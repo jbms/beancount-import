@@ -405,6 +405,7 @@ class NewCandidate(object):
         if self.target_account not in self.state.all_accounts:
             self.open_account_line = '1900-01-01 open %s' % self.target_account
             self.line_changes = self.line_changes_actual + [(1, self.open_account_line)]
+            self.state.all_accounts.add(self.target_account)
         else:
             self.line_changes = self.line_changes_actual
             self.open_account_line = None
