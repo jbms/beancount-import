@@ -472,7 +472,8 @@ def load_mint_data(filename, state):
 
                 source_data = 'csv-desc:' + row['Original Description']
 
-                entries.append(MintEntry(account = account_map[account], date = date,
+                source_account = account_map[account]
+                entries.append(MintEntry(account = source_account, date = date,
                                          source_data = source_data, amount = amount))
         entries.reverse()
         entries.sort(key = lambda x: x[1]) # sort by date
@@ -501,7 +502,7 @@ class ProcessState(object):
         for e in self.imported_data:
             if matched_postings[e] > 0:
                 matched_postings[e] -= 1
-            else:
+            elif re.fullmatch(args.limit, e.account):
                 self.pending_data.append(e)
 
         # Find mint entries referenced in the journal that are not present in the imported date.
@@ -896,6 +897,8 @@ def main():
     argparser.add_argument('--editor', type = str, help = 'Editor program to run, invoked as <editor> +<lineno> <filename>')
     argparser.add_argument('--log-output', type = str, help = 'Filename to which log output will be written.',
                            default = '/dev/null')
+    argparser.add_argument('--limit', type=str, help='Regular expression for limiting accounts to reconcile.',
+                           default='.*')
     argparser.add_argument(
         '-d', '--debug',
         help = 'Set log verbosity to DEBUG.',
