@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 
 import pdb
+import re
 import sys, csv, argparse, os
 import concurrent.futures
 import collections
 import datetime
 import tempfile
+import json
+import nltk, sklearn.tree
 
 import npyscreen
 import npyscreen.wgwidget
+import npyscreen.wgtitlefield
+
 import curses
 import curses.ascii
 import threading
@@ -18,23 +23,25 @@ import logging
 from decimal import Decimal
 
 import beancount.parser.printer
+import beancount.loader
+import beancount.parser.booking
+from beancount.core.data import Open, Transaction
 
-logger = logging.getLogger('process_mint')
+logger = logging.getLogger('beancount-import')
 
 source_data_key = ['source_data'] + ['source_data%d' % x for x in range(1,3)]
 posting_date_key = 'date'
 journal_date_format = '%Y-%m-%d'
 
 def get_posting_date(entry, posting):
-    if 'date' in posting.meta:
-        return posting.meta.date
+    if posting_date_key in posting.meta:
+        return posting.meta[posting_date_key]
     return entry.date
 
 MintEntry = collections.namedtuple('MintEntry', ['account', 'date', 'amount', 'source_data'])
 
 class JournalState(object):
     def __init__(self, args, log_status):
-        import beancount.loader
         self.args = args
 
         log_status('Parsing journal')
@@ -51,27 +58,32 @@ class JournalState(object):
             raise RuntimeError('Errors detected, run bean-check')
 
         self.fuzzy_match_days = args.fuzzy_match_days
-        
+
         self.training_examples = []
         self.classifier = None
 
         self.cached_lines = {}
 
         self._process_accounts()
-        
+
         log_status('Processing entries')
         self._process_entries()
+
+    def get_filename_for_account(self, account_name):
+        if self.args.account_output is not None:
+            for pattern, filename in self.args.account_output:
+                if re.match(pattern, account_name):
+                    return filename
+        return self.args.journal_output
 
     def _process_accounts(self):
         """Populates the bidirectional mappings self.mint_id_to_account and self.account_to_mint_id
         based on the mint_id account metadata field.
         """
-        from beancount.core.data import Open
-        
         self.mint_id_to_account = {}
         self.account_to_mint_id = {}
         self.all_accounts = set()
-        
+
         for entry in self.entries:
             if not isinstance(entry, Open):
                 continue
@@ -95,13 +107,11 @@ class JournalState(object):
     def _process_entries(self):
         """Initializes self.{matched,unmatched}_postings.
         """
-        from beancount.core.data import Transaction
-        
         # Dict of (account, amount, date +- args.fuzzy_match_days) -> { id(posting) -> (entry, posting) }
         self.unmatched_postings = {}
 
         # Multiset of MintEntry
-        
+
         # This contains postings that have (source_data, posting_date) and have not yet been matched against the downloaded data during this session.
         self.matched_postings = {}
         journal_filenames = set()
@@ -109,7 +119,7 @@ class JournalState(object):
         for entry in self.entries:
             if not isinstance(entry, Transaction): continue
 
-            journal_filenames.add(entry.meta.filename)
+            journal_filenames.add(entry.meta['filename'])
             for posting_i, posting in enumerate(entry.postings):
 
                 # Only consider postings into accounts tracked by Mint.
@@ -186,7 +196,7 @@ class JournalState(object):
     def get_unmatched_posting_group_key(self, entry, posting):
         # If there is a posting date, only allow exact date matches.
         if 'date' in posting.meta:
-            date_range = [posting.meta.date]
+            date_range = [posting.meta['date']]
         # Otherwise perform fuzzy matching based on the transaction date.
         else:
             date_range = self.get_fuzzy_date_range(entry.date)
@@ -226,9 +236,8 @@ class JournalState(object):
         return lines
 
     def get_transaction_line_range(self, entry):
-        import re
-        lines = self.get_journal_lines(entry.meta.filename)
-        start_line = entry.meta.lineno - 1
+        lines = self.get_journal_lines(entry.meta['filename'])
+        start_line = entry.meta['lineno'] - 1
         line_i = start_line + 1
         # Find last line of transaction
         # According to Beanacount grammer, each line of the transaction must start with whitespace and contain a non-whitespace character.
@@ -264,7 +273,7 @@ class JournalState(object):
                 next_old_lineno += 1
             if change_type >= 0:
                 next_new_lineno += 1
-                
+
         new_lines += orig_lines[line_range[1]:]
         while next_new_lineno <= len(new_lines):
             lineno_map[next_old_lineno] = next_new_lineno
@@ -272,7 +281,7 @@ class JournalState(object):
             next_new_lineno += 1
 
         new_data = '\n'.join(new_lines)
-        
+
 
         filename = os.path.realpath(filename)
         if self.check_journal_modification(filename):
@@ -288,22 +297,22 @@ class JournalState(object):
             self.journal_load_time[filename] = os.stat(f.name).st_mtime
             os.rename(f.name, filename)
 
-        from beancount.core.data import Transaction
-
         self.cached_lines[filename] = new_lines
 
         # Update lines of all entries
         for entry in self.entries:
             if entry.meta is not None and 'lineno' in entry.meta:
-                entry.meta.lineno = lineno_map[entry.meta.lineno]
+                entry.meta['lineno'] = lineno_map[entry.meta['lineno']]
             if isinstance(entry, Transaction):
                 for posting in entry.postings:
                     if posting.meta is not None and 'lineno' in posting.meta:
-                        posting.meta.lineno = lineno_map[posting.meta.lineno]
-    def append_lines(self, lines):
+                        posting.meta['lineno'] = lineno_map[posting.meta['lineno']]
+    def append_lines(self, lines, output_filename=None, separate_with_blank_line=True):
+        if output_filename is None:
+            output_filename = self.args.journal_output
         # Avoid mutating original
         lines = list(lines)
-        filename = os.path.realpath(self.args.journal_output)
+        filename = os.path.realpath(output_filename)
         orig_lines = self.get_journal_lines(filename)
         if self.check_journal_modification(filename):
             raise RuntimeError('Journal file modified concurrently: %r' % filename)
@@ -311,9 +320,10 @@ class JournalState(object):
         if orig_lines[-1] != '':
             lines.insert(0, '')
             base_lineno += 1
-        if len(orig_lines) == 1 or orig_lines[-2] != '':
-            lines.insert(0, '')
-            base_lineno += 1
+        if separate_with_blank_line:
+            if len(orig_lines) == 1 or orig_lines[-2] != '':
+                lines.insert(0, '')
+                base_lineno += 1
 
         lines.append('')
 
@@ -342,19 +352,18 @@ class MatchCandidate(object):
         self.source_data = source_data
         self.posting_date = date
 
-        lines = state.get_journal_lines(posting.meta.filename)
+        lines = state.get_journal_lines(posting.meta['filename'])
         line_range = state.get_transaction_line_range(entry)
         self.line_range = line_range
         self.line_changes = [(0, line) for line in lines[line_range[0]:line_range[1]]]
 
-        insert_offset = posting.meta.lineno - entry.meta.lineno + 1
+        insert_offset = posting.meta['lineno'] - entry.meta['lineno'] + 1
         indent = ' ' * 4
 
         # Insert the date first so that it comes after
         if posting_date_key not in posting.meta:
             self.line_changes.insert(
                 insert_offset, (1, '%s%s: %s' % (indent, posting_date_key, date.strftime(journal_date_format))))
-        import json
 
         # Json string literal representation (approximately) matches beancount syntax
         self.line_changes.insert(
@@ -362,7 +371,7 @@ class MatchCandidate(object):
             (1, '%s%s: %s' % (indent, source_data_key[0], json.dumps(source_data))))
 
     def apply(self):
-        self.state.apply_changes(self.posting.meta.filename, self.line_range, self.line_changes)
+        self.state.apply_changes(self.posting.meta['filename'], self.line_range, self.line_changes)
         self.state.remove_unmatched_posting(self.entry, self.posting)
 
         # We don't increment the count in matched_postings because this posting has already been matched against downloaded data during this session.
@@ -385,9 +394,7 @@ class NewCandidate(object):
         self.state = state
         self.target_account = target_account
 
-        import json
-
-        self.line_changes = [
+        self.line_changes_actual = [
             (0, '%s * %s' % (entry.date.strftime(journal_date_format),
                              json.dumps(get_narration_from_source_data(entry.source_data)))),
             (0, '  %s    %.2f USD' % (entry.account, entry.amount)),
@@ -395,24 +402,33 @@ class NewCandidate(object):
             (0, '    %s: %s' % (posting_date_key, entry.date.strftime(journal_date_format))),
             (1, '  %s' % (target_account))
             ]
+        if self.target_account not in self.state.all_accounts:
+            self.open_account_line = '1900-01-01 open %s' % self.target_account
+            self.line_changes = self.line_changes_actual + [(1, self.open_account_line)]
+        else:
+            self.line_changes = self.line_changes_actual
+            self.open_account_line = None
     def apply(self):
-        lines = [line for change_type, line in self.line_changes]
+        lines = [line for change_type, line in self.line_changes_actual]
         filename, base_lineno = self.state.append_lines(lines)
+        if self.open_account_line is not None:
+            self.state.append_lines([self.open_account_line],
+                                    output_filename=self.state.get_filename_for_account(self.target_account),
+                                    separate_with_blank_line=False)
         entry_text = '\n'.join(lines) + '\n'
         def ignore_errors(x):
             pass
         postings = []
-        from beancount.parser import booking
         entries, errors, options = beancount.parser.parser.parse_string(entry_text)
-        entries, balance_errors = booking.book(entries, self.state.options)
+        entries, balance_errors = beancount.parser.booking.book(entries, self.state.options)
         if len(entries) != 1:
             raise RuntimeError('Error parsing new transaction text: %r\n%r' % (entry_text, errors))
         entry = entries[0]
-        entry.meta.filename = filename
-        entry.meta.lineno += base_lineno
+        entry.meta['filename'] = filename
+        entry.meta['lineno'] += base_lineno
         for posting in entry.postings:
-            posting.meta.filename = filename
-            posting.meta.lineno += base_lineno
+            posting.meta['filename'] = filename
+            posting.meta['lineno'] += base_lineno
         self.state.add_unmatched_posting(entry, entry.postings[1])
 
         # We don't increment the count in matched_postings because this posting has already been matched against downloaded data during this session.
@@ -441,7 +457,8 @@ def load_mint_data(filename, state):
             for row in reader:
                 account = row['Account Name']
                 if account not in account_map:
-                    raise RuntimeError('Unknown account name: %r in row %r' % (account,row))
+                    #raise RuntimeError('Unknown account name: %r in row %r' % (account,row))
+                    continue
                 if row['Transaction Type'] not in ['credit', 'debit']:
                     raise('Unknown transaction type: %r in row %r' % (row['Transaction Type'], row))
                 amount = Decimal(row['Amount'])
@@ -463,7 +480,7 @@ def load_mint_data(filename, state):
 
     except Exception as e:
         raise RuntimeError('CSV file has incorrect format',filename) from e
-        
+
 
 class ProcessState(object):
     def __init__(self, args, log_status):
@@ -473,7 +490,7 @@ class ProcessState(object):
 
         log_status('Parsing CSV file %r' % args.mint_data)
         self.imported_data = load_mint_data(args.mint_data, self.state)
-        
+
         log_status('Matching entries')
 
         matched_postings = collections.Counter()
@@ -495,7 +512,7 @@ class ProcessState(object):
                 for entry, posting in postings:
                     stale_entries.append(
                         '%s:%d: Stale entry: %s %s' %
-                        (posting.meta.filename, posting.meta.lineno,
+                        (posting.meta['filename'], posting.meta['lineno'],
                          mint_entry.date.strftime(journal_date_format), mint_entry.source_data))
         if stale_entries:
             raise RuntimeError('Stale entries found\n' + '\n'.join(stale_entries))
@@ -521,7 +538,7 @@ class ActionWidget(npyscreen.wgwidget.Widget):
                     curses.color_pair(self.parent.theme_manager.get_pair_number('WHITE_BLACK')),
                     curses.color_pair(self.parent.theme_manager.get_pair_number('WHITE_BLACK')) | curses.A_BOLD,
                   ]
-            
+
             # line_type: 0 -> existing, 1 -> insertion
             self.parent.curses_pad.addstr(self.rely+line_i, self.relx, line, attributes[line_type])
 
@@ -571,11 +588,11 @@ class ActionList(npyscreen.MultiLineAction):
                 entry, posting = value.apply()
                 if key == ord('e'):
                     # Also open editor
-                    app.open_editor(posting.meta.filename, posting.meta.lineno)
+                    app.open_editor(posting.meta['filename'], posting.meta['lineno'])
 
                 del app.process_state.pending_data[0]
                 app.has_entry = False
-    
+
     def skip_entry(self, *args, **kwargs):
         app = self.parent.parentApp
         if app.has_entry:
@@ -591,7 +608,7 @@ class ActionList(npyscreen.MultiLineAction):
         wAccount.editable = True
         new_candidate = app.current_matches[-1]
         wAccount.entry_widget.value = new_candidate.target_account
-        
+
         self.editable = False
         self.h_exit_down(*args)
 
@@ -664,7 +681,7 @@ class AccountEntryWidget(npyscreen.Autocomplete):
             completions = [a for a in state.all_accounts if is_subseq(self.value.lower(), a.lower())]
         completions.sort()
         return completions
-            
+
     def auto_complete(self, x):
         app = self.parent.parentApp
         state = app.process_state.state
@@ -676,6 +693,12 @@ class AccountEntryWidget(npyscreen.Autocomplete):
 
     def accept(self, x):
         app = self.parent.parentApp
+        state = app.process_state.state
+        if self.value not in state.all_accounts:
+            if not npyscreen.notify_yes_no(
+                    'Account %s does not exist.  Add it?' % self.value,
+                    editw=2):
+                return
         app.current_matches[-1] = app.make_new_candidate(self.value)
         self.cancel(x)
 
@@ -690,7 +713,6 @@ class AccountEntryWidget(npyscreen.Autocomplete):
         self.editable = False
         self.h_exit_up(x)
 
-import npyscreen.wgtitlefield
 class TitledAccountEntryWidget(npyscreen.TitleText):
     _entry_type = AccountEntryWidget
 
@@ -703,7 +725,7 @@ class MainForm(npyscreen.FormMutt):
 
 class DaemonThreadExecutor(concurrent.futures.Executor):
     """Launches each task in a separate daemon thread."""
-    
+
     def submit(self, fn, *args, **kwargs):
         f = concurrent.futures.Future()
         def wrapper():
@@ -713,7 +735,7 @@ class DaemonThreadExecutor(concurrent.futures.Executor):
                 f.set_result(fn(*args, **kwargs))
             except Exception as e:
                 f.set_exception(e)
-                
+
         t = threading.Thread(target = wrapper)
         t.daemon = True
         t.start()
@@ -737,7 +759,7 @@ class App(npyscreen.NPSAppManaged):
         with self.lock:
             self.status_text = status
             self.status2_text = ''
-        
+
     def onStart(self):
         self.addForm("MAIN", MainForm)
         self.mainForm = self.getForm("MAIN")
@@ -751,7 +773,6 @@ class App(npyscreen.NPSAppManaged):
         if self.classifier is None:
             training_examples = process_state.state.training_examples
             self.log_status('Training classifier with %d examples' % len(training_examples))
-            import nltk, sklearn.tree
             classifier = nltk.classify.scikitlearn.SklearnClassifier(
                 estimator = sklearn.tree.DecisionTreeClassifier()
                 )
@@ -863,30 +884,37 @@ class App(npyscreen.NPSAppManaged):
         subprocess.check_call([self.args.editor, '+%d' % lineno, filename],
                               stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
-argparser = argparse.ArgumentParser()
-argparser.add_argument('--journal_input', help = 'Top-level Beancount input file', required = True)
-argparser.add_argument('--journal_output', help = 'Beancount output file to which new transactions will be appended',
-                       required = True)
-argparser.add_argument('--mint_data', help = 'Mint CSV data file',
-                       required = True)
-argparser.add_argument('--editor', type = str, help = 'Editor program to run, invoked as <editor> +<lineno> <filename>')
-argparser.add_argument('--log-output', type = str, help = 'Filename to which log output will be written.',
-                       default = '/dev/null')
-argparser.add_argument(
-    '-d', '--debug',
-    help = 'Set log verbosity to DEBUG.',
-    action = 'store_const', dest = 'loglevel', const = logging.DEBUG,
-    default = logging.WARNING)
-argparser.add_argument(
-    '-v', '--verbose',
-    help = 'Set log verbosity to INFO.',
-    action = 'store_const', dest = 'loglevel', const = logging.DEBUG)
-argparser.add_argument(
-    '--fuzzy_match_days', type = int, default = 3,
-    help = 'Maximum number of days by which the dates of two matching entries may differ.')
-args = argparser.parse_args()
+def main():
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('--journal_input', help = 'Top-level Beancount input file', required = True)
+    argparser.add_argument('--journal_output', help = 'Beancount output file to which new transactions will be appended',
+                           required = True)
+    argparser.add_argument('--account_output', help = 'Beancount output file to which matching accounts will be appended',
+                           nargs=2, action = 'append')
+    argparser.add_argument('--mint_data', help = 'Mint CSV data file',
+                           required = True)
+    argparser.add_argument('--editor', type = str, help = 'Editor program to run, invoked as <editor> +<lineno> <filename>')
+    argparser.add_argument('--log-output', type = str, help = 'Filename to which log output will be written.',
+                           default = '/dev/null')
+    argparser.add_argument(
+        '-d', '--debug',
+        help = 'Set log verbosity to DEBUG.',
+        action = 'store_const', dest = 'loglevel', const = logging.DEBUG,
+        default = logging.WARNING)
+    argparser.add_argument(
+        '-v', '--verbose',
+        help = 'Set log verbosity to INFO.',
+        action = 'store_const', dest = 'loglevel', const = logging.DEBUG)
+    argparser.add_argument(
+        '--fuzzy_match_days', type = int, default = 3,
+        help = 'Maximum number of days by which the dates of two matching entries may differ.')
+    args = argparser.parse_args()
 
-logging.basicConfig(filename = args.log_output, level = args.loglevel)
+    logging.basicConfig(filename = args.log_output, level = args.loglevel)
 
-app = App(args)
-app.run()
+    app = App(args)
+    app.run()
+        
+
+if __name__ == '__main__':
+    main()
