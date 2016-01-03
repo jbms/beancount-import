@@ -15,7 +15,8 @@ setup(name='beancount-import',
       install_requires=[
           'beancount',
           'npyscreen',
-          'nltk',
+          'numpy',
           'scikit-learn',
+          'nltk',
           ],
       )
