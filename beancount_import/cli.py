@@ -8,7 +8,6 @@ import collections
 import datetime
 import tempfile
 import json
-import nltk, sklearn.tree
 
 import npyscreen
 import npyscreen.wgwidget
@@ -22,9 +21,6 @@ import subprocess
 import logging
 from decimal import Decimal
 
-import beancount.parser.printer
-import beancount.loader
-import beancount.parser.booking
 from beancount.core.data import Open, Transaction
 
 logger = logging.getLogger('beancount-import')
@@ -51,6 +47,7 @@ class JournalState(object):
         self.default_journal_load_time = time.time()
         self.journal_load_time = {}
 
+        import beancount.loader
         self.entries, errors, self.options = beancount.loader.load_file(
             args.journal_input, log_errors = ignore_errors)
 
@@ -420,7 +417,9 @@ class NewCandidate(object):
         def ignore_errors(x):
             pass
         postings = []
+        import beancount.parser
         entries, errors, options = beancount.parser.parser.parse_string(entry_text)
+        import beancount.parser.booking
         entries, balance_errors = beancount.parser.booking.book(entries, self.state.options)
         if len(entries) != 1:
             raise RuntimeError('Error parsing new transaction text: %r\n%r' % (entry_text, errors))
@@ -775,6 +774,8 @@ class App(npyscreen.NPSAppManaged):
         if self.classifier is None:
             training_examples = process_state.state.training_examples
             self.log_status('Training classifier with %d examples' % len(training_examples))
+
+            import nltk, sklearn.tree
             classifier = nltk.classify.scikitlearn.SklearnClassifier(
                 estimator = sklearn.tree.DecisionTreeClassifier()
                 )
