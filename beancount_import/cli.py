@@ -296,14 +296,35 @@ class JournalState(object):
 
         self.cached_lines[filename] = new_lines
 
+        realpaths = dict()
+        def get_realpath(path):
+            result = realpaths.get(path, None)
+            if result is None:
+                result = os.path.realpath(path)
+                realpaths[path] = result
+            return result
+
+        def fix_meta(meta):
+            if meta is None:
+                return
+            entry_filename = meta.get('filename', None)
+            if entry_filename is None:
+                return
+            if get_realpath(entry_filename) != filename:
+                return
+            lineno = meta.get('lineno', None)
+            # Automatic Document entries get a lineno of 0
+            if lineno is None or lineno == 0:
+                return
+            entry.meta['lineno'] = lineno_map[lineno]
+
         # Update lines of all entries
         for entry in self.entries:
-            if entry.meta is not None and 'lineno' in entry.meta:
-                entry.meta['lineno'] = lineno_map[entry.meta['lineno']]
+            fix_meta(entry.meta)
             if isinstance(entry, Transaction):
                 for posting in entry.postings:
-                    if posting.meta is not None and 'lineno' in posting.meta:
-                        posting.meta['lineno'] = lineno_map[posting.meta['lineno']]
+                    fix_meta(posting.meta)
+
     def append_lines(self, lines, output_filename=None, separate_with_blank_line=True):
         if output_filename is None:
             output_filename = self.args.journal_output
