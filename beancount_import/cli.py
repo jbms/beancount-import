@@ -147,7 +147,7 @@ class JournalState(object):
     def add_matched_posting(self, entry, posting, source_data, posting_date):
         self.matched_postings.setdefault(
             MintEntry(account = posting.account, date = posting_date,
-                      amount = posting.position.number, source_data = source_data),
+                      amount = posting.units.number, source_data = source_data),
             []).append((entry, posting))
 
         # If there are exactly 2 postings, use this as training data.
@@ -155,7 +155,7 @@ class JournalState(object):
             posting_i = 0 if posting is entry.postings[0] else 1
             self.add_training_example(posting.account,
                                       source_data,
-                                      posting.position.number,
+                                      posting.units.number,
                                       entry.postings[1 - posting_i].account)
 
     def add_training_example(self, source_account, source_data, amount, target_account):
@@ -199,7 +199,7 @@ class JournalState(object):
             date_range = self.get_fuzzy_date_range(entry.date)
 
         for date in date_range:
-            yield (posting.account, date, posting.position.number)
+            yield (posting.account, date, posting.units.number)
 
     def add_unmatched_posting(self, entry, posting):
         # FIXME: Check that posting.position.lot matches the currency that we are tracking
