@@ -794,19 +794,22 @@ class App(npyscreen.NPSAppManaged):
             process_state = self.process_state
         if self.classifier is None:
             training_examples = process_state.state.training_examples
-            self.log_status('Training classifier with %d examples' % len(training_examples))
+            if len(training_examples) > 0:
+                self.log_status('Training classifier with %d examples' % len(training_examples))
 
-            import nltk, sklearn.tree
-            classifier = nltk.classify.scikitlearn.SklearnClassifier(
-                estimator = sklearn.tree.DecisionTreeClassifier()
-                )
-            classifier.train(training_examples)
-            logging.info('Evaluating accuracy of classifier')
-            errors = 0
-            for features, label in training_examples:
-                if classifier.classify(features) != label:
-                    errors += 1
-            logging.info('Classifier accuracy: %.4f' % (1 - float(errors) / len(training_examples)))
+                import nltk, sklearn.tree
+                classifier = nltk.classify.scikitlearn.SklearnClassifier(
+                    estimator = sklearn.tree.DecisionTreeClassifier()
+                    )
+                classifier.train(training_examples)
+                logging.info('Evaluating accuracy of classifier')
+                errors = 0
+                for features, label in training_examples:
+                    if classifier.classify(features) != label:
+                        errors += 1
+                logging.info('Classifier accuracy: %.4f' % (1 - float(errors) / len(training_examples)))
+            else:
+                classifier = None
         else:
             classifier = self.classifier
         return process_state, classifier
@@ -858,13 +861,14 @@ class App(npyscreen.NPSAppManaged):
                                               posting = posting, state = self.process_state.state,
                                               source_data = next_entry.source_data, date = next_entry.date)
                                for entry, posting in matches]
-
-                    predicted_account = self.classifier.classify(
-                        self.process_state.state.get_features(
-                            source_account = next_entry.account,
-                            source_data = next_entry.source_data,
-                            amount = next_entry.amount))
-
+                    if self.classifier is not None:
+                        predicted_account = self.classifier.classify(
+                            self.process_state.state.get_features(
+                                source_account = next_entry.account,
+                                source_data = next_entry.source_data,
+                                amount = next_entry.amount))
+                    else:
+                        predicted_account = 'Expenses:Unknown'
                     matches.append(self.make_new_candidate(predicted_account))
                     self.current_matches = matches
                     if self.mainForm.wMain.is_showing_completions:
