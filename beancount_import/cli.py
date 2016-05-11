@@ -316,7 +316,7 @@ class JournalState(object):
             # Automatic Document entries get a lineno of 0
             if lineno is None or lineno == 0:
                 return
-            entry.meta['lineno'] = lineno_map[lineno]
+            meta['lineno'] = lineno_map[lineno]
 
         # Update lines of all entries
         for entry in self.entries:
