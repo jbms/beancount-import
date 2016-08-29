@@ -1,0 +1,451 @@
+OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+SECURITY:NONE
+ENCODING:USASCII
+CHARSET:1252
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:c0b46cde47e6e1ccd1fe4c7a13b95772
+
+
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0
+        <SEVERITY>INFO
+        <MESSAGE>SUCCESS
+      </STATUS>
+      <DTSERVER>20180617185358.913[-4:EDT]
+      <LANGUAGE>ENG
+      <FI>
+        <ORG>MyBank
+        <FID>7191
+      </FI>
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <INVSTMTMSGSRSV1>
+    <INVSTMTTRNRS>
+      <TRNUID>a8ac02b9b3781688c74c9a79129d57b6
+      <STATUS>
+        <CODE>0
+        <SEVERITY>INFO
+        <MESSAGE>SUCCESS
+      </STATUS>
+      <INVSTMTRS>
+        <DTASOF>20180616033008.000[-4:EDT]
+        <CURDEF>USD
+        <INVACCTFROM>
+          <BROKERID>MyBank
+          <ACCTID>123456789
+        </INVACCTFROM>
+        <INVTRANLIST>
+          <DTSTART>20180608000000.000[-4:EDT]
+          <DTEND>20180617185358.976[-4:EDT]
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>CASH
+              <DTPOSTED>20180608000000.000[-4:EDT]
+              <TRNAMT>-33.7200
+              <FITID>46f2144d0ce515a855234ec
+              <NAME>DIRECT               DEBIT WELLS
+              <MEMO>DIRECT               DEBIT WELLSFARGO   CRCARDPMT
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT
+              <DTPOSTED>20180611000000.000[-4:EDT]
+              <TRNAMT>-27.6800
+              <FITID>c91d80d9358f433cd9ab34f
+              <NAME>DEBIT CARD PURCHASE  AMAZON MKTP
+              <MEMO>DEBIT CARD PURCHASE  AMAZON MKTPLACE PMTS    AMZN.COM/BILL WA
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>DEP
+              <DTPOSTED>20180611000000.000[-4:EDT]
+              <TRNAMT>+75.6000
+              <FITID>9a69c0efa290c0aa6cd2e96
+              <NAME>CHECK RECEIVED
+              <MEMO>CHECK RECEIVED
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>CASH
+              <DTPOSTED>20180611000000.000[-4:EDT]
+              <TRNAMT>-20.2800
+              <FITID>7565f8c69ff4148710c25d7
+              <NAME>DIRECT               DEBIT CHASE
+              <MEMO>DIRECT               DEBIT CHASE TRNSFR DR
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT
+              <DTPOSTED>20180611000000.000[-4:EDT]
+              <TRNAMT>-36.0700
+              <FITID>bfea1b3fc6b9cd383d62383
+              <NAME>DEBIT CARD PURCHASE  POS1234 7-E
+              <MEMO>DEBIT CARD PURCHASE  POS1234 7-ELEVEN        SACRAMENTO CA
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT
+              <DTPOSTED>20180611000000.000[-4:EDT]
+              <TRNAMT>-79.7000
+              <FITID>13517076f2512f0830a4380
+              <NAME>DEBIT CARD PURCHASE  STARBUCKS S
+              <MEMO>DEBIT CARD PURCHASE  STARBUCKS STORE 12345
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT
+              <DTPOSTED>20180612000000.000[-4:EDT]
+              <TRNAMT>-94.4900
+              <FITID>d1f6c4345793074d46e3502
+              <NAME>DEBIT CARD PURCHASE  POS1234 WAL
+              <MEMO>DEBIT CARD PURCHASE  POS1234 WAL-MART #1234  SACRAMENTO CA
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT
+              <DTPOSTED>20180612000000.000[-4:EDT]
+              <TRNAMT>-46.8000
+              <FITID>c994842e8c0170e8262860d
+              <NAME>DEBIT CARD PURCHASE  POS1234 TAR
+              <MEMO>DEBIT CARD PURCHASE  POS1234 TARGET T-1234
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT
+              <DTPOSTED>20180612000000.000[-4:EDT]
+              <TRNAMT>-46.0000
+              <FITID>3bebaf840f4451980de527a
+              <NAME>DEBIT CARD PURCHASE  POS9999 TAR
+              <MEMO>DEBIT CARD PURCHASE  POS9999 TARGET T-1234
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT
+              <DTPOSTED>20180613000000.000[-4:EDT]
+              <TRNAMT>-9.9000
+              <FITID>87ddbe56b49fdfad11c9a5b
+              <NAME>DEBIT CARD PURCHASE  AMAZON MKTP
+              <MEMO>DEBIT CARD PURCHASE  AMAZON MKTPLACE PMTS W  WWW.AMAZON.CO WA
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>DEP
+              <DTPOSTED>20180614000000.000[-4:EDT]
+              <TRNAMT>+98.1600
+              <FITID>e92c27aa0ce372e7842bb27
+              <NAME>DIRECT               DEPOSIT MYC
+              <MEMO>DIRECT               DEPOSIT MYCOMPANY PAYROLL
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT
+              <DTPOSTED>20180614000000.000[-4:EDT]
+              <TRNAMT>-97.0500
+              <FITID>d3c478700a7412ddea3bc74
+              <NAME>DEBIT CARD PURCHASE  POS1234 SHE
+              <MEMO>DEBIT CARD PURCHASE  POS1234 SHELL Service
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT
+              <DTPOSTED>20180615000000.000[-4:EDT]
+              <TRNAMT>-70.7100
+              <FITID>41fc88f8bb518e9b5c000c7
+              <NAME>DEBIT CARD PURCHASE  COFFEE HOU
+              <MEMO>DEBIT CARD PURCHASE  COFFEE HOUSE   NEW YORK NY
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+        </INVTRANLIST>
+        <INVBAL>
+          <AVAILCASH>80.15
+          <MARGINBALANCE>+16.00
+          <SHORTBALANCE>+19.00
+          <BUYPOWER>+66.00
+          <BALLIST>
+            <BAL>
+              <NAME>Networth
+              <DESC>The net market value of all long and short positions in the account
+              <BALTYPE>DOLLAR
+              <VALUE>91.89
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Margin Equity
+              <DESC>The margin market value less any margin debit balance
+              <BALTYPE>DOLLAR
+              <VALUE>6.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Margin Equity Percentage
+              <DESC>Margin equity / market value of long and short positions
+              <BALTYPE>PERCENT
+              <VALUE>37.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Cash Debit Balance
+              <DESC>Cash Debit Balance
+              <BALTYPE>DOLLAR
+              <VALUE>90.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Total Money Markets
+              <DESC>The total value of all money market positions in the cash account
+              <BALTYPE>DOLLAR
+              <VALUE>70.23
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>House Surplus
+              <DESC>Equity amount above house requirements
+              <BALTYPE>DOLLAR
+              <VALUE>22.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>NYSE Surplus
+              <DESC>Equity amount above exchange requirements
+              <BALTYPE>DOLLAR
+              <VALUE>1.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Federal Surplus
+              <DESC>Amount above federal requirements
+              <BALTYPE>DOLLAR
+              <VALUE>32.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Buying Power - Equities
+              <DESC>Amount of equities you can buy on margin without generating a margin call
+              <BALTYPE>DOLLAR
+              <VALUE>41.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Buying Power - Municipal Bonds
+              <DESC>Amount of municipal bonds you can buy on margin without generating a margin call
+              <BALTYPE>DOLLAR
+              <VALUE>21.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Buying Power - Government Bonds
+              <DESC>Amount of government bonds you can buy on margin without generating a margin cal
+              <BALTYPE>DOLLAR
+              <VALUE>70.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Buying Power - Corporate Bonds
+              <DESC>Amount you can buy of corporate bonds on margin with no margin call
+              <BALTYPE>DOLLAR
+              <VALUE>58.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Option Market Value
+              <DESC>The market value of all options in the account
+              <BALTYPE>DOLLAR
+              <VALUE>43.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Option In The Money Amount
+              <DESC>The in-the-money amount on covered options
+              <BALTYPE>DOLLAR
+              <VALUE>17.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Cash Market value
+              <DESC>Total value of all cash account positions
+              <BALTYPE>DOLLAR
+              <VALUE>96.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Margin Market Value
+              <DESC>Total value of positions in margin less in-the-money amount of covered options
+              <BALTYPE>DOLLAR
+              <VALUE>41.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Short Market Value
+              <DESC>Total value of short positions less in-the-money amount of covered put options
+              <BALTYPE>DOLLAR
+              <VALUE>21.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+            <BAL>
+              <NAME>Available to Borrow
+              <DESC>Cash amount that can be borrowed without generating a margin call
+              <BALTYPE>DOLLAR
+              <VALUE>90.0
+              <DTASOF>20180616033008.000[-4:EDT]
+              <CURRENCY>
+                <CURRATE>1.000
+                <CURSYM>USD
+              </CURRENCY>
+            </BAL>
+          </BALLIST>
+        </INVBAL>
+      </INVSTMTRS>
+    </INVSTMTTRNRS>
+  </INVSTMTMSGSRSV1>
+</OFX>

@@ -1,0 +1,59 @@
+2016-08-10 * "Starbucks"
+  Liabilities:Credit-Card:National-Federal  -2.45 USD
+  Expenses:Coffee           2.45 USD
+
+2013-11-27 * "Credit card payment"
+  Liabilities:Credit-Card:National-Federal   66.88 USD
+  Assets:Checking:Wells-Fargo          -66.88 USD
+
+2018-06-08 * "Wells Fargo Credit card payment"
+  Assets:Checking:Chase    -33.72 USD
+  Liabilities:Credit-Card:Wells-Fargo   33.72 USD
+
+2018-06-11 * "Headphones"
+  Assets:Checking:Chase    -27.68 USD
+  Expenses:Electronics   27.68 USD
+
+2018-06-11 * "Reimbursement from Fred"
+  Assets:Checking:Chase     75.60 USD
+  Assets:Receivable:Fred -75.60 USD
+
+2018-06-11 * "Chase Credit Card Payment"
+  Assets:Checking:Chase          -20.28 USD
+  Liabilities:Credit-Card:Chase   20.28 USD
+
+2018-06-11 * "Gas"
+  Assets:Checking:Chase  -36.07 USD
+  Expenses:Gas            36.07 USD
+
+2018-06-11 * "Starbucks"
+  Assets:Checking:Chase  -79.70 USD
+  Expenses:Coffee         79.70 USD
+
+2018-06-12 * "Walmart"
+  Assets:Checking:Chase   -94.49 USD
+  Expenses:Clothes   94.49 USD
+
+2018-06-12 * "Target"
+  Assets:Checking:Chase  -46.80 USD
+  Expenses:Clothes        46.80 USD
+
+2018-06-12 * "Target"
+  Assets:Checking:Chase   -46.00 USD
+  Expenses:Miscellaneous   46.00 USD
+
+2018-06-13 * "Mouse"
+  Assets:Checking:Chase  -9.90 USD
+  Expenses:Electronics    9.90 USD
+
+2018-06-14 * "My Company Payroll"
+  Assets:Checking:Chase      98.16 USD
+  Income:My-Company:Salary  -98.16 USD
+
+2018-06-14 * "Gas"
+  Assets:Checking:Chase  -97.05 USD
+  Expenses:Gas            97.05 USD
+
+2018-06-15 * "Coffee"
+  Assets:Checking:Chase  -70.71 USD
+  Expenses:Coffee         70.71 USD

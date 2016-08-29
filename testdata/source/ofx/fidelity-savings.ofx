@@ -1,0 +1,111 @@
+OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+SECURITY:NONE
+ENCODING:USASCII
+CHARSET:1252
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0
+
+
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+    <STATUS>
+    <CODE>0
+    <SEVERITY>INFO
+    <MESSAGE>SUCCESS
+    </STATUS>
+    <DTSERVER>20120908190849.317[-4:EDT]
+    <LANGUAGE>ENG
+    <FI>
+    <ORG>fidelity.com
+    <FID>7776
+    </FI>
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <INVSTMTMSGSRSV1>
+    <INVSTMTTRNRS>
+      <TRNUID>00000000000000000000000001
+      <STATUS>
+        <CODE>0
+        <SEVERITY>INFO
+        <MESSAGE>SUCCESS
+      </STATUS>
+      <INVSTMTRS>
+        <DTASOF>20120908190851.317[-4:EDT]
+        <CURDEF>USD
+        <INVACCTFROM>
+          <BROKERID>fidelity.com
+          <ACCTID>X0000001
+        </INVACCTFROM>
+        <INVTRANLIST>
+          <DTSTART>20120710000000.000[-4:EDT]
+          <DTEND>20120908190849.555[-4:EDT]
+          <INVBANKTRAN>    
+            <STMTTRN>
+              <TRNTYPE>CHECK
+              <DTPOSTED>20120720000000.000[-4:EDT]
+              <TRNAMT>-00000000001500.0000
+              <FITID>X0000000000000000000001
+              <CHECKNUM>0000001001
+              <NAME>Check Paid #0000001001
+              <MEMO>Check Paid #0000001001
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>    
+            <STMTTRN>
+              <TRNTYPE>DEP
+              <DTPOSTED>20120727000000.000[-4:EDT]
+              <TRNAMT>+00000000000115.8331
+              <FITID>X0000000000000000000002
+              <NAME>TRANSFERRED FROM     VS X10-08144
+              <MEMO>TRANSFERRED FROM     VS X10-08144-1
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>    
+            <STMTTRN>
+              <TRNTYPE>PAYMENT
+              <DTPOSTED>20120727000000.000[-4:EDT]
+              <TRNAMT>-00000000000197.1063
+              <FITID>X0000000000000000000003
+              <NAME>BILL PAYMENT         CITICORP CH
+              <MEMO>BILL PAYMENT         CITICORP CHOICE          /0001/N********
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+          <INVBANKTRAN>    
+            <STMTTRN>
+              <TRNTYPE>CASH
+              <DTPOSTED>20120727000000.000[-4:EDT]
+              <TRNAMT>-00000000000197.1220
+              <FITID>X0000000000000000000004
+              <NAME>DIRECT               DEBIT HOMES
+              <MEMO>DIRECT               DEBIT HOMESTREET LS LOAN PMT
+              <CURRENCY>
+                <CURRATE>1.00
+                <CURSYM>USD
+              </CURRENCY>
+            </STMTTRN>
+            <SUBACCTFUND>CASH    
+          </INVBANKTRAN>
+        </INVTRANLIST>
+      </INVSTMTRS>
+    </INVSTMTTRNRS>
+  </INVSTMTMSGSRSV1>
+</OFX>

@@ -1,0 +1,79 @@
+{
+    "order_id": "781-8429198-6057878",
+    "order_date": "2016-08-30",
+    "shipments": [
+        {
+            "shipped_date": "2016-08-30",
+            "items": [
+                {
+                    "quantity": "1",
+                    "description": "Car Mount, Anker CD Slot Universal Phone Holder for iPhone 6s/6/6s plus/6 plus, Samsung S7/S6/edge, Samsung Note 7/5, LG G5, Nexus 5X/6/6P, Moto, HTC,",
+                    "sold_by": "AnkerDirect",
+                    "condition": "New",
+                    "price": {
+                        "number": "14.99",
+                        "currency": "USD"
+                    }
+                }
+            ],
+            "items_subtotal": {
+                "number": "14.99",
+                "currency": "USD"
+            },
+            "pretax_adjustments": [
+                {
+                    "description": "Shipping & Handling",
+                    "amount": {
+                        "number": "5.99",
+                        "currency": "USD"
+                    }
+                }
+            ],
+            "total_before_tax": {
+                "number": "20.98",
+                "currency": "USD"
+            },
+            "posttax_adjustments": [],
+            "tax": [
+                {
+                    "description": "Sales Tax",
+                    "amount": {
+                        "number": "1.99",
+                        "currency": "USD"
+                    }
+                }
+            ],
+            "total": {
+                "number": "22.97",
+                "currency": "USD"
+            },
+            "errors": []
+        }
+    ],
+    "credit_card_transactions": [
+        {
+            "date": "2016-08-30",
+            "card_description": "Amazon.com Visa Signature",
+            "card_ending_in": "1234",
+            "amount": {
+                "number": "22.97",
+                "currency": "USD"
+            }
+        }
+    ],
+    "pretax_adjustments": [
+        {
+            "description": "Shipping & Handling",
+            "amount": {
+                "number": "5.99",
+                "currency": "USD"
+            }
+        }
+    ],
+    "tax": {
+        "number": "1.99",
+        "currency": "USD"
+    },
+    "posttax_adjustments": [],
+    "errors": []
+}

@@ -1,0 +1,95 @@
+{
+    "order_id": "166-7926740-5141621",
+    "order_date": "2016-02-07",
+    "shipments": [
+        {
+            "shipped_date": "2016-02-08",
+            "items": [
+                {
+                    "quantity": "1",
+                    "description": "Casio Men's W916-8AV Alarm Chronograph Watch, classic",
+                    "sold_by": "Amazon.com LLC",
+                    "condition": "New",
+                    "price": {
+                        "number": "11.87",
+                        "currency": "USD"
+                    }
+                }
+            ],
+            "items_subtotal": {
+                "number": "11.87",
+                "currency": "USD"
+            },
+            "pretax_adjustments": [
+                {
+                    "description": "Shipping & Handling",
+                    "amount": {
+                        "number": "0.00",
+                        "currency": "USD"
+                    }
+                }
+            ],
+            "total_before_tax": {
+                "number": "11.87",
+                "currency": "USD"
+            },
+            "posttax_adjustments": [
+                {
+                    "description": "Rewards Points",
+                    "amount": {
+                        "number": "-1.06",
+                        "currency": "USD"
+                    }
+                }
+            ],
+            "tax": [
+                {
+                    "description": "Sales Tax",
+                    "amount": {
+                        "number": "1.13",
+                        "currency": "USD"
+                    }
+                }
+            ],
+            "total": {
+                "number": "11.94",
+                "currency": "USD"
+            },
+            "errors": []
+        }
+    ],
+    "credit_card_transactions": [
+        {
+            "date": "2016-02-08",
+            "card_description": "Amazon.com Visa Signature",
+            "card_ending_in": "1234",
+            "amount": {
+                "number": "11.94",
+                "currency": "USD"
+            }
+        }
+    ],
+    "pretax_adjustments": [
+        {
+            "description": "Shipping & Handling",
+            "amount": {
+                "number": "0.00",
+                "currency": "USD"
+            }
+        }
+    ],
+    "tax": {
+        "number": "1.13",
+        "currency": "USD"
+    },
+    "posttax_adjustments": [
+        {
+            "description": "Rewards Points",
+            "amount": {
+                "number": "-1.06",
+                "currency": "USD"
+            }
+        }
+    ],
+    "errors": []
+}

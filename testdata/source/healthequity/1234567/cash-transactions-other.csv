@@ -1,0 +1,5 @@
+"Date","Transaction","Amount","Cash Balance"
+"2016-01-16","Investment: VIIIX","($300.00)","$500.00"
+"2016-01-31","Interest for Jan-16","$0.01","$500.01"
+"2016-02-29","Interest for Feb-16","$0.02","$500.03"
+"2016-03-11","Investment: VIIIX","($1,600.03)","$500.00"

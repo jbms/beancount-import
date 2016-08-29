@@ -1,7 +1,0 @@
-This example shows the basic usage of beancount-import.
-
-First make a copy of this directory, since running beancount-import will modify the example files.
-
-Then run it as:
-
-beancount-import --journal_input journal.beancount --journal_output transactions.beancount --mint_data mint.csv --account_output '.*' accounts.beancount

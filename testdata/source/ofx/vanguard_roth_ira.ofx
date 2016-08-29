@@ -1,0 +1,110 @@
+OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+SECURITY:NONE
+ENCODING:USASCII
+CHARSET:1252
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:e670aab838c6fbed9e86ab309cac26e9
+
+
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0
+        <SEVERITY>INFO
+        <MESSAGE>Successful Sign On
+      </STATUS>
+      <DTSERVER>20180703202536[-5:EST]
+      <LANGUAGE>ENG
+      <DTPROFUP>20140605083000
+      <FI>
+        <ORG>MyBank
+        <FID>89449
+      </FI>
+      <SESSCOOKIE>180e286be708522e25c5e5a7b9d33645.d2e020515bc07_9813bb22_e
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <INVSTMTMSGSRSV1>
+    <INVSTMTTRNRS>
+      <TRNUID>6a1e73b65e67db9431f0c39c4ebf8961
+      <STATUS>
+        <CODE>0
+        <SEVERITY>INFO
+      </STATUS>
+      <CLTCOOKIE>2
+      <INVSTMTRS>
+        <DTASOF>20180703160000.000[-5:EST]
+        <CURDEF>USD
+        <INVACCTFROM>
+          <BROKERID>MyBank
+          <ACCTID>123456789
+        </INVACCTFROM>
+        <INVTRANLIST>
+          <DTSTART>20180327160000.000[-5:EST]
+          <DTEND>20180703202536.000[-5:EST]
+          <REINVEST>
+            <INVTRAN>
+              <FITID>7c9254b784a.a9bd.edcfa27b.b
+              <DTTRADE>20180621160000.000[-5:EST]
+              <DTSETTLE>20180621160000.000[-5:EST]
+            </INVTRAN>
+            <SECID>
+              <UNIQUEID>E1A7917D1
+              <UNIQUEIDTYPE>CUSIP
+            </SECID>
+            <INCOMETYPE>DIV
+            <TOTAL>-93.20976
+            <SUBACCTSEC>CASH
+            <UNITS>31.704
+            <UNITPRICE>2.94
+          </REINVEST>
+        </INVTRANLIST>
+        <INVPOSLIST>
+          <POSMF>
+            <INVPOS>
+              <SECID>
+                <UNIQUEID>E1A7917D1
+                <UNIQUEIDTYPE>CUSIP
+              </SECID>
+              <HELDINACCT>OTHER
+              <POSTYPE>LONG
+              <UNITS>46.872
+              <UNITPRICE>84.20
+              <MKTVAL>72.85
+              <DTPRICEASOF>20180703160000.000[-5:EST]
+              <MEMO>Price as of date based on closing price
+            </INVPOS>
+            <REINVDIV>Y
+            <REINVCG>Y
+          </POSMF>
+        </INVPOSLIST>
+        <INVBAL>
+          <AVAILCASH>7.97
+          <MARGINBALANCE>78.3
+          <SHORTBALANCE>56.5
+        </INVBAL>
+      </INVSTMTRS>
+    </INVSTMTTRNRS>
+  </INVSTMTMSGSRSV1>
+  <SECLISTMSGSRSV1>
+    <SECLIST>
+      <MFINFO>
+        <SECINFO>
+          <SECID>
+            <UNIQUEID>E1A7917D1
+            <UNIQUEIDTYPE>CUSIP
+          </SECID>
+          <SECNAME>Security
+          <TICKER>TYCDT
+          <FIID>6967
+          <UNITPRICE>74.33
+          <MEMO>Price as of date based on closing price
+        </SECINFO>
+        <MFTYPE>OPENEND
+      </MFINFO>
+    </SECLIST>
+  </SECLISTMSGSRSV1>
+</OFX>

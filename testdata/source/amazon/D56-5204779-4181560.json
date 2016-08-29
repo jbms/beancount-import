@@ -1,0 +1,60 @@
+{
+    "order_id": "D56-5204779-4181560",
+    "order_date": "2016-06-30",
+    "shipments": [
+        {
+            "shipped_date": "2016-06-30",
+            "items": [
+                {
+                    "description": "Case for Mars",
+                    "url": "https://www.amazon.com/dp/B004G8QU6U/ref=docs-os-doi_0",
+                    "sold_by": "Simon and Schuster Digital Sales Inc",
+                    "by": "Robert Zubrin, Arthur C. Clarke, Richard Wagner",
+                    "price": {
+                        "number": "14.99",
+                        "currency": "USD"
+                    }
+                }
+            ],
+            "items_subtotal": {
+                "number": "14.99",
+                "currency": "USD"
+            },
+            "pretax_adjustments": [],
+            "total_before_tax": {
+                "number": "14.99",
+                "currency": "USD"
+            },
+            "posttax_adjustments": [],
+            "tax": [
+                {
+                    "description": "Tax Collected",
+                    "amount": {
+                        "number": "0.00",
+                        "currency": "USD"
+                    }
+                }
+            ],
+            "total": {
+                "number": "14.99",
+                "currency": "USD"
+            },
+            "errors": []
+        }
+    ],
+    "credit_card_transactions": [
+        {
+            "date": "2016-06-30",
+            "card_description": "VISA",
+            "card_ending_in": "1234",
+            "amount": {
+                "number": "14.99",
+                "currency": "USD"
+            }
+        }
+    ],
+    "pretax_adjustments": [],
+    "tax": [],
+    "posttax_adjustments": [],
+    "errors": []
+}

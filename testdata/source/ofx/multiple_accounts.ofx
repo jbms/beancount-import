@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?OFX OFXHEADER="200" VERSION="211" SECURITY="NONE" OLDFILEUID="NONE" NEWFILEUID="NONE"?>
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+        <MESSAGE>The operation succeeded.</MESSAGE>
+      </STATUS>
+      <DTSERVER>20120603203135.547[-7:PDT]</DTSERVER>
+      <LANGUAGE>ENG</LANGUAGE>
+      <FI>
+        <ORG>blah</ORG>
+        <FID>1000</FID>
+      </FI>
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>1001</TRNUID>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <STMTRS>
+        <CURDEF>USD</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>123</BANKID>
+          <BRANCHID>00</BRANCHID>
+          <ACCTID>9100</ACCTID>
+          <ACCTTYPE>CHECKING</ACCTTYPE>
+        </BANKACCTFROM>
+        <LEDGERBAL>
+          <BALAMT>111</BALAMT>
+          <DTASOF>20120603133220.000[-7:PDT]</DTASOF>
+        </LEDGERBAL>
+      </STMTRS>
+    </STMTTRNRS>
+    <STMTTRNRS>
+      <TRNUID>1002</TRNUID>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <STMTRS>
+        <CURDEF>USD</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>123</BANKID>
+          <BRANCHID>00</BRANCHID>
+          <ACCTID>9200</ACCTID>
+          <ACCTTYPE>SAVINGS</ACCTTYPE>
+        </BANKACCTFROM>
+        <LEDGERBAL>
+          <BALAMT>222</BALAMT>
+          <DTASOF>20120603133220.000[-7:PDT]</DTASOF>
+        </LEDGERBAL>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>

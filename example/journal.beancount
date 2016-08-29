@@ -1,2 +1,0 @@
-include "accounts.beancount"
-include "transactions.beancount"

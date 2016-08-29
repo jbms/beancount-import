@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<?OFX OFXHEADER="200" VERSION="200" SECURITY="NONE" OLDFILEUID="NONE" NEWFILEUID="NONE"?>
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <DTSERVER>20131215</DTSERVER>
+      <LANGUAGE>ENG</LANGUAGE>
+      <FI>
+        <ORG>SUNCORP</ORG>
+        <FID>484-799</FID>
+      </FI>
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>1</TRNUID>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <STMTRS>
+        <CURDEF>AUD</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>SUNCORP</BANKID>
+          <ACCTID>123456789</ACCTID>
+          <ACCTTYPE>CHECKING</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>20130618</DTSTART>
+          <DTEND>20131215</DTEND>
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20131215</DTPOSTED>
+            <TRNAMT>-16.85</TRNAMT>
+            <FITID>1</FITID>
+            <CHECKNUM>0</CHECKNUM>
+            <NAME><![CDATA[EFTPOS WDL HANDYWAY ALDI STORE  ]]></NAME>
+            <MEMO><![CDATA[EFTPOS WDL HANDYWAY ALDI STORE   GEELONG WEST VICAU]]></MEMO>
+          </STMTTRN>
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>1234.12</BALAMT>
+          <DTASOF>20131215</DTASOF>
+        </LEDGERBAL>
+        <AVAILBAL>
+          <BALAMT>1234.12</BALAMT>
+          <DTASOF>20131215</DTASOF>
+        </AVAILBAL>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>
