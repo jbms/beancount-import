@@ -10,11 +10,14 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/jbms/beancount-import',
-    version='1.0.1',
+    version='1.0.2',
     author='Jeremy Maitin-Shepard',
     author_email="jeremy@jeremyms.com",
     license='GPLv2',
-    packages=["beancount_import"],
+    packages=[
+        "beancount_import",
+        "beancount_import.source",
+    ],
     package_data={
         'beancount_import': ['frontend_dist/prod/index.html'],
     },
