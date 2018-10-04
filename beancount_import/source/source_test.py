@@ -118,7 +118,8 @@ def check_source(tmpdir,
         journal_editor.entries, invalid_references)
     assert actual_pending == pending_entries
     assert results.accounts == set(accounts)
-    assert results.invalid_references == expected_invalid_references
+    assert sorted(
+        results.invalid_references) == sorted(expected_invalid_references)
 
     for entry in journal_editor.entries:
         if not isinstance(entry, Transaction): continue
