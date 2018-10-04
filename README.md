@@ -64,9 +64,22 @@ postings that serve several purposes:
 
 1. Ensure you have activated a suitable Python 3 virtualenv if desired.
 
-2. Type `python3 setup.py install` or `python3 setup.py develop` (if you plan to
-   make changes to this package).
-   
+2. To install the most recent published package from PyPi, simply type:
+
+   ```shell
+   pip install beancount-import
+   ```
+
+   Alternatively, to install from a clone of the repository, type:
+   ```shell
+   python setup.py install
+   ```
+
+   or for development:
+   ```shell
+   python setup.py develop
+   ```
+
 # Demo
 
 To see Beancount-import in action on test data, refer to the instructions in the
