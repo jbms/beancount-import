@@ -18,6 +18,7 @@ setup(
     package_data={
         'beancount_import': ['frontend_dist/prod/index.html'],
     },
+    python_requires='>=3.5',
     install_requires=[
         'beancount>=2.1.2',
         'tornado',
