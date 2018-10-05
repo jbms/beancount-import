@@ -147,6 +147,8 @@ def convert_errors(x):
 def json_encode_state(obj):
     if isinstance(obj, Decimal):
         return str(obj)
+    if isinstance(obj, (frozenset, set)):
+        return list(obj)
     if isinstance(obj, datetime.date):
         return obj.strftime('%Y-%m-%d')
     if isinstance(obj, reconcile.Candidate):
