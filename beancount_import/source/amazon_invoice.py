@@ -245,6 +245,31 @@ def parse_shipments(soup) -> List[Shipment]:
     return shipments
 
 
+def parse_credit_card_transactions_from_payments_table(
+        payment_table, order_date: datetime.date) -> List[CreditCardTransaction]:
+    payment_text = '\n'.join(payment_table.strings)
+    m = re.search(r'\n\s*Grand Total:\s+(.*)\n', payment_text)
+    assert m is not None
+    grand_total = parse_amount(m.group(1).strip())
+
+    m = re.search(r'\n\s*([^\s|][^|\n]*[^|\s])\s+\|\s+Last (?:4 )?digits:\s+([0-9]{4})\n', payment_text)
+    if m is None:
+        m = re.search(r'\n\s*(.+)\s+ending in\s+([0-9]{4})\n', payment_text)
+
+    if m is not None:
+        credit_card_transactions = [
+            CreditCardTransaction(
+                date=order_date,
+                amount=grand_total,
+                card_description=m.group(1).strip(),
+                card_ending_in=m.group(2).strip(),
+            )
+        ]
+    else:
+        credit_card_transactions = []
+    return credit_card_transactions
+
+
 def parse_credit_card_transactions(soup) -> List[CreditCardTransaction]:
     def is_header_node(node):
         return node.name == 'td' and node.text.strip(
@@ -286,8 +311,6 @@ def parse_regular_order_invoice(path: str) -> Order:
     with open(path, 'r') as f:
         soup = bs4.BeautifulSoup(f.read(), 'lxml')
     shipments = parse_shipments(soup)
-    credit_card_transactions = parse_credit_card_transactions(soup)
-
     payment_table_header = soup.find(
         lambda node: node.name == 'table' and re.match('^Payment information$', node.text.strip()))
 
@@ -358,18 +381,8 @@ def parse_regular_order_invoice(path: str) -> Order:
                                 reduce_amounts(x.total for x in shipments))
     adjusted_grand_total = add_amount(payments_total_adjustment, grand_total)
     if expected_total != adjusted_grand_total:
-        errors.append('expected grand total is %r, but parsed value is %r' %
+        errors.append('expected grand total is %s, but parsed value is %s' %
                       (expected_total, adjusted_grand_total))
-
-    if credit_card_transactions:
-        total_payments = reduce_amounts(
-            x.amount for x in credit_card_transactions)
-    else:
-        total_payments = Amount(number=ZERO, currency=grand_total.currency)
-    if total_payments != adjusted_grand_total:
-        errors.append('total payment amount is %s, but grand total is %s' %
-                      (total_payments, adjusted_grand_total))
-
     order_placed_pattern = r'(?:Subscribe and Save )?Order Placed:\s+([^\s]+ \d+, \d{4})'
 
     def is_order_placed_node(node):
@@ -380,6 +393,20 @@ def parse_regular_order_invoice(path: str) -> Order:
     m = re.fullmatch(order_placed_pattern, node.text.strip())
     assert m is not None
     order_date = dateutil.parser.parse(m.group(1)).date()
+
+    credit_card_transactions = parse_credit_card_transactions(soup)
+    if not credit_card_transactions:
+        credit_card_transactions = parse_credit_card_transactions_from_payments_table(
+            payment_table, order_date)
+
+    if credit_card_transactions:
+        total_payments = reduce_amounts(
+            x.amount for x in credit_card_transactions)
+    else:
+        total_payments = Amount(number=ZERO, currency=grand_total.currency)
+    if total_payments != adjusted_grand_total:
+        errors.append('total payment amount is %s, but grand total is %s' %
+                      (total_payments, adjusted_grand_total))
 
     title = soup.find('title').text.strip()
     m = re.fullmatch(r'.*Order ([0-9\-]+)', title.strip())
@@ -534,7 +561,7 @@ def parse_digital_order_invoice(path: str) -> Order:
                     [a.amount for a in output_fields['pretax_adjustments']])
     expected_total_before_tax = reduce_amounts(pretax_parts)
     if expected_total_before_tax != total_before_tax:
-        errors.append('expected total before tax is %r, but parsed value is %r'
+        errors.append('expected total before tax is %s, but parsed value is %s'
                       % (expected_total_before_tax, total_before_tax))
     output_fields['posttax_adjustments'] = get_adjustments(
         posttax_adjustment_fields_pattern)
@@ -542,7 +569,7 @@ def parse_digital_order_invoice(path: str) -> Order:
                      [a.amount for a in output_fields['posttax_adjustments']])
     expected_total = reduce_amounts(posttax_parts)
     if expected_total != total_for_this_order:
-        errors.append('expected total is %r, but parsed value is %r' %
+        errors.append('expected total is %s, but parsed value is %s' %
                       (expected_total, total_for_this_order))
 
     shipment = Shipment(
@@ -565,27 +592,8 @@ def parse_digital_order_invoice(path: str) -> Order:
     payment_table = soup.find(
         lambda node: node.name == 'table' and node.text.strip().startswith('Payment Information')
     )
-
-    payment_text = '\n'.join(payment_table.strings)
-    m = re.search(r'\n\s*Grand Total:\s+(.*)\n', payment_text)
-    assert m is not None
-    grand_total = parse_amount(m.group(1).strip())
-
-    m = re.search(r'\n\s*(.+) \| Last 4 digits: ([0-9]{4})\n', payment_text)
-    if m is None:
-        m = re.search(r'\n\s*(.+)\s+ending in\s+([0-9]{4})\n', payment_text)
-
-    if m is not None:
-        credit_card_transactions = [
-            CreditCardTransaction(
-                date=order_date,
-                amount=grand_total,
-                card_description=m.group(1),
-                card_ending_in=m.group(2),
-            )
-        ]
-    else:
-        credit_card_transactions = []
+    credit_card_transactions = parse_credit_card_transactions_from_payments_table(
+        payment_table, order_date)
 
     return Order(
         order_date=order_date,
@@ -624,7 +632,7 @@ def main():
         if not args.quiet and not args.json:
             print(repr(result))
     if args.json:
-        print(json.dumps(to_json(results)))
+        print(json.dumps(to_json(results), indent=4))
 
 if __name__ == '__main__':
     main()
