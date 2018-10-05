@@ -11,13 +11,10 @@ import random
 import pickle
 from decimal import Decimal
 
-from beancount.core.data import Transaction, Posting, Balance, Open, Close, Price, ALL_DIRECTIVES, Amount
+from beancount.core.data import Transaction, Posting, Balance, Open, Close, Price, Directive, Entries, Amount
 from beancount.core.flags import FLAG_PADDING
 from beancount.core.number import MISSING
 import beancount.parser.printer
-
-Directive = Union[ALL_DIRECTIVES]
-Entries = List[Directive]
 
 from . import training
 from . import matching

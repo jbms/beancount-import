@@ -3,17 +3,13 @@ import datetime
 import re
 from typing import Callable, Any, Dict, Iterable, List, NamedTuple, Sequence, Union, Optional, Tuple
 
-from beancount.core.data import ALL_DIRECTIVES, Transaction, Posting
+from beancount.core.data import Directive, Entries, Transaction, Posting
 from beancount.core.amount import Amount
 from .matching import is_unknown_account, FIXME_ACCOUNT
 from .posting_date import get_posting_date
 
 if False:
     from .source import Source  # For typing only.
-
-Directive = Union[ALL_DIRECTIVES]
-Entries = List[Directive]
-
 
 DEFAULT_IGNORE_ACCOUNT_FOR_CLASSIFICATION_PATTERN = '^Income.*:Capital-Gains(?::|$)'
 
@@ -61,13 +57,15 @@ class TrainingExamples(object):
 
 class MockTrainingExamples(object):
     def __init__(self):
-        self.examples = [] # type: List[Tuple[PredictionInput, str]]
+        self.examples = []  # type: List[Tuple[PredictionInput, str]]
 
     def add(self, prediction_input: PredictionInput,
             target_account: str) -> None:
         self.examples.append((prediction_input, target_account))
 
+
 TrainingExamplesInterface = Union[TrainingExamples, MockTrainingExamples]
+
 
 def get_unknown_account_postings(transaction: Transaction) -> List[Posting]:
     return [

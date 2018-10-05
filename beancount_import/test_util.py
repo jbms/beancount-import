@@ -5,10 +5,7 @@ import py
 
 import beancount.parser.parser
 import beancount.parser.printer
-from beancount.core.data import ALL_DIRECTIVES, Posting, Transaction, Meta
-
-Directive = Union[ALL_DIRECTIVES]
-Entries = List[Directive]
+from beancount.core.data import Directive, Entries, Posting, Transaction, Meta
 
 
 def parse(text: str) -> Entries:

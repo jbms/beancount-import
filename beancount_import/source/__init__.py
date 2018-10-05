@@ -93,17 +93,15 @@ import datetime
 from typing import Iterable, NamedTuple, List, Dict, Any, Tuple, Union, Callable, Optional
 import importlib
 
-from beancount.core.data import Transaction, ALL_DIRECTIVES, Posting, Meta
+from beancount.core.data import Transaction, Entries, Directive, Posting, Meta
 
 if False:
     from ..journal_editor import JournalEditor  # For type annotations only.
 
 from ..training import TrainingExamples, PredictionInput, ExampleKeyValuePairs
 
-Directive = Union[ALL_DIRECTIVES]
-
 ImportResult = NamedTuple('ImportResult', [('date', datetime.date),
-                                           ('entries', List[Directive]),
+                                           ('entries', Entries),
                                            ('info', Dict[str, Any])])
 
 InvalidSourceReference = NamedTuple('InvalidSourceReference', [

@@ -4,15 +4,13 @@ import datetime
 import collections
 from typing import Iterable, Tuple, Dict, TypeVar, Callable, List, AbstractSet, Union
 
-from beancount.core.data import Transaction, Posting, Open, ALL_DIRECTIVES, CostSpec, Meta
+from beancount.core.data import Transaction, Posting, Open, Directive, CostSpec, Meta
 from beancount.core.number import ZERO, MISSING
 
 from ..posting_date import POSTING_DATE_KEY
 from . import Source, SourceResults, InvalidSourceReference
 from ..training import TrainingExamples
 from ..unbook import unbook_postings, group_postings_by_meta
-
-Directive = Union[ALL_DIRECTIVES]
 
 SOURCE_DESC_KEYS = ['source_desc'] + ['source_desc%d' % x for x in range(1, 3)]
 

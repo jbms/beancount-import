@@ -4,7 +4,7 @@ from typing import List, Set, Tuple, NamedTuple, Union, Dict
 import argparse
 import datetime
 
-from beancount.core.data import Transaction, Posting, ALL_DIRECTIVES
+from beancount.core.data import Transaction, Posting, Directive, Entries
 from beancount.core.number import MISSING, ZERO
 from beancount.core.amount import Amount
 import beancount.parser.printer
@@ -12,9 +12,6 @@ import beancount.parser.printer
 from . import journal_editor
 from . import matching
 from .posting_date import get_posting_date
-
-Directive = Union[ALL_DIRECTIVES]
-Entries = List[Directive]
 
 PendingEntry = NamedTuple('PendingEntry', [
     ('date', datetime.date),

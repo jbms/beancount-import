@@ -23,7 +23,7 @@ setup(
     },
     python_requires='>=3.5',
     install_requires=[
-        'beancount>=2.1.2',
+        'beancount>=2.1.3',
         'tornado',
         'numpy',
         'scipy',

@@ -5,15 +5,12 @@ import py
 
 import beancount.parser.parser
 import beancount.parser.printer
-from beancount.core.data import Posting, Transaction, Meta, ALL_DIRECTIVES
+from beancount.core.data import Posting, Transaction, Meta, Directive, Entries
 
 from ..journal_editor import JournalEditor
 from . import load_source as _load_source, ImportResult, SourceResults, SourceSpec, InvalidSourceReference
 from .. import training
 from .. import test_util
-
-Directive = Union[ALL_DIRECTIVES]
-Entries = List[Directive]
 
 
 def log_status(x):
