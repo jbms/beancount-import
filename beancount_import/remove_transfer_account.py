@@ -75,10 +75,8 @@ def delete_posting_account(pending_entry: PendingEntry) -> PendingEntry:
 
 def process(journal_path: str,
             account: str,
-            max_day_offset: int = 30,
-            skip_booking=False):
-    editor = journal_editor.JournalEditor(
-        journal_path, skip_booking=skip_booking)
+            max_day_offset: int = 30):
+    editor = journal_editor.JournalEditor(journal_path)
 
     postings_by_units = dict(
     )  # type: Dict[Amount, List[PendingEntry]]
@@ -195,10 +193,6 @@ def main():
     ap.add_argument('journal', help='Path to beancount journal file.')
     ap.add_argument('account', help='Transfer account to remove.')
     ap.add_argument(
-        '--skip-booking',
-        action='store_true',
-        help='Skip booking when loading the journal.')
-    ap.add_argument(
         '--max-day-offset',
         type=int,
         default=30,
@@ -207,7 +201,6 @@ def main():
     process(
         args.journal,
         args.account,
-        skip_booking=args.skip_booking,
         max_day_offset=args.max_day_offset)
 
 

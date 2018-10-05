@@ -1,13 +1,15 @@
-import pytest
-import py
 import datetime
+from decimal import Decimal
 
-from . import journal_editor
 import beancount.parser.printer
 from beancount.core.data import Transaction, Posting
 from beancount.core.number import MISSING
 from beancount.core.amount import Amount
-from decimal import Decimal
+import pytest
+import py
+
+from . import journal_editor
+from . import test_util
 
 META_IGNORE = set({'__tolerances__', '__automatic__'})
 
@@ -47,14 +49,71 @@ def check_journal_entries(editor):
         journal_editor.JournalEditor(editor.journal_path).entries)
 
 
-def create_journal(tmpdir: py.path.local, contents: str, name: str = 'journal.beancount'):
+def create_journal(tmpdir: py.path.local,
+                   contents: str,
+                   name: str = 'journal.beancount'):
     path = tmpdir.join(name)
     path.write(contents)
     return str(path)
 
 
+def test_load_file_simple(tmpdir):
+    """Tests that partial booking resolves the missing units."""
+    journal_path = create_journal(
+        tmpdir, """
+2015-02-01 * "Test transaction"
+  Assets:Account-A  100 USD
+  Assets:Account-B
+""")
+    editor = journal_editor.JournalEditor(journal_path)
+    expected_entries = test_util.parse("""
+        2015-02-01 * "Test transaction"
+          Assets:Account-A  100 USD
+          Assets:Account-B  -100 USD
+        """)
+    assert test_util.format_entries(
+        editor.entries) == test_util.format_entries(expected_entries)
+
+
+def test_load_file_reduction(tmpdir):
+    """Tests that partial booking leaves the reduction alone."""
+    journal_path = create_journal(
+        tmpdir, """
+2015-02-01 * "Test transaction"
+  Assets:Account-A  -5 STOCK {}
+  Assets:Account-B
+""")
+    editor = journal_editor.JournalEditor(journal_path)
+    expected_entries = test_util.parse("""
+        2015-02-01 * "Test transaction"
+          Assets:Account-A  -5 STOCK {}
+          Assets:Account-B
+        """)
+    assert test_util.format_entries(
+        editor.entries) == test_util.format_entries(expected_entries)
+
+
+def test_load_file_buy(tmpdir):
+    """Tests that partial booking handles a posting with a cost."""
+    journal_path = create_journal(
+        tmpdir, """
+2015-02-01 * "Test transaction"
+  Assets:Account-A  5 STOCK {3.00 USD}
+  Assets:Account-B
+""")
+    editor = journal_editor.JournalEditor(journal_path)
+    expected_entries = test_util.parse("""
+        2015-02-01 * "Test transaction"
+          Assets:Account-A  5 STOCK {3.00 USD}
+          Assets:Account-B -15.00 USD
+        """)
+    assert test_util.format_entries(
+        editor.entries) == test_util.format_entries(expected_entries)
+
+
 def test_simple(tmpdir):
-    journal_path = create_journal(tmpdir, """
+    journal_path = create_journal(
+        tmpdir, """
 2015-02-01 * "Test transaction"
   Assets:Account-A  100 USD
   Assets:Account-B
@@ -80,7 +139,8 @@ def test_simple(tmpdir):
 
 
 def test_transaction_add_meta(tmpdir):
-    journal_path = create_journal(tmpdir, """
+    journal_path = create_journal(
+        tmpdir, """
 2015-02-01 * "Test transaction"
   transaction_note: "Hello"
   Assets:Account-A  100 USD
@@ -106,8 +166,10 @@ def test_transaction_add_meta(tmpdir):
 """)
     check_journal_entries(editor)
 
+
 def test_transaction_modify_narration(tmpdir):
-    journal_path = create_journal(tmpdir, """
+    journal_path = create_journal(
+        tmpdir, """
 2015-02-01 * "Test transaction"
   Assets:Account-A  100 USD
   Assets:Account-B
@@ -127,8 +189,10 @@ def test_transaction_modify_narration(tmpdir):
 """)
     check_journal_entries(editor)
 
+
 def test_two(tmpdir):
-    journal_path = create_journal(tmpdir, """
+    journal_path = create_journal(
+        tmpdir, """
 2015-01-01 * "Test transaction 1"
   Assets:Account-A  100 USD
   Assets:Account-B
@@ -172,7 +236,8 @@ def test_two(tmpdir):
 
 
 def test_two2(tmpdir):
-    journal_path = create_journal(tmpdir, """
+    journal_path = create_journal(
+        tmpdir, """
 2015-01-01 * "Test transaction 1"
   Assets:Account-A  100 USD
   Assets:Account-B
@@ -225,7 +290,8 @@ def test_two2(tmpdir):
 
 
 def test_remove(tmpdir):
-    journal_path = create_journal(tmpdir, """
+    journal_path = create_journal(
+        tmpdir, """
 2015-01-01 * "Test transaction 1"
   Assets:Account-A  100 USD
   Assets:Account-B
@@ -259,7 +325,8 @@ def test_remove(tmpdir):
 
 
 def test_add(tmpdir):
-    journal_path = create_journal(tmpdir, """
+    journal_path = create_journal(
+        tmpdir, """
 2015-01-01 * "Test transaction 1"
   Assets:Account-A  100 USD
   Assets:Account-B

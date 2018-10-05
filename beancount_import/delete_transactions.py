@@ -64,7 +64,7 @@ def main():
 
     args = ap.parse_args()
 
-    editor = journal_editor.JournalEditor(args.journal, skip_booking=True)
+    editor = journal_editor.JournalEditor(args.journal)
     stage = editor.stage_changes()
 
     for entry in get_matching_entries(editor.entries, editor.options_map, args.query):

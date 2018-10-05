@@ -65,7 +65,7 @@ def main():
 
     args = ap.parse_args()
 
-    editor = journal_editor.JournalEditor(args.journal, skip_booking=True)
+    editor = journal_editor.JournalEditor(args.journal)
     stage = editor.stage_changes()
     new_account = args.new_account
     eval_expr = args.eval
