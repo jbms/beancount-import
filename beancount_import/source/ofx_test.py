@@ -333,7 +333,7 @@ def test_vanguard_with_cash_account(tmpdir):
                 entries=r"""
                 2011-07-15 * "Transfer due to: SELLMF - THIS IS A MEMO"
                   Assets:Investment:Vanguard:Cash  -4212.30 USD
-                    ofx_fitid_transfer: "01234567890.0123.07152011.0"
+                    ofx_fitid: ">01234567890.0123.07152011.0"
                     date: 2011-07-15
                     ofx_memo: "THIS IS A MEMO"
                     ofx_type_transfer: "SELLMF"
@@ -428,7 +428,7 @@ def test_vanguard_with_cash_account_matching_missing_transfer(tmpdir):
                 entries=r"""
                 2011-07-15 * "Transfer due to: SELLMF - THIS IS A MEMO"
                   Assets:Investment:Vanguard:Cash  -4212.30 USD
-                    ofx_fitid_transfer: "01234567890.0123.07152011.0"
+                    ofx_fitid: ">01234567890.0123.07152011.0"
                     date: 2011-07-15
                     ofx_memo: "THIS IS A MEMO"
                     ofx_type_transfer: "SELLMF"
@@ -493,7 +493,8 @@ def test_vanguard_with_cash_account_matching_missing_primary(tmpdir):
 
         2011-07-15 * "Transfer due to: SELLMF - THIS IS A MEMO"
           Assets:Investment:Vanguard:Cash  -4212.30 USD
-            ofx_fitid_transfer: "01234567890.0123.07152011.0"
+            ofx_fitid: ">01234567890.0123.07152011.0"
+            cleared: TRUE
           Expenses:FIXME                    4212.30 USD
         ''',
         accounts=frozenset([

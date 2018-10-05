@@ -323,7 +323,7 @@ created for posting to the `:Cash` account:
 
     2011-07-15 * "Transfer due to: SELLMF - THIS IS A MEMO"
       Assets:Investment:Vanguard:Cash  -4212.30 USD
-        ofx_fitid_transfer: "01234567890.0123.07152011.0"
+        ofx_fitid: ">01234567890.0123.07152011.0"
         date: 2011-07-15
         ofx_memo: "THIS IS A MEMO"
         ofx_type_transfer: "SELLMF"
@@ -488,7 +488,7 @@ def get_info(
 
 
 OFX_FITID_KEY = 'ofx_fitid'
-OFX_FITID_TRANSFER_KEY = 'ofx_fitid_transfer'
+FITID_TRANSFER_PREFIX = '>'
 OFX_TYPE_KEY = 'ofx_type'
 OFX_TYPE_TRANSFER_KEY = 'ofx_type_transfer'
 OFX_MEMO_KEY = 'ofx_memo'
@@ -1019,10 +1019,8 @@ class ParsedOfxStatement(object):
                         date=entry.date, entries=[entry], info=get_info(raw)))
             if cash_transfer_transaction_amount is not None and not cash_transfer_transaction_exists:
                 assert cash_amount is not MISSING
-                transfer_meta = collections.OrderedDict(
-                                [(OFX_FITID_TRANSFER_KEY, raw.fitid)])
-                transfer_meta.update(posting_meta)
-                transfer_meta.pop(OFX_FITID_KEY, None)
+                transfer_meta = collections.OrderedDict(posting_meta)
+                transfer_meta[OFX_FITID_KEY] = FITID_TRANSFER_PREFIX + raw.fitid
                 transfer_meta.pop(OFX_TYPE_KEY, None)
                 transfer_meta[OFX_TYPE_TRANSFER_KEY] = raw.trantype
 
@@ -1242,14 +1240,6 @@ class PrepareState(object):
                         continue
                     last_lineno = new_lineno
                     fitid = meta.get(OFX_FITID_KEY, None)
-                    fitid_transfer = meta.get(OFX_FITID_TRANSFER_KEY, None)
-                    if fitid is not None and fitid_transfer is not None:
-                        results.add_error(
-                            'Both %s and %s cannot be specified on the same posting.'
-                            % (OFX_FITID_KEY, OFX_FITID_TRANSFER_KEY),
-                            posting.meta)
-                        continue
-                    fitid = fitid or fitid_transfer
                     if fitid is None: continue
                     m = re.fullmatch(account_leaf_regexp, posting.account)
                     if m is not None:
@@ -1263,6 +1253,10 @@ class PrepareState(object):
                         continue
                     results.add_account(posting.account)
                     date = get_posting_date(entry, posting)
+                    fitid_transfer = None  # type: Optional[str]
+                    if fitid.startswith(FITID_TRANSFER_PREFIX):
+                        fitid_transfer = fitid = fitid[len(
+                            FITID_TRANSFER_PREFIX):]
                     full_fitid = (ofx_id, date, fitid)
                     if posting.account in cash_accounts:
                         if fitid_transfer is not None:
@@ -1272,8 +1266,9 @@ class PrepareState(object):
                     else:
                         if fitid_transfer is not None:
                             results.add_error(
-                                '%s must only be specified on Cash accounts.' %
-                                OFX_FITID_TRANSFER_KEY, posting.meta)
+                                'A %s starting with %r must only be specified on Cash accounts.'
+                                % OFX_FITID_KEY, FITID_TRANSFER_PREFIX,
+                                posting.meta)
                             continue
                         matched = matched_transactions
                     matched.setdefault(full_fitid, []).append((entry, posting))
