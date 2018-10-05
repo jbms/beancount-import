@@ -44,8 +44,8 @@ def get_features(example: PredictionInput) -> Dict[str, bool]:
                 w = w.strip('-.').lower()
                 if len(w) > 0:
                     words.append(w)
-            for start_i in range(len(words) - 1):
-                for end_i in range(start_i + 1, len(words)):
+            for start_i in range(len(words)):
+                for end_i in range(start_i + 1, len(words) + 1):
                     features['%s:%s' % (key, ' '.join(
                         words[start_i:end_i]))] = True
     return features

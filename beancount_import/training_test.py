@@ -1,5 +1,28 @@
+import datetime
+
+from beancount.core.data import Amount
 from . import test_util
 from . import training
+
+
+def test_get_features():
+    date = datetime.date.min
+    amount = Amount.from_string('3 USD')
+    assert training.get_features(
+        training.PredictionInput(
+            date=date,
+            amount=amount,
+            source_account='Assets:Checking',
+            key_value_pairs={
+                'a': 'hello',
+                'b': 'foo bar'
+            })) == {
+                'account:Assets:Checking': True,
+                'a:hello': True,
+                'b:foo': True,
+                'b:bar': True,
+                'b:foo bar': True
+            }
 
 
 def test_get_unknown_account_group_numbers():
