@@ -110,7 +110,7 @@ InvalidSourceReference = NamedTuple('InvalidSourceReference', [
 ])
 
 
-class SourceResults(object):
+class SourceResults:
     def __init__(self):
         self.pending = []  # type: List[ImportResult]
         self.accounts = set()  # type: Set[str]
@@ -178,7 +178,36 @@ ExampleKeyExtractorFunction = Callable[[Posting, Dict[str, str]], None]
 ExampleKeyExtractor = Optional[ExampleKeyExtractorFunction]
 
 
-class Source(object):
+class AssociatedData:
+    """Represents source data associated with a directive/posting."""
+
+    def __init__(self,
+                 description: str,
+                 type: str,
+                 path: Optional[str] = None,
+                 meta: Optional[Tuple[str, Any]] = None,
+                 link: Optional[str] = None,
+                 posting: Optional[Posting] = None):
+        """Initializes the associated data object.
+
+        :param description: A textual description of the data.
+        :param type: Mime type of the data.
+        :param path: Optional.  Local filesystem path to the data.
+        :param meta: Optional.  Key value metadata pair indicating the
+                     association.  Mutually exclusive with link.
+        :param link: Optional.  Transaction link value indicating the
+                     association.  Mutually exclusive with meta.
+        :param posting: Optional.  Posting to which this data is associated.
+        """
+        self.description = description
+        self.type = type
+        self.path = path
+        self.meta = meta
+        self.link = link
+        self.posting = posting
+
+
+class Source:
     """Represents a data source with a particular set of data files.
 
     The Source object is created once at startup by the
@@ -256,6 +285,12 @@ class Source(object):
         del transaction
         del posting
         return {}
+
+    def get_associated_data(self,
+                            entry: Directive) -> Optional[List[AssociatedData]]:
+        """Returns any associated data for this directive."""
+        del entry
+        return None
 
 
 LogFunction = Callable[[str], None]
