@@ -2,7 +2,7 @@ import datetime
 from decimal import Decimal
 
 import beancount.parser.printer
-from beancount.core.data import Transaction, Posting
+from beancount.core.data import Transaction, Posting, EMPTY_SET
 from beancount.core.number import MISSING
 from beancount.core.amount import Amount
 import pytest
@@ -28,9 +28,7 @@ def clean_entry(entry):
     entry = entry._replace(meta=clean_meta(entry.meta))
     if isinstance(entry, Transaction):
         entry = entry._replace(
-            postings=list(map(clean_posting, entry.postings)),
-            tags=entry.tags or None,
-            links=entry.links or None)
+            postings=list(map(clean_posting, entry.postings)))
     return entry
 
 
@@ -44,9 +42,12 @@ def check_file_contents(path, expected_contents):
     assert contents == expected_contents
 
 
-def check_journal_entries(editor):
-    assert clean_entries(editor.entries) == clean_entries(
-        journal_editor.JournalEditor(editor.journal_path).entries)
+def check_journal_entries(editor: journal_editor.JournalEditor):
+    new_editor = journal_editor.JournalEditor(editor.journal_path,
+                                              editor.ignored_path)
+    assert clean_entries(editor.entries) == clean_entries(new_editor.entries)
+    assert clean_entries(editor.ignored_entries) == clean_entries(
+        new_editor.ignored_entries)
 
 
 def create_journal(tmpdir: py.path.local,
@@ -126,8 +127,10 @@ def test_simple(tmpdir):
         old_entry.postings[1],
     ])
     stage.change_entry(old_entry, new_entry)
-    old_entries, new_entries = stage.apply()
-    assert old_entries == [old_entry]
+    result = stage.apply()
+    assert result.old_entries == [old_entry]
+    assert result.old_ignored_entries == []
+    assert result.new_ignored_entries == []
     check_file_contents(
         journal_path, """
 2015-02-01 * "Test transaction"
@@ -154,8 +157,10 @@ def test_transaction_add_meta(tmpdir):
         old_entry.postings[1],
     ])
     stage.change_entry(old_entry, new_entry)
-    old_entries, new_entries = stage.apply()
-    assert old_entries == [old_entry]
+    result = stage.apply()
+    assert result.old_ignored_entries == []
+    assert result.new_ignored_entries == []
+    assert result.old_entries == [old_entry]
     check_file_contents(
         journal_path, """
 2015-02-01 * "Test transaction"
@@ -179,8 +184,10 @@ def test_transaction_modify_narration(tmpdir):
     old_entry = editor.entries[0]
     new_entry = old_entry._replace(narration='Modified transaction')
     stage.change_entry(old_entry, new_entry)
-    old_entries, new_entries = stage.apply()
-    assert old_entries == [old_entry]
+    result = stage.apply()
+    assert result.old_entries == [old_entry]
+    assert result.old_ignored_entries == []
+    assert result.new_ignored_entries == []
     check_file_contents(
         journal_path, """
 2015-02-01 * "Modified transaction"
@@ -214,8 +221,10 @@ def test_two(tmpdir):
         old_entry.postings[1],
     ])
     stage.change_entry(old_entry, new_entry)
-    old_entries, new_entries = stage.apply()
-    assert old_entries == [old_entry]
+    result = stage.apply()
+    assert result.old_entries == [old_entry]
+    assert result.old_ignored_entries == []
+    assert result.new_ignored_entries == []
     check_file_contents(
         journal_path, """
 2015-01-01 * "Test transaction 1"
@@ -267,8 +276,10 @@ def test_two2(tmpdir):
     ])
     stage.change_entry(old_entry2, new_entry2)
 
-    old_entries, new_entries = stage.apply()
-    assert old_entries == [old_entry, old_entry2]
+    result = stage.apply()
+    assert result.old_entries == [old_entry, old_entry2]
+    assert result.old_ignored_entries == []
+    assert result.new_ignored_entries == []
     check_file_contents(
         journal_path, """
 2015-01-01 * "Test transaction 1"
@@ -308,9 +319,11 @@ def test_remove(tmpdir):
     stage = editor.stage_changes()
     old_entry = editor.entries[1]
     stage.remove_entry(old_entry)
-    old_entries, new_entries = stage.apply()
-    assert old_entries == [old_entry]
-    assert new_entries == []
+    result = stage.apply()
+    assert result.old_entries == [old_entry]
+    assert result.new_entries == []
+    assert result.old_ignored_entries == []
+    assert result.new_ignored_entries == []
     check_file_contents(
         journal_path, """
 2015-01-01 * "Test transaction 1"
@@ -343,8 +356,8 @@ def test_add(tmpdir):
         flag='*',
         payee=None,
         narration='New transaction',
-        tags=None,
-        links=None,
+        tags=EMPTY_SET,
+        links=EMPTY_SET,
         postings=[
             Posting(
                 account='Assets:Account-A',
@@ -363,7 +376,7 @@ def test_add(tmpdir):
         ],
     )
     stage.add_entry(new_transaction, journal_path)
-    old_entries, new_entries = stage.apply()
+    result = stage.apply()
     check_file_contents(
         journal_path, """
 2015-01-01 * "Test transaction 1"
@@ -376,6 +389,109 @@ def test_add(tmpdir):
 
 2015-04-01 * "New transaction"
   Assets:Account-A  3 USD
+  Assets:Account-B
+""")
+    check_journal_entries(editor)
+
+def test_add_ignored(tmpdir):
+    journal_path = create_journal(
+        tmpdir, """
+2015-01-01 * "Test transaction 1"
+  Assets:Account-A  100 USD
+  Assets:Account-B
+""")
+    ignored_path = create_journal(
+        tmpdir, """
+2015-03-01 * "Test transaction 2"
+  Assets:Account-A  100 USD
+  Assets:Account-B
+""",
+        name='ignored.beancount')
+    editor = journal_editor.JournalEditor(journal_path, ignored_path)
+    stage = editor.stage_changes()
+    new_transaction = Transaction(
+        meta=None,
+        date=datetime.date(2015, 4, 1),
+        flag='*',
+        payee=None,
+        narration='New transaction',
+        tags=EMPTY_SET,
+        links=EMPTY_SET,
+        postings=[
+            Posting(
+                account='Assets:Account-A',
+                units=Amount(Decimal(3), 'USD'),
+                cost=None,
+                price=None,
+                flag=None,
+                meta=None),
+            Posting(
+                account='Assets:Account-B',
+                units=MISSING,
+                cost=None,
+                price=None,
+                flag=None,
+                meta=None),
+        ],
+    )
+    stage.add_entry(new_transaction, ignored_path)
+    result = stage.apply()
+    check_file_contents(
+        journal_path, """
+2015-01-01 * "Test transaction 1"
+  Assets:Account-A  100 USD
+  Assets:Account-B
+""")
+    check_file_contents(
+        ignored_path, """
+2015-03-01 * "Test transaction 2"
+  Assets:Account-A  100 USD
+  Assets:Account-B
+
+2015-04-01 * "New transaction"
+  Assets:Account-A  3 USD
+  Assets:Account-B
+""")
+    check_journal_entries(editor)
+
+def test_remove_ignored(tmpdir):
+    journal_path = create_journal(
+        tmpdir, """
+2015-03-01 * "Test transaction 2"
+  Assets:Account-A  100 USD
+  Assets:Account-B
+""")
+    ignored_path = create_journal(
+        tmpdir,
+        """
+2015-01-01 * "Test transaction 1"
+  Assets:Account-A  100 USD
+  Assets:Account-B
+
+2015-02-01 * "Test transaction"
+  Assets:Account-A  100 USD
+  Assets:Account-B
+""",
+        name='ignored.beancount')
+    editor = journal_editor.JournalEditor(journal_path, ignored_path)
+    stage = editor.stage_changes()
+    old_entry = editor.ignored_entries[1]
+    stage.remove_entry(old_entry)
+    result = stage.apply()
+    assert result.old_ignored_entries == [old_entry]
+    assert result.new_entries == []
+    assert result.old_entries == []
+    assert result.new_ignored_entries == []
+    check_file_contents(
+        journal_path, """
+2015-03-01 * "Test transaction 2"
+  Assets:Account-A  100 USD
+  Assets:Account-B
+""")
+    check_file_contents(
+        ignored_path, """
+2015-01-01 * "Test transaction 1"
+  Assets:Account-A  100 USD
   Assets:Account-B
 """)
     check_journal_entries(editor)

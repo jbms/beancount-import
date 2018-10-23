@@ -242,18 +242,18 @@ import collections
 from typing import Dict, List, Tuple, Optional
 import os
 
+from beancount.core.data import Transaction, Posting, Balance, Commodity, Price, EMPTY_SET, Directive
+from beancount.core.amount import Amount
+from beancount.core.flags import FLAG_OKAY
+from beancount.core.number import ZERO, ONE
+import beancount.core.amount
+
 from .amazon_invoice import parse_invoice, DigitalItem, Order
 
 from ..matching import FIXME_ACCOUNT, SimpleInventory
 from ..posting_date import POSTING_DATE_KEY, POSTING_TRANSACTION_DATE_KEY
 from . import ImportResult, Source, SourceResults, InvalidSourceReference
 from ..journal_editor import JournalEditor
-
-from beancount.core.data import Transaction, Posting, Balance, Commodity, Price, EMPTY_SET
-from beancount.core.amount import Amount
-from beancount.core.flags import FLAG_OKAY
-from beancount.core.number import ZERO, ONE
-import beancount.core.amount
 
 ITEM_DESCRIPTION_KEY = 'amazon_item_description'
 ITEM_URL_KEY = 'amazon_item_url'
@@ -391,16 +391,22 @@ def get_credit_card_accounts(journal: JournalEditor) -> Dict[str, str]:
     return accounts
 
 
-def get_order_ids_seen(journal: JournalEditor, amazon_account: str) -> Dict[str, List[Transaction]]:
+def _get_entry_order_id(entry: Directive, amazon_account: str):
+    if not isinstance(entry, Transaction): return None
+    meta = entry.meta
+    if meta is None: return None
+    if meta.get(AMAZON_ACCOUNT_KEY) != amazon_account:
+        return None
+    order_id = meta.get(ORDER_ID_KEY)
+    return order_id
+
+
+def get_order_ids_seen(journal: JournalEditor,
+                       amazon_account: str) -> Dict[str, List[Transaction]]:
     order_ids = dict()  # type: Dict[str, List[Transaction]]
-    for entry in journal.entries:
-        if entry.meta is None:
-            continue
-        if entry.meta.get(AMAZON_ACCOUNT_KEY) != amazon_account:
-            continue
-        order_id = entry.meta.get(ORDER_ID_KEY)
-        if not order_id:
-            continue
+    for entry in journal.all_entries:
+        order_id = _get_entry_order_id(entry, amazon_account)
+        if not order_id: continue
         order_ids.setdefault(order_id, []).append(entry)
     return order_ids
 
@@ -420,7 +426,7 @@ class AmazonSource(Source):
         self.example_posting_key_extractors[POSTTAX_DESCRIPTION_KEY] = None
         self.example_transaction_key_extractors[AMAZON_ACCOUNT_KEY] = None
 
-        self.invoice_filenames = [] # type: List[Tuple[str, str]]
+        self.invoice_filenames = []  # type: List[Tuple[str, str]]
         for filename in os.listdir(self.directory):
             suffix = '.html'
             if not filename.endswith(suffix):
@@ -442,7 +448,6 @@ class AmazonSource(Source):
         self._cached_invoices[invoice_filename] = invoice, path
         return invoice, path
 
-
     def prepare(self, journal: JournalEditor, results: SourceResults):
         credit_card_accounts = get_credit_card_accounts(journal)
         order_ids_seen = get_order_ids_seen(journal, self.amazon_account)
@@ -457,7 +462,7 @@ class AmazonSource(Source):
             if order_id in order_ids_seen: continue
             invoice, path = self._get_invoice(invoice_filename)
             if invoice is None:
-                results.add_error('Failed to parse invoice: %s' % (path,))
+                results.add_error('Failed to parse invoice: %s' % (path, ))
                 continue
             transaction = make_amazon_transaction(
                 invoice=invoice,

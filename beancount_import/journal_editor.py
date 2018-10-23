@@ -55,8 +55,22 @@ FileChangeSet = NamedTuple('FileChangeSet', [
 
 JournalDiff = NamedTuple('JournalDiff', [
     ('change_sets', List[FileChangeSet]),
-    ('new_entries', Entries),
     ('old_entries', Entries),
+    ('new_entries', Entries),
+])
+
+ApplyFileChangesResult = NamedTuple('ApplyFileChangesResult', [
+    ('new_contents', str),
+    ('new_lines', List[str]),
+    ('lineno_map', Dict[int, Optional[int]]),
+    ('append_only', bool),
+])
+
+ApplyStagedChangesResult = NamedTuple('ApplyStagedChangesResult', [
+    ('old_entries', Entries),
+    ('new_entries', Entries),
+    ('old_ignored_entries', Entries),
+    ('new_ignored_entries', Entries),
 ])
 
 
@@ -184,15 +198,16 @@ def get_partially_booked_entries(pre_booking_entries: Entries,
 
 
 class JournalEditor(object):
-    def __init__(self, journal_path: str) -> None:
+    def __init__(self, journal_path: str,
+                 ignored_path: Optional[str] = None) -> None:
 
         self.default_journal_load_time = time.time()
         self.journal_load_time = {}  # type: Dict[str, float]
         journal_path = os.path.realpath(journal_path)
         self.journal_path = journal_path
 
-        final_entries, self.errors, self.options_map, pre_booking_entries, post_booking_entries = load_file(
-            journal_path)
+        (final_entries, self.errors, self.options_map, pre_booking_entries,
+         post_booking_entries) = load_file(journal_path)
         del final_entries
         self.entries = get_partially_booked_entries(pre_booking_entries,
                                                     post_booking_entries)
@@ -200,9 +215,36 @@ class JournalEditor(object):
         self.cached_lines = {}  # type: Dict[str, List[str]]
         self.accounts, self.commodities = get_accounts_and_commodities(
             self.entries)
-        self.journal_filenames = set(
-            os.path.realpath(x)
-            for x in [journal_path] + self.options_map['include'])
+        journal_paths = [journal_path] + self.options_map['include']
+        ignored_journal_paths = []  # type: List[str]
+        if ignored_path is not None:
+            ignored_path = os.path.realpath(ignored_path)
+            self.ignored_path = ignored_path  # type: Optional[str]
+            (pre_booking_ignored_entries, ignored_errors,
+             self.ignored_options_map) = beancount.loader._parse_recursive(
+                 [(ignored_path, True)], log_timings=False)
+            self.ignored_entries, ignored_balance_errors = beancount.parser.booking.book(
+                pre_booking_ignored_entries, self.ignored_options_map)
+            self.errors.extend(ignored_errors)
+            ignored_journal_paths = [ignored_path]
+            ignored_journal_paths.extend(self.ignored_options_map['include'])
+            journal_paths.extend(ignored_journal_paths)
+        else:
+            self.ignored_entries = []
+            self.ignored_path = None
+            self.ignored_options_map = {}
+
+        self.journal_filenames = set(os.path.realpath(x) for x in journal_paths)
+        self.ignored_journal_filenames = set(
+            os.path.realpath(x) for x in ignored_journal_paths)
+        self._all_entries = None  # type: Optional[Entries]
+
+    @property
+    def all_entries(self) -> Entries:
+        if self._all_entries is None:
+            self._all_entries = list(self.entries)
+            self._all_entries.extend(self.ignored_entries)
+        return self._all_entries
 
     def get_journal_lines(self, filename: str):
         filename = os.path.realpath(filename)
@@ -249,11 +291,12 @@ class JournalEditor(object):
                 modified_filenames.add(f)
         return modified_filenames
 
-    def apply_file_change_sets(self, filename: str, change_sets):
-        """
-        change_type < 0 means delete 1 line
-        change_type == 0 means replace 1 line
-        change_type > 0 means insert 1 line
+    def _get_file_change_sets_result(
+            self, filename: str,
+            change_sets: Sequence[LineChangeSet]) -> ApplyFileChangesResult:
+        """Returns the new lines for `filename` after applying `change_sets`.
+
+        This does not actually modify the specified file.
         """
         _, old_lines = self.get_journal_lines(filename)
         new_lines = []  # type: List[str]
@@ -266,9 +309,6 @@ class JournalEditor(object):
             assert end_old_lineno <= len(
                 old_lines) and end_old_lineno >= next_old_lineno
             new_lines.extend(old_lines[next_old_lineno:end_old_lineno])
-            # print('Mapping old %d-%d to new %d-%d' %
-            #       (next_old_lineno + 1, end_old_lineno + 1, next_new_lineno + 1,
-            #        next_new_lineno + end_old_lineno - next_old_lineno + 1))
             for i in range(next_old_lineno, end_old_lineno):
                 # +1 because beancount parser uses 1-based line numbers
                 lineno_map[i + 1] = next_new_lineno + 1
@@ -293,10 +333,8 @@ class JournalEditor(object):
                     new_lines.append(line)
                 if change_type < 0:
                     lineno_map[next_old_lineno + 1] = None
-                    # print('Mapping %d -> None [deletion]' % (next_old_lineno + 1))
                 if change_type == 0:
                     lineno_map[next_old_lineno + 1] = next_new_lineno + 1
-                    # print('Mapping %d -> %d [unchanged]' % (next_old_lineno + 1, next_new_lineno + 1))
                 if change_type <= 0:
                     next_old_lineno += 1
                 if change_type >= 0:
@@ -304,24 +342,18 @@ class JournalEditor(object):
             assert next_old_lineno == line_range[1]
 
         fill_unchanged_lines(len(old_lines))
-
         new_data = '\n'.join(new_lines)
+        return ApplyFileChangesResult(
+            new_contents=new_data,
+            new_lines=new_lines,
+            lineno_map=lineno_map,
+            append_only=append_only,
+        )
 
-        # DEBUG
-        # DEBUG
-        # reverse_lineno_map = {v: k for k, v in lineno_map.items()}
-
-        # for old_lineno, old_line in enumerate(old_lines):
-        #     if lineno_map.get(old_lineno+1) is None:
-        #         print('Unmapped old line %d: %s' % (old_lineno+1, old_line))
-        # for new_lineno, new_line in enumerate(new_lines):
-        #     if reverse_lineno_map.get(new_lineno+1) is None:
-        #         print('Unmapped new line %d: %s' % (new_lineno+1, new_line))
-        # with open('/tmp/old-lines.txt', 'w') as f:
-        #     f.write('\n'.join(old_lines))
-
-        # END DEBUG STUFF
-
+    def apply_file_changes_result(self, filename: str, result: ApplyFileChangesResult):
+        new_lines = result.new_lines
+        new_data = result.new_contents
+        lineno_map = result.lineno_map
         filename = os.path.realpath(filename)
         if self.check_journal_modification(filename):
             raise RuntimeError(
@@ -349,16 +381,9 @@ class JournalEditor(object):
                 realpaths[path] = result
             return result
 
-        fixed_meta_ids = set()  # type: Set[int]
-
         def fix_meta(meta):
             if meta is None:
                 return
-            if id(meta) in fixed_meta_ids:
-                return
-            # Multiple postings generated by booking to handle a reduction will share a metadata
-            # dict.  We have to make sure to modify it only once.
-            fixed_meta_ids.add(id(meta))
             entry_filename = meta.get('filename', None)
             if entry_filename is None:
                 return
@@ -371,19 +396,31 @@ class JournalEditor(object):
             meta['lineno'] = lineno_map[lineno]
 
         # Update lines of all entries
-        if not append_only:
+        if not result.append_only:
             for entry in self.entries:
                 fix_meta(entry.meta)
                 if isinstance(entry, Transaction):
                     for posting in entry.postings:
                         fix_meta(posting.meta)
 
-    def apply_change_sets(self, change_sets):
-        for filename, file_change_sets in change_sets:
-            self.apply_file_change_sets(filename, file_change_sets)
+    def get_file_change_results(self, change_sets: List[FileChangeSet]
+                                ) -> Dict[str, ApplyFileChangesResult]:
+        return {
+            x.filename: self._get_file_change_sets_result(
+                x.filename, x.changes)
+            for x in change_sets
+        }
+
+    def apply_file_change_results(self, results: Dict[str, ApplyFileChangesResult]):
+        for filename, result in results.items():
+            self.apply_file_changes_result(filename, result)
+
+    def apply_change_sets(self, change_sets: List[FileChangeSet]):
+        results = self.get_file_change_results(change_sets)
+        self.apply_file_change_results(results)
 
     def apply_staged_changes(
-            self, staged_changes: 'StagedChanges') -> Tuple[Entries, Entries]:
+            self, staged_changes: 'StagedChanges') -> ApplyStagedChangesResult:
         change_sets, old_entries, new_entries = staged_changes.get_diff()
         self.apply_change_sets(change_sets)
         old_entries_set = set(map(id, old_entries))
@@ -391,17 +428,41 @@ class JournalEditor(object):
             e for e in self.entries
             if id(e) not in old_entries_set and e.meta.get('lineno') is not None
         ]
+        self.ignored_entries = [
+            e for e in self.ignored_entries
+            if id(e) not in old_entries_set and e.meta.get('lineno') is not None
+        ]
         booked_new_entries, balance_errors = beancount.parser.booking.book(
             new_entries, self.options_map)
-        self.entries.extend(booked_new_entries)
-        self.entries.sort(key=beancount.core.data.entry_sortkey)
+        non_ignored_booked_new_entries = []  # type: Entries
+        ignored_booked_new_entries = [] # type: Entries
         for entry in booked_new_entries:
-            if isinstance(entry, Open):
-                self.accounts[entry.account] = entry
-            if isinstance(entry, Commodity):
-                self.commodities[entry.currency] = entry
+            if os.path.realpath(entry.meta.get('filename')) in self.ignored_journal_filenames:
+                self.ignored_entries.append(entry)
+                ignored_booked_new_entries.append(entry)
+            else:
+                self.entries.append(entry)
+                non_ignored_booked_new_entries.append(entry)
+                if isinstance(entry, Open):
+                    self.accounts[entry.account] = entry
+                if isinstance(entry, Commodity):
+                    self.commodities[entry.currency] = entry
 
-        return old_entries, booked_new_entries
+        self.entries.sort(key=beancount.core.data.entry_sortkey)
+        self.ignored_entries.sort(key=beancount.core.data.entry_sortkey)
+        self._all_entries = None
+        return ApplyStagedChangesResult(
+            old_entries=[
+                e for e in old_entries if os.path.realpath(
+                    e.meta.get('filename')) not in self.ignored_journal_filenames
+            ],
+            new_entries=non_ignored_booked_new_entries,
+            old_ignored_entries=[
+                e for e in old_entries if os.path.realpath(
+                    e.meta.get('filename')) in self.ignored_journal_filenames
+            ],
+            new_ignored_entries=ignored_booked_new_entries,
+        )
 
     def stage_changes(self) -> 'StagedChanges':
         return StagedChanges(self)
@@ -604,6 +665,23 @@ class StagedChanges(object):
                 (old_entry, new_entry))
         self._cached_diff = None
 
+    def make_with_new_output_filename(self,
+                                      output_filename: str) -> 'StagedChanges':
+        new_stage = StagedChanges(self.journal_editor)
+        for change_pairs in self.changed_entries.values():
+            for old_entry, new_entry in change_pairs:
+                if old_entry is None:
+                    new_stage.add_entry(new_entry, output_filename)
+                elif new_entry is None:
+                    new_stage.remove_entry(old_entry)
+                elif os.path.realpath(old_entry.meta[
+                        'filename']) == os.path.realpath(output_filename):
+                    new_stage.change_entry(old_entry, new_entry)
+                else:
+                    new_stage.remove_entry(old_entry)
+                    new_stage.add_entry(new_entry, output_filename)
+        return new_stage
+
     def get_all_new_entries(self):
         """Returns a sequence of the new entries WITHOUT updated line numbers."""
         return [
@@ -790,7 +868,7 @@ class StagedChanges(object):
         self._cached_diff = JournalDiff(change_sets, old_entries, new_entries)
         return self._cached_diff
 
-    def apply(self):
+    def apply(self) -> ApplyStagedChangesResult:
         return self.journal_editor.apply_staged_changes(self)
 
     def get_combined_changes(self) -> List[LineChange]:

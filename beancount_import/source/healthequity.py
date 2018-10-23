@@ -488,7 +488,7 @@ class Source(description_based_source.DescriptionBasedSource):
 
         description_based_source.get_pending_and_invalid_entries(
             raw_entries=transactions,
-            journal_entries=journal.entries,
+            journal_entries=journal.all_entries,
             account_set=account_to_id.keys(),
             get_key_from_posting=get_key_from_posting,
             get_key_from_raw_entry=get_key_from_raw_entry,

@@ -338,7 +338,7 @@ class MintSource(description_based_source.DescriptionBasedSource):
 
         description_based_source.get_pending_and_invalid_entries(
             raw_entries=get_converted_mint_entries(self.mint_entries),
-            journal_entries=journal.entries,
+            journal_entries=journal.all_entries,
             account_set=account_to_mint_id.keys(),
             get_key_from_posting=_get_key_from_posting,
             get_key_from_raw_entry=_get_key_from_csv_entry,

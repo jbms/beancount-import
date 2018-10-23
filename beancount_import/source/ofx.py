@@ -1228,7 +1228,7 @@ class PrepareState(object):
         commodities_by_cusip = self.commodities_by_cusip
         account_leaf_regexp = '^(.+):([^:]+)$'
         results = self.results
-        for entry in self.journal.entries:
+        for entry in self.journal.all_entries:
             if isinstance(entry, Transaction):
                 last_lineno = None
                 for posting in entry.postings:

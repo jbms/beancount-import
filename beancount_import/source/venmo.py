@@ -263,7 +263,7 @@ class VenmoSource(Source):
         matched_payment_postings = dict(
         )  # type: Dict[str, List[Tuple[Transaction,Posting]]]
         
-        for entry in journal.entries:
+        for entry in journal.all_entries:
             if not isinstance(entry, Transaction):
                 continue
             for posting in entry.postings:
