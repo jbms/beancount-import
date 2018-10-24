@@ -1,0 +1,19 @@
+;; date: 2017-12-03
+;; info: {"filename": "<testdata>/td_ameritrade.ofx", "type": "application/x-ofx"}
+
+2017-12-03 balance Assets:Investment:TD-Ameritrade:AMZN            1 AMZN
+
+;; date: 2017-12-03
+;; info: {"filename": "<testdata>/td_ameritrade.ofx", "type": "application/x-ofx"}
+
+2017-12-03 price AMZN                                 1000 USD
+
+;; date: 2017-12-03
+;; info: {"filename": "<testdata>/td_ameritrade.ofx", "type": "application/x-ofx"}
+
+2017-12-03 balance Assets:Investment:TD-Ameritrade:AMERITRADE-912810RW0 1000 AMERITRADE-912810RW0
+
+;; date: 2017-12-03
+;; info: {"filename": "<testdata>/td_ameritrade.ofx", "type": "application/x-ofx"}
+
+2017-12-03 price AMERITRADE-912810RW0                  100 USD

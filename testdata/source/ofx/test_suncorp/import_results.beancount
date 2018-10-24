@@ -1,0 +1,27 @@
+;; date: 2013-12-15
+;; info: {"filename": "<testdata>/suncorp.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-16.85 AUD",
+;               "date": "2013-12-15",
+;               "key_value_pairs": {
+;                 "desc": "EFTPOS WDL HANDYWAY ALDI STORE GEELONG WEST VICAU",
+;                 "ofx_memo": "EFTPOS WDL HANDYWAY ALDI STORE GEELONG WEST VICAU",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Assets:Checking:Suncorp"
+;             }
+;           ]
+2013-12-15 * "STMTTRN - EFTPOS WDL HANDYWAY ALDI STORE GEELONG WEST VICAU"
+  Assets:Checking:Suncorp  -16.85 AUD
+    date: 2013-12-15
+    ofx_fitid: "1"
+    ofx_memo: "EFTPOS WDL HANDYWAY ALDI STORE GEELONG WEST VICAU"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME            16.85 AUD
+
+;; date: 2013-12-15
+;; info: {"filename": "<testdata>/suncorp.ofx", "type": "application/x-ofx"}
+
+2013-12-15 balance Assets:Checking:Suncorp                         1234.12 AUD

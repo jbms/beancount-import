@@ -1,0 +1,146 @@
+[
+  [
+    {
+      "amount": "14.99 USD",
+      "date": "2016-08-30",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_item_description": [
+          "Car Mount, Anker CD Slot Universal Phone Holder for iPhone 6s/6/6s plus/6 plus, Samsung S7/S6/edge, Samsung Note 7/5, LG G5, Nexus 5X/6/6P, Moto, HTC,"
+        ]
+      },
+      "source_account": ""
+    },
+    "Expenses:Miscellaneous"
+  ],
+  [
+    {
+      "amount": "-22.97 USD",
+      "date": "2016-08-30",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Visa Signature ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "7.99 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_item_description": [
+          "Skydue Letter A4 Paper Expanding File Folder Pockets Accordion Document Organizer (Jade)"
+        ]
+      },
+      "source_account": ""
+    },
+    "Expenses:Office-Supplies"
+  ],
+  [
+    {
+      "amount": "-71.06 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-16.21 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-12.60 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-34.33 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-12.00 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-7.99 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ]
+]

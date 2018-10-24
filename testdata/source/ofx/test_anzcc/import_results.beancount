@@ -1,0 +1,27 @@
+;; date: 2017-05-08
+;; info: {"filename": "<testdata>/anzcc.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-5.50 AUD",
+;               "date": "2017-05-08",
+;               "key_value_pairs": {
+;                 "desc": "SOME MEMO",
+;                 "ofx_memo": "SOME MEMO",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Liabilities:Credit-Card"
+;             }
+;           ]
+2017-05-08 * "STMTTRN - SOME MEMO"
+  Liabilities:Credit-Card  -5.50 AUD
+    date: 2017-05-08
+    ofx_fitid: "201705080001"
+    ofx_memo: "SOME MEMO"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME            5.50 AUD
+
+;; date: 2017-05-10
+;; info: {"filename": "<testdata>/anzcc.ofx", "type": "application/x-ofx"}
+
+2017-05-10 balance Liabilities:Credit-Card                         -123.45 AUD

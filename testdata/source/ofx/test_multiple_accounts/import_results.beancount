@@ -1,0 +1,9 @@
+;; date: 2012-06-03
+;; info: {"filename": "<testdata>/multiple_accounts.ofx", "type": "application/x-ofx"}
+
+2012-06-03 balance Assets:Checking                                 111 USD
+
+;; date: 2012-06-03
+;; info: {"filename": "<testdata>/multiple_accounts.ofx", "type": "application/x-ofx"}
+
+2012-06-03 balance Assets:Savings                                  222 USD

@@ -1,0 +1,75 @@
+plugin "beancount.plugins.auto_accounts"
+option "infer_tolerance_from_cost" "true"
+
+2016-01-01 open Assets:HSA:HealthEquity
+  healthequity_account_id: "1234567"
+  dividend_account: "Income:HealthEquity:Dividends"
+  capital_gains_account: "Income:HealthEquity:Capital-Gains"
+
+2016-01-01 * "Employer Contribution (Tax year: 2016)"
+  Assets:HSA:HealthEquity:Cash   800.00 USD
+    date: 2016-01-15
+    healthequity_transaction_type: "Contribution"
+    source_desc: "Employer Contribution (Tax year: 2016)"
+    cleared: TRUE
+  Expenses:FIXME                           -800.00 USD
+
+2016-01-16 * "Investment: VIIIX"
+  Assets:HSA:HealthEquity:Cash  -300.00 USD
+    date: 2016-01-16
+    healthequity_transaction_type: "Other"
+    source_desc: "Investment: VIIIX"
+    cleared: TRUE
+  Assets:HSA:HealthEquity:VIIIX    1.745 VIIIX {171.92 USD}
+    date: 2016-01-19
+    source_desc: "Buy"
+    cleared: TRUE
+
+2016-01-31 * "Interest for Jan-16"
+  Assets:HSA:HealthEquity:Cash   0.01 USD
+    date: 2016-01-31
+    healthequity_transaction_type: "Other"
+    source_desc: "Interest for Jan-16"
+    cleared: TRUE
+  Expenses:FIXME                           -0.01 USD
+
+2016-02-29 * "Interest for Feb-16"
+  Assets:HSA:HealthEquity:Cash   0.02 USD
+    date: 2016-02-29
+    healthequity_transaction_type: "Other"
+    source_desc: "Interest for Feb-16"
+    cleared: TRUE
+  Expenses:FIXME                           -0.02 USD
+
+2016-03-11 * "Employer Contribution (Tax year: 2015)"
+  Assets:HSA:HealthEquity:Cash   1600.00 USD
+    date: 2016-03-11
+    healthequity_transaction_type: "Contribution"
+    source_desc: "Employer Contribution (Tax year: 2015)"
+    cleared: TRUE
+  Expenses:FIXME                           -1600.00 USD
+
+2016-03-11 * "Investment: VIIIX"
+  Assets:HSA:HealthEquity:Cash  -1600.03 USD
+    date: 2016-03-11
+    healthequity_transaction_type: "Other"
+    source_desc: "Investment: VIIIX"
+    cleared: TRUE
+  Assets:HSA:HealthEquity:VIIIX     8.622 VIIIX {185.58 USD}
+    date: 2016-03-11
+    source_desc: "Buy"
+    cleared: TRUE
+
+2016-03-16 * "Dividend"
+  Assets:HSA:HealthEquity:VIIIX   0.056 VIIIX {185.71 USD}
+    date: 2016-03-16
+    source_desc: "Dividend"
+    cleared: TRUE
+  Income:HealthEquity:Dividends:VIIIX       -10.40 USD
+
+2016-06-16 * "Dividend"
+  Assets:HSA:HealthEquity:VIIIX  0.051 VIIIX {191.57 USD}
+    date: 2016-06-16
+    source_desc: "Dividend"
+    cleared: TRUE
+  Income:HealthEquity:Dividends:VIIIX       -9.77 USD

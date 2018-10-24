@@ -1,0 +1,95 @@
+;; date: 2013-09-05
+;; info: {"filename": "<testdata>/vanguard401k.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-0.04241 VANGUARD-92202V351",
+;               "date": "2013-09-05",
+;               "key_value_pairs": {
+;                 "desc": "Investment Expense",
+;                 "ofx_memo": "Investment Expense",
+;                 "ofx_type": "TRANSFER"
+;               },
+;               "source_account": "Assets:Retirement:Vanguard:Company401k:Match:VANGUARD-92202V351"
+;             }
+;           ]
+2013-09-05 * "TRANSFER - MATCH - Investment Expense"
+  Assets:Retirement:Vanguard:Company401k:Match:VANGUARD-92202V351  -0.04241 VANGUARD-92202V351 {} @ 39.37 USD
+    date: 2013-09-05
+    ofx_fitid: "1234567890123456795AAA"
+    ofx_memo: "Investment Expense"
+    ofx_type: "TRANSFER"
+  Income:Vanguard:Capital-Gains:VANGUARD-92202V351
+  Expenses:FIXME                                                       1.67 USD
+
+;; date: 2014-09-26
+;; info: {"filename": "<testdata>/vanguard401k.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "14.61137 VANGUARD-92202V351",
+;               "date": "2014-09-26",
+;               "key_value_pairs": {
+;                 "ofx_type": "BUYMF"
+;               },
+;               "source_account": "Assets:Retirement:Vanguard:Company401k:PreTax:VANGUARD-92202V351"
+;             }
+;           ]
+2014-09-26 * "BUYMF - PRETAX"
+  Assets:Retirement:Vanguard:Company401k:PreTax:VANGUARD-92202V351  14.61137 VANGUARD-92202V351 {46.06 USD}
+    date: 2014-09-26
+    ofx_fitid: "1234567890123456790AAA"
+    ofx_type: "BUYMF"
+  Expenses:FIXME                                                     -673.00 USD
+
+;; date: 2014-09-26
+;; info: {"filename": "<testdata>/vanguard401k.ofx", "type": "application/x-ofx"}
+
+; features: []
+2014-09-26 * "BUYMF - MATCH"
+  Assets:Retirement:Vanguard:Company401k:Match:VANGUARD-92202V351  7.30568 VANGUARD-92202V351 {46.06 USD}
+    date: 2014-09-26
+    ofx_fitid: "1234567890123456791AAA"
+    ofx_type: "BUYMF"
+  Income:Company:Match                                             -336.50 USD
+
+;; date: 2014-10-10
+;; info: {"filename": "<testdata>/vanguard401k.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "15.25039 VANGUARD-92202V351",
+;               "date": "2014-10-10",
+;               "key_value_pairs": {
+;                 "ofx_type": "BUYMF"
+;               },
+;               "source_account": "Assets:Retirement:Vanguard:Company401k:PreTax:VANGUARD-92202V351"
+;             }
+;           ]
+2014-10-10 * "BUYMF - PRETAX"
+  Assets:Retirement:Vanguard:Company401k:PreTax:VANGUARD-92202V351  15.25039 VANGUARD-92202V351 {44.13 USD}
+    date: 2014-10-10
+    ofx_fitid: "1234567890123456793AAA"
+    ofx_type: "BUYMF"
+  Expenses:FIXME                                                     -673.00 USD
+
+;; date: 2014-10-10
+;; info: {"filename": "<testdata>/vanguard401k.ofx", "type": "application/x-ofx"}
+
+; features: []
+2014-10-10 * "BUYMF - MATCH"
+  Assets:Retirement:Vanguard:Company401k:Match:VANGUARD-92202V351  7.62519 VANGUARD-92202V351 {44.13 USD}
+    date: 2014-10-10
+    ofx_fitid: "1234567890123456794AAA"
+    ofx_type: "BUYMF"
+  Income:Company:Match                                             -336.50 USD
+
+;; date: 2014-10-17
+;; info: {"filename": "<testdata>/vanguard401k.ofx", "type": "application/x-ofx"}
+
+2014-10-17 balance Assets:Retirement:Vanguard:Company401k          117.506 VANGUARD-92202V351
+
+;; date: 2014-10-17
+;; info: {"filename": "<testdata>/vanguard401k.ofx", "type": "application/x-ofx"}
+
+2014-10-17 price VANGUARD-92202V351                  44.01 USD

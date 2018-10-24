@@ -1,14 +1,16 @@
-from typing import List, Optional, Union, Tuple, Dict
+from typing import List, Optional, Union, Tuple, Dict, Any
 
-import pytest
-import py
+import collections
+import io
+import os
+import json
 
 import beancount.parser.parser
 import beancount.parser.printer
 from beancount.core.data import Posting, Transaction, Meta, Directive, Entries
 
 from ..journal_editor import JournalEditor
-from . import load_source as _load_source, ImportResult, SourceResults, SourceSpec, InvalidSourceReference
+from . import load_source as _load_source, ImportResult, SourceResults, SourceSpec, InvalidSourceReference, PredictionInput, Source
 from .. import training
 from .. import test_util
 
@@ -21,125 +23,165 @@ def load_source(source_spec: SourceSpec):
     return _load_source(source_spec, log_status=log_status)
 
 
-def import_result(
-        info: dict,
-        entries: str,
-        unknown_account_prediction_inputs: Optional[List[
-            training.PredictionInput]] = None
-) -> Tuple[ImportResult, Optional[List[training.PredictionInput]]]:
-    parsed_entries = [
-        test_util.normalize_entry(entry) for entry in test_util.parse(entries)
-    ]
-    return ImportResult(
-        date=parsed_entries[0].date, entries=parsed_entries,
-        info=info), unknown_account_prediction_inputs
+def _json_encode_prediction_input(x: Optional[PredictionInput]) -> Any:
+    if x is None: return None
+    result = x._asdict()
+    result['amount'] = str(result['amount'])
+    result['date'] = result['date'].strftime('%Y-%m-%d')
+    return result
 
 
-InvalidReferenceSpec = Tuple[int, List[Tuple[str, Optional[str]]]]
+def _format_import_results(import_results: List[ImportResult],
+                           extractor: training.FeatureExtractor,
+                           source: Source) -> str:
+    out = io.StringIO()
+    for import_result in import_results:
+        out.write(';; date: %s\n' % import_result.date.strftime('%Y-%m-%d'))
+        out.write(
+            ';; info: %s\n\n' % json.dumps(import_result.info, sort_keys=True))
+        for entry in import_result.entries:
+            if isinstance(entry, Transaction):
+                entry = entry._replace(
+                    meta=collections.OrderedDict(entry.meta or {}),
+                    postings=[
+                        posting._replace(
+                            meta=collections.OrderedDict(posting.meta or {}))
+                        for posting in entry.postings
+                    ],
+                )
+                features = extractor.extract_unknown_account_group_features(
+                    entry)
+                if features is not None:
+                    features_json = json.dumps(
+                        [_json_encode_prediction_input(x) for x in features],
+                        sort_keys=True,
+                        indent='  ')
+                    prefix0 = '; features: '
+                    prefix1 = ';           '
+                    prefix = prefix0
+                    for line in features_json.split('\n'):
+                        out.write(prefix + line + '\n')
+                        prefix = prefix1
+                associated_data = source.get_associated_data(entry) or []
+                for i, data in enumerate(associated_data):
+                    data_rep = dict(vars(data))
+                    del data_rep['posting']
+                    for key in [k for k, v in data_rep.items() if v is None]:
+                        del data_rep[key]
+                    data_json = json.dumps(data_rep, sort_keys=True)
+                    meta_key = 'associated_data%d' % i
+                    if data.posting is not None:
+                        data.posting.meta[meta_key] = data_json
+                    else:
+                        entry.meta[meta_key] = data_json
+
+            out.write(test_util.format_entries([entry]).strip() + '\n\n')
+    return out.getvalue().strip() + '\n'
 
 
-def _get_invalid_references(entries: Entries, specs: List[InvalidReferenceSpec]
-                            ) -> List[InvalidSourceReference]:
-    transactions_by_id = dict()  # type: Dict[str, Transaction]
-    postings_by_id = dict()  # type: Dict[Tuple[str, str], Posting]
-    for entry in entries:
-        if not isinstance(entry, Transaction): continue
-        if not entry.meta: continue
-        invalid_id = entry.meta.get('invalid_id')
-        if invalid_id is None: continue
-        transactions_by_id[invalid_id] = entry
+def _add_invalid_reference_and_cleared_metadata(
+        editor: JournalEditor, source: Source,
+        invalid_references: List[InvalidSourceReference]) -> Dict[str, str]:
+    id_to_invalid_keys = {}  # type: Dict[int, List[Tuple[str, str]]]
+    for i, ref in enumerate(invalid_references):
+        invalid_pair = ('invalid%d' % (i, ), '%d extra' % (ref.num_extras, ))
+        for transaction, posting in ref.transaction_posting_pairs:
+            if posting is None:
+                id_to_invalid_keys.setdefault(id(transaction),
+                                              []).append(invalid_pair)
+            else:
+                id_to_invalid_keys.setdefault(id(posting),
+                                              []).append(invalid_pair)
+
+    def _adjust_meta(
+            directive: Union[Directive, Posting]) -> Union[Directive, Posting]:
+        meta = collections.OrderedDict(
+            sorted((key, value)
+                   for key, value in (directive.meta or {}).items()
+                   if not key.startswith('invalid') and key != 'cleared'))
+        if isinstance(directive,
+                      Posting) and source.is_posting_cleared(directive):
+            meta['cleared'] = True
+        for key, value in id_to_invalid_keys.get(id(directive), []):
+            meta[key] = value
+        if dict(meta) == directive.meta:
+            return directive
+        return directive._replace(meta=meta)
+
+    def _adjust_entry(entry: Directive) -> Directive:
+        if not isinstance(entry, Transaction): return entry
+        new_entry = _adjust_meta(entry)
+        modified = new_entry is not entry
+        new_postings = []
         for posting in entry.postings:
-            if not posting.meta: continue
-            posting_id = posting.meta.get('invalid_id')
-            if posting_id is None: continue
-            postings_by_id[(invalid_id, posting_id)] = posting
-    return [
-        InvalidSourceReference(
-            num_extras,
-            [(transactions_by_id.get(transaction_id),
-              postings_by_id.get((transaction_id, posting_id))
-              if posting_id is not None else None)
-             for transaction_id, posting_id in transaction_posting_pairs])
-        for num_extras, transaction_posting_pairs in specs
-    ]
+            new_posting = _adjust_meta(posting)
+            if new_posting is not posting:
+                modified = True
+            new_postings.append(new_posting)
+        new_entry = new_entry._replace(postings=new_postings)
+        if modified:
+            return new_entry
+        return entry
+
+    stage = editor.stage_changes()
+    for entry in editor.all_entries:
+        new_entry = _adjust_entry(entry)
+        if new_entry is not entry:
+            stage.change_entry(entry, new_entry)
+    return {
+        filename: result.new_contents
+        for filename, result in editor.get_file_change_results(
+            stage.get_diff().change_sets).items()
+    }
 
 
-def format_pending_entry(p: ImportResult):
-    return '''
-            import_result(
-                info=%r,
-                entries=r"""
-%s
-                """,
-            )''' % (p.info, test_util.format_entries(p.entries,
-                                                     indent=16).rstrip())
-
-
-def format_pending_entries(pending: List[ImportResult]):
-    return '        [' + ',\n'.join(format_pending_entry(p)
-                                    for p in pending) + '\n        ]'
-
-
-def normalize_import_result(pending: ImportResult) -> ImportResult:
-    return pending._replace(
-        entries=[test_util.normalize_entry(entry) for entry in pending.entries])
-
-
-def normalize_import_results(pending: List[ImportResult]) -> List[ImportResult]:
-    return [normalize_import_result(p) for p in pending]
-
-
-def check_source(tmpdir,
-                 source_spec: SourceSpec,
-                 pending: List[Tuple[ImportResult, Optional[List[
-                     training.PredictionInput]]]],
-                 journal_contents='',
-                 invalid_references: List[InvalidReferenceSpec] = [],
-                 accounts=frozenset(),
-                 training_examples: Optional[List[Tuple[
-                     training.PredictionInput, str]]] = None):
-    journal_path = tmpdir.join('journal.beancount')
-    journal_path.write(journal_contents)
-    journal_editor = JournalEditor(str(journal_path))
-    if journal_editor.errors:
-        assert journal_editor.errors == []
+def check_source_example(example_dir: str,
+                         source_spec: SourceSpec,
+                         replacements: List[Tuple[str, str]],
+                         write: Optional[bool] = None):
+    journal_path = os.path.join(example_dir, 'journal.beancount')
+    editor = JournalEditor(journal_path)
+    assert editor.errors == []
     source = load_source(source_spec)
     results = SourceResults()
-    source.prepare(journal_editor, results)
+    source.prepare(editor, results)
     results.pending.sort(key=lambda x: x.date)
-    actual_pending = normalize_import_results(results.pending)
-    pending_entries = [entry for entry, _ in pending]
-    if actual_pending != pending_entries:
-        print(format_pending_entries(results.pending))
-    expected_invalid_references = _get_invalid_references(
-        journal_editor.entries, invalid_references)
-    assert actual_pending == pending_entries
-    assert results.accounts == set(accounts)
-    assert sorted(
-        results.invalid_references) == sorted(expected_invalid_references)
-
-    for entry in journal_editor.entries:
-        if not isinstance(entry, Transaction): continue
-        for posting in entry.postings:
-            if posting.account in results.accounts:
-                is_cleared = source.is_posting_cleared(posting)
-                assert is_cleared == posting.meta.get('cleared', False)
-
     account_source_map = {account: source for account in results.accounts}
     sources = [source]
     extractor = training.FeatureExtractor(
         sources=sources, account_source_map=account_source_map)
+    for filename, new_contents in _add_invalid_reference_and_cleared_metadata(
+            editor, source, results.invalid_references).items():
+        test_util.check_golden_contents(
+            filename,
+            new_contents,
+            replacements=[],
+            write=write,
+        )
+    test_util.check_golden_contents(
+        os.path.join(example_dir, 'import_results.beancount'),
+        _format_import_results(
+            results.pending, extractor=extractor, source=source),
+        replacements=replacements,
+        write=write,
+    )
+    test_util.check_golden_contents(
+        os.path.join(example_dir, 'accounts.txt'),
+        ''.join(account + '\n' for account in sorted(results.accounts)),
+        replacements=replacements,
+        write=write,
+    )
 
-    if training_examples is not None:
-        actual_training_examples = training.MockTrainingExamples()
-        extractor.extract_examples(journal_editor.entries,
-                                   actual_training_examples)
-        if actual_training_examples.examples != training_examples:
-            print(actual_training_examples.examples)
-        assert actual_training_examples.examples == training_examples
+    training_examples = training.MockTrainingExamples()
+    extractor.extract_examples(editor.entries, training_examples)
 
-    for entry, expected_input in pending:
-        if expected_input is not None:
-            assert len(entry.entries) == 1
-            assert extractor.extract_unknown_account_group_features(
-                entry.entries[0]) == expected_input
+    test_util.check_golden_contents(
+        os.path.join(example_dir, 'training_examples.json'),
+        json.dumps(
+            [[_json_encode_prediction_input(prediction_input), target]
+             for prediction_input, target in training_examples.examples],
+            indent='  ',
+            sort_keys=True),
+        replacements=replacements,
+        write=write,
+    )

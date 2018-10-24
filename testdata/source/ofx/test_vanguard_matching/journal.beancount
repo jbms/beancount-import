@@ -1,0 +1,22 @@
+plugin "beancount.plugins.auto_accounts"
+
+1900-01-01 open Assets:Investment:Vanguard
+  ofx_org: "The Vanguard Group"
+  ofx_broker_id: "vanguard.com"
+  ofx_account_type: "securities_only"
+  account_id: "01234567890"
+  capital_gains_account: "Income:Vanguard:Capital-Gains"
+
+2011-07-01 * "Manually added BUY transaction"
+  Assets:Investment:Vanguard:VFINX     100 VFINX {90.00 USD}
+  Assets:Investment:Vanguard:Cash
+
+2011-07-15 * "SELLMF - THIS IS A MEMO"
+  Assets:Investment:Vanguard:VFINX     -42.123 VFINX {} @ 100 USD
+    date: 2011-07-15
+    ofx_fitid: "01234567890.0123.07152011.0"
+    ofx_memo: "THIS IS A MEMO"
+    ofx_type: "SELLMF"
+    cleared: TRUE
+  Income:Vanguard:Capital-Gains:VFINX
+  Assets:Checking      4212.30 USD

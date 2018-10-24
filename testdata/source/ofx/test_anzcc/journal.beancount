@@ -1,0 +1,5 @@
+1900-01-01 open Liabilities:Credit-Card
+  ofx_org: ""
+  ofx_broker_id: ""
+  account_id: "1234123412341234"
+  ofx_account_type: "cash_only"

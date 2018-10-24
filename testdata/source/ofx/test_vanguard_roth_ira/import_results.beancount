@@ -1,0 +1,20 @@
+;; date: 2018-06-21
+;; info: {"filename": "<testdata>/vanguard_roth_ira.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-06-21 * "REINVEST - DIV"
+  Assets:Retirement:Vanguard:Roth-IRA:TYCDT  31.704 TYCDT {2.94 USD}
+    date: 2018-06-21
+    ofx_fitid: "7c9254b784a.a9bd.edcfa27b.b"
+    ofx_type: "REINVEST"
+  Income:Vanguard:Dividends:TYCDT            -93.21 USD
+
+;; date: 2018-07-03
+;; info: {"filename": "<testdata>/vanguard_roth_ira.ofx", "type": "application/x-ofx"}
+
+2018-07-03 balance Assets:Retirement:Vanguard:Roth-IRA:TYCDT       46.872 TYCDT
+
+;; date: 2018-07-03
+;; info: {"filename": "<testdata>/vanguard_roth_ira.ofx", "type": "application/x-ofx"}
+
+2018-07-03 price TYCDT                               84.20 USD

@@ -1,0 +1,115 @@
+plugin "beancount.plugins.auto_accounts"
+
+1900-01-01 open Liabilities:Credit-Card
+  credit_card_last_4_digits: "1234"
+
+2017-03-23 * "Amazon.com" "Order"
+  amazon_account: "name@domain.com"
+  amazon_order_id: "277-5312419-9119541"
+  Expenses:FIXME:A   10.80 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "C.R. Gibson 9-Count Coloring File Folders, 3 of Each Design, 10 Adhesive Labels, Measures 11.5 x 9.5 - Gold"
+    amazon_item_quantity: 1
+    amazon_seller: "Amazon.com LLC"
+    shipped_date: 2017-03-24
+  Expenses:FIXME:A   12.60 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "MUJI Gel Ink Ballpoint Pens 0.38mm 9-colors Pack"
+    amazon_item_quantity: 1
+    amazon_seller: "hidamarifarm"
+    shipped_date: 2017-03-24
+  Expenses:FIXME:A   16.50 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Cynthia Rowley File Folders, 3 Tab, 6 Folders per package, Leaves Assorted Patterns"
+    amazon_item_quantity: 1
+    amazon_seller: "Sherry Pappas"
+    shipped_date: 2017-03-24
+  Expenses:FIXME:A    8.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "V&A William Morris Garden File Folder, Galison"
+    amazon_item_quantity: 1
+    amazon_seller: "Amazon.com LLC"
+    shipped_date: 2017-03-24
+  Expenses:FIXME:A   23.95 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Bloom Daily Planners All In One Planner, Calendar, Notebook, To-Do List Book, Sketch Book, Coloring Book and More! 9 x 11 Do More of What Makes You Happy"
+    amazon_item_quantity: 1
+    amazon_seller: "bloom daily planners"
+    shipped_date: 2017-03-24
+  Expenses:FIXME:A    8.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Skydue Floral Printed Accordion Document File Folder Expanding Letter Organizer (Pink)"
+    amazon_item_quantity: 1
+    amazon_seller: "Skydue"
+    shipped_date: 2017-03-24
+  Expenses:FIXME:A    1.83 USD
+    amazon_invoice_description: "Sales Tax"
+  Expenses:Office-Supplies    7.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Skydue Letter A4 Paper Expanding File Folder Pockets Accordion Document Organizer (Jade)"
+    amazon_item_quantity: 1
+    amazon_seller: "Skydue"
+    shipped_date: 2017-03-27
+  Expenses:FIXME:C   14.84 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Design Ideas 8758616-DI 8758616-DI Cabo LetterHolder-Copper,Copper,"
+    amazon_item_quantity: 1
+    amazon_seller: "Quidsi Retail LLC"
+    shipped_date: 2017-03-24
+  Expenses:FIXME:C    1.37 USD
+    amazon_invoice_description: "Sales Tax"
+  Expenses:FIXME:D   17.95 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Cynthia Rowley File Folders, 3 Tab, 6 folders per package, Gold Assorted Patterns"
+    amazon_item_quantity: 1
+    amazon_seller: "Cailler's LLC"
+    shipped_date: 2017-03-25
+  Expenses:FIXME:D   14.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Suncatchers Colorful Bird Stained Glass Effect Resin Mobile - Beautiful Window Hanging - Home Decoration"
+    amazon_item_quantity: 1
+    amazon_seller: "That Internet Shop USA"
+    shipped_date: 2017-03-25
+  Expenses:FIXME:D    1.39 USD
+    amazon_invoice_description: "Sales Tax"
+  Expenses:FIXME:E   12.00 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Rifle Paper Co. Jardin Weekly Desk Planner Notepad"
+    amazon_item_quantity: 1
+    amazon_seller: "Our Pampered Home"
+    shipped_date: 2017-03-24
+  Liabilities:Credit-Card    -71.06 USD
+    amazon_credit_card_description: "Amazon.com Store Card ending in 1234"
+    transaction_date: 2017-03-25
+  Liabilities:Credit-Card    -16.21 USD
+    amazon_credit_card_description: "Amazon.com Store Card ending in 1234"
+    transaction_date: 2017-03-25
+  Liabilities:Credit-Card    -12.60 USD
+    amazon_credit_card_description: "Amazon.com Store Card ending in 1234"
+    transaction_date: 2017-03-27
+  Liabilities:Credit-Card    -34.33 USD
+    amazon_credit_card_description: "Amazon.com Store Card ending in 1234"
+    transaction_date: 2017-03-27
+  Liabilities:Credit-Card    -12.00 USD
+    amazon_credit_card_description: "Amazon.com Store Card ending in 1234"
+    transaction_date: 2017-03-27
+  Liabilities:Credit-Card     -7.99 USD
+    amazon_credit_card_description: "Amazon.com Store Card ending in 1234"
+    transaction_date: 2017-03-28
+
+2016-08-30 * "Amazon.com" "Order"
+  amazon_account: "name@domain.com"
+  amazon_order_id: "781-8429198-6057878"
+  Expenses:Miscellaneous   14.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Car Mount, Anker CD Slot Universal Phone Holder for iPhone 6s/6/6s plus/6 plus, Samsung S7/S6/edge, Samsung Note 7/5, LG G5, Nexus 5X/6/6P, Moto, HTC,"
+    amazon_item_quantity: 1
+    amazon_seller: "AnkerDirect"
+    shipped_date: 2016-08-30
+  Expenses:Miscellaneous    5.99 USD
+    amazon_invoice_description: "Shipping & Handling"
+  Expenses:Miscellaneous    1.99 USD
+    amazon_invoice_description: "Sales Tax"
+  Liabilities:Credit-Card    -22.97 USD
+    amazon_credit_card_description: "Amazon.com Visa Signature ending in 1234"
+    transaction_date: 2016-08-30

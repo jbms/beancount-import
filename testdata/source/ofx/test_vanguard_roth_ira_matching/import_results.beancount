@@ -1,0 +1,9 @@
+;; date: 2018-07-03
+;; info: {"filename": "<testdata>/vanguard_roth_ira.ofx", "type": "application/x-ofx"}
+
+2018-07-03 balance Assets:Retirement:Vanguard:Roth-IRA:TYCDT       46.872 TYCDT
+
+;; date: 2018-07-03
+;; info: {"filename": "<testdata>/vanguard_roth_ira.ofx", "type": "application/x-ofx"}
+
+2018-07-03 price TYCDT                               84.20 USD

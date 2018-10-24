@@ -1,0 +1,92 @@
+;; date: 2012-07-20
+;; info: {"filename": "<testdata>/fidelity-savings.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-1500.00 USD",
+;               "date": "2012-07-20",
+;               "key_value_pairs": {
+;                 "desc": "Check Paid #0000001001",
+;                 "ofx_memo": "Check Paid #0000001001",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Savings:Fidelity"
+;             }
+;           ]
+2012-07-20 * "INVBANKTRAN - Check Paid #0000001001"
+  Assets:Savings:Fidelity  -1500.00 USD
+    check: 1001
+    date: 2012-07-20
+    ofx_fitid: "X0000000000000000000001"
+    ofx_memo: "Check Paid #0000001001"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME            1500.00 USD
+
+;; date: 2012-07-27
+;; info: {"filename": "<testdata>/fidelity-savings.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "115.83 USD",
+;               "date": "2012-07-27",
+;               "key_value_pairs": {
+;                 "desc": "TRANSFERRED FROM VS X10-08144-1",
+;                 "ofx_memo": "TRANSFERRED FROM VS X10-08144-1",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Savings:Fidelity"
+;             }
+;           ]
+2012-07-27 * "INVBANKTRAN - TRANSFERRED FROM VS X10-08144-1"
+  Assets:Savings:Fidelity   115.83 USD
+    date: 2012-07-27
+    ofx_fitid: "X0000000000000000000002"
+    ofx_memo: "TRANSFERRED FROM VS X10-08144-1"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           -115.83 USD
+
+;; date: 2012-07-27
+;; info: {"filename": "<testdata>/fidelity-savings.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-197.11 USD",
+;               "date": "2012-07-27",
+;               "key_value_pairs": {
+;                 "desc": "BILL PAYMENT CITICORP CHOICE /0001/N********",
+;                 "ofx_memo": "BILL PAYMENT CITICORP CHOICE /0001/N********",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Savings:Fidelity"
+;             }
+;           ]
+2012-07-27 * "INVBANKTRAN - BILL PAYMENT CITICORP CHOICE /0001/N********"
+  Assets:Savings:Fidelity  -197.11 USD
+    date: 2012-07-27
+    ofx_fitid: "X0000000000000000000003"
+    ofx_memo: "BILL PAYMENT CITICORP CHOICE /0001/N********"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME            197.11 USD
+
+;; date: 2012-07-27
+;; info: {"filename": "<testdata>/fidelity-savings.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-197.12 USD",
+;               "date": "2012-07-27",
+;               "key_value_pairs": {
+;                 "desc": "DIRECT DEBIT HOMESTREET LS LOAN PMT",
+;                 "ofx_memo": "DIRECT DEBIT HOMESTREET LS LOAN PMT",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Savings:Fidelity"
+;             }
+;           ]
+2012-07-27 * "INVBANKTRAN - DIRECT DEBIT HOMESTREET LS LOAN PMT"
+  Assets:Savings:Fidelity  -197.12 USD
+    date: 2012-07-27
+    ofx_fitid: "X0000000000000000000004"
+    ofx_memo: "DIRECT DEBIT HOMESTREET LS LOAN PMT"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME            197.12 USD

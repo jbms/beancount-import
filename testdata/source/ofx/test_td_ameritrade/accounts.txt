@@ -1,0 +1,3 @@
+Assets:Investment:TD-Ameritrade
+Assets:Investment:TD-Ameritrade:AMERITRADE-912810RW0
+Assets:Investment:TD-Ameritrade:AMZN

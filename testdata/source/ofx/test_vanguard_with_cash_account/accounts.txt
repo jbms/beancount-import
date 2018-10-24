@@ -1,0 +1,4 @@
+Assets:Investment:Vanguard
+Assets:Investment:Vanguard:Cash
+Assets:Investment:Vanguard:VFIAX
+Assets:Investment:Vanguard:VFINX

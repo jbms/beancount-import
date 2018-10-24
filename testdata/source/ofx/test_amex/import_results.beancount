@@ -1,0 +1,76 @@
+;; date: 2013-11-24
+;; info: {"filename": "<testdata>/amex.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-143.94 USD",
+;               "date": "2013-11-24",
+;               "key_value_pairs": {
+;                 "ofx_memo": "7101466 RESTAURANT",
+;                 "ofx_name": "PRUNE NEW YORK",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Liabilities:Credit-Card:Amex"
+;             }
+;           ]
+2013-11-24 * "STMTTRN - PRUNE NEW YORK - 7101466 RESTAURANT"
+  Liabilities:Credit-Card:Amex  -143.94 USD
+    date: 2013-11-24
+    ofx_fitid: "320133280255184014"
+    ofx_memo: "7101466 RESTAURANT"
+    ofx_name: "PRUNE NEW YORK"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME                 143.94 USD
+
+;; date: 2013-11-25
+;; info: {"filename": "<testdata>/amex.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-28.05 USD",
+;               "date": "2013-11-25",
+;               "key_value_pairs": {
+;                 "ofx_memo": "000451990 RESTAURANT",
+;                 "ofx_name": "TAKAHACHI RESTAURANTNEW YORK",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Liabilities:Credit-Card:Amex"
+;             }
+;           ]
+2013-11-25 * "STMTTRN - TAKAHACHI RESTAURANTNEW YORK - 000451990 RESTAURANT"
+  Liabilities:Credit-Card:Amex  -28.05 USD
+    date: 2013-11-25
+    ofx_fitid: "320133290268683266"
+    ofx_memo: "000451990 RESTAURANT"
+    ofx_name: "TAKAHACHI RESTAURANTNEW YORK"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME                 28.05 USD
+
+;; date: 2013-11-26
+;; info: {"filename": "<testdata>/amex.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-18.76 USD",
+;               "date": "2013-11-26",
+;               "key_value_pairs": {
+;                 "ofx_memo": "47155 GROCERY STORE",
+;                 "ofx_name": "UNION MARKET - HOUSNEW YORK",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Liabilities:Credit-Card:Amex"
+;             }
+;           ]
+2013-11-26 * "STMTTRN - UNION MARKET - HOUSNEW YORK - 47155 GROCERY STORE"
+  Liabilities:Credit-Card:Amex  -18.76 USD
+    date: 2013-11-26
+    ofx_fitid: "320133300285014247"
+    ofx_memo: "47155 GROCERY STORE"
+    ofx_name: "UNION MARKET - HOUSNEW YORK"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME                 18.76 USD
+
+;; date: 2014-01-12
+;; info: {"filename": "<testdata>/amex.ofx", "type": "application/x-ofx"}
+
+2014-01-12 balance Liabilities:Credit-Card:Amex                    -2356.38 USD

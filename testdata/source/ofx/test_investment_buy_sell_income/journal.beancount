@@ -1,0 +1,13 @@
+1900-01-01 open Assets:Investment:MyBank
+  ofx_org: "MyBank"
+  ofx_broker_id: "MyBank"
+  ofx_account_type: "securities_and_cash"
+  account_id: "123456789"
+  div_income_account: "Income:MyBank:Dividends"
+  interest_income_account: "Income:MyBank:Interest"
+  capital_gains_account: "Income:MyBank:Capital-Gains"
+  fees_account: "Expenses:Investment:MyBank:Fees"
+  commission_account: "Expenses:Investment:MyBank:Commission"
+
+1900-01-01 commodity QTSAQ
+  equivalent_currency: "USD"

@@ -1,0 +1,5 @@
+1900-01-01 open Assets:Checking
+  ofx_org: ""
+  ofx_broker_id: ""
+  account_id: "12300 000012345678"
+  ofx_account_type: "cash_only"

@@ -1,0 +1,8 @@
+1900-01-01 open Assets:Investment:TD-Ameritrade
+  ofx_org: "ameritrade.com"
+  ofx_broker_id: "ameritrade.com"
+  account_id: "121212121"
+  ofx_account_type: "securities_and_cash"
+
+1900-01-01 commodity AMERITRADE-912810RW0
+  cusip: "912810RW0"

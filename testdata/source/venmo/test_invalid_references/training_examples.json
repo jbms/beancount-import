@@ -1,0 +1,127 @@
+[
+  [
+    {
+      "amount": "220.00 USD",
+      "date": "2017-04-25",
+      "key_value_pairs": {
+        "venmo_account_description": "Visa Debit *1559",
+        "venmo_type": "Payment"
+      },
+      "source_account": "Assets:Venmo"
+    },
+    "Assets:Checking"
+  ],
+  [
+    {
+      "amount": "-220.00 USD",
+      "date": "2017-04-25",
+      "key_value_pairs": {
+        "venmo_description": "Tutoring",
+        "venmo_payee": "Tom Johnson",
+        "venmo_type": "Payment"
+      },
+      "source_account": "Assets:Venmo"
+    },
+    "Expenses:Tutoring"
+  ],
+  [
+    {
+      "amount": "559.00 USD",
+      "date": "2017-09-02",
+      "key_value_pairs": {
+        "venmo_account_description": "Visa Debit *1559",
+        "venmo_type": "Payment"
+      },
+      "source_account": "Assets:Venmo"
+    },
+    "Assets:Checking"
+  ],
+  [
+    {
+      "amount": "-559.00 USD",
+      "date": "2017-09-02",
+      "key_value_pairs": {
+        "venmo_description": "Security deposit",
+        "venmo_payee": "Maria Anderson",
+        "venmo_type": "Payment"
+      },
+      "source_account": "Assets:Venmo"
+    },
+    "Assets:Security-Deposit"
+  ],
+  [
+    {
+      "amount": "1150.00 USD",
+      "date": "2017-09-06",
+      "key_value_pairs": {
+        "venmo_description": "Rent",
+        "venmo_payer": "Sally Smith",
+        "venmo_type": "Payment"
+      },
+      "source_account": "Assets:Venmo"
+    },
+    "Expenses:Rent"
+  ],
+  [
+    {
+      "amount": "-1150.00 USD",
+      "date": "2017-09-06",
+      "key_value_pairs": {
+        "venmo_account_description": "Visa Debit *8967",
+        "venmo_type": "Standard Transfer"
+      },
+      "source_account": "Assets:Venmo"
+    },
+    "Assets:Checking"
+  ],
+  [
+    {
+      "amount": "120.00 USD",
+      "date": "2018-04-05",
+      "key_value_pairs": {
+        "venmo_account_description": "Visa Debit *1559",
+        "venmo_type": "Charge"
+      },
+      "source_account": "Assets:Venmo"
+    },
+    "Assets:Checking"
+  ],
+  [
+    {
+      "amount": "-120.00 USD",
+      "date": "2018-04-05",
+      "key_value_pairs": {
+        "venmo_description": "Utilities",
+        "venmo_payee": "Maria Anderson",
+        "venmo_type": "Charge"
+      },
+      "source_account": "Assets:Venmo"
+    },
+    "Expenses:Utilities"
+  ],
+  [
+    {
+      "amount": "3.00 USD",
+      "date": "2018-04-17",
+      "key_value_pairs": {
+        "venmo_account_description": "Visa Debit *1559",
+        "venmo_type": "Payment"
+      },
+      "source_account": "Assets:Venmo"
+    },
+    "Assets:Checking"
+  ],
+  [
+    {
+      "amount": "-3.00 USD",
+      "date": "2018-04-17",
+      "key_value_pairs": {
+        "venmo_description": "Bagels",
+        "venmo_payee": "Maria Anderson",
+        "venmo_type": "Payment"
+      },
+      "source_account": "Assets:Venmo"
+    },
+    "Expenses:Groceries"
+  ]
+]

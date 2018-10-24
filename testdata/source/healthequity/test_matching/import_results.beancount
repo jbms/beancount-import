@@ -1,0 +1,54 @@
+;; date: 2016-01-16
+;; info: {"filename": "<testdata>/data/1234567/cash-transactions-contribution.csv", "line": 1, "type": "text/csv"}
+
+2016-01-16 balance Assets:HSA:HealthEquity:Cash                    800.00 USD
+
+;; date: 2016-01-17
+;; info: {"filename": "<testdata>/data/1234567/cash-transactions-other.csv", "line": 1, "type": "text/csv"}
+
+2016-01-17 balance Assets:HSA:HealthEquity:Cash                    500.00 USD
+
+;; date: 2016-01-20
+;; info: {"filename": "<testdata>/data/1234567/investment-transactions.csv", "line": 1, "type": "text/csv"}
+
+2016-01-20 balance Assets:HSA:HealthEquity:VIIIX                   1.745 VIIIX
+
+;; date: 2016-02-01
+;; info: {"filename": "<testdata>/data/1234567/cash-transactions-other.csv", "line": 2, "type": "text/csv"}
+
+2016-02-01 balance Assets:HSA:HealthEquity:Cash                    500.01 USD
+
+;; date: 2016-03-01
+;; info: {"filename": "<testdata>/data/1234567/cash-transactions-other.csv", "line": 3, "type": "text/csv"}
+
+2016-03-01 balance Assets:HSA:HealthEquity:Cash                    500.03 USD
+
+;; date: 2016-03-12
+;; info: {"filename": "<testdata>/data/1234567/cash-transactions-other.csv", "line": 4, "type": "text/csv"}
+
+2016-03-12 balance Assets:HSA:HealthEquity:Cash                    500.00 USD
+
+;; date: 2016-03-12
+;; info: {"filename": "<testdata>/data/1234567/investment-transactions.csv", "line": 2, "type": "text/csv"}
+
+2016-03-12 balance Assets:HSA:HealthEquity:VIIIX                   10.367 VIIIX
+
+;; date: 2016-03-17
+;; info: {"filename": "<testdata>/data/1234567/investment-transactions.csv", "line": 3, "type": "text/csv"}
+
+2016-03-17 balance Assets:HSA:HealthEquity:VIIIX                   10.423 VIIIX
+
+;; date: 2016-06-17
+;; info: {"filename": "<testdata>/data/1234567/investment-transactions.csv", "line": 4, "type": "text/csv"}
+
+2016-06-17 balance Assets:HSA:HealthEquity:VIIIX                   10.474 VIIIX
+
+;; date: 2016-08-26
+;; info: {"filename": "<testdata>/data/1234567/2016-08-26T152440-0700.balances.csv", "line": 1, "type": "text/csv"}
+
+2016-08-26 price VIIIX                              199.17 USD
+
+;; date: 2016-08-27
+;; info: {"filename": "<testdata>/data/1234567/2016-08-27T200554-0700.balances.csv", "line": 1, "type": "text/csv"}
+
+2016-08-27 price VIIIX                              198.86 USD

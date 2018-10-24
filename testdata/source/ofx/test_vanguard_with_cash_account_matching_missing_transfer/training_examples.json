@@ -1,0 +1,15 @@
+[
+  [
+    {
+      "amount": "-42.123 VFINX",
+      "date": "2011-07-15",
+      "key_value_pairs": {
+        "desc": "THIS IS A MEMO",
+        "ofx_memo": "THIS IS A MEMO",
+        "ofx_type": "SELLMF"
+      },
+      "source_account": "Assets:Investment:Vanguard:VFINX"
+    },
+    "Assets:Investment:Vanguard:Cash"
+  ]
+]

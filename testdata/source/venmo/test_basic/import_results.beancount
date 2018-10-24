@@ -1,0 +1,347 @@
+;; date: 2017-04-05
+;; info: {"filename": "<testdata>/balances.csv", "line": 2, "type": "text/csv"}
+
+2017-04-05 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2017-04-25
+;; info: {"filename": "<testdata>/transactions.csv", "line": 1, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "220.00 USD",
+;               "date": "2017-04-25",
+;               "key_value_pairs": {
+;                 "venmo_account_description": "Visa Debit *1559",
+;                 "venmo_type": "Payment"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2017-04-25 * "Tom Johnson" "Transfer" ^venmo.2394198259925614643
+  Assets:Venmo     220.00 USD
+    date: 2017-04-25
+    venmo_account_description: "Visa Debit *1559"
+    venmo_description: "Tutoring"
+    venmo_payee: "Tom Johnson"
+    venmo_transfer_id: "2394198259925614643"
+    venmo_type: "Payment"
+  Expenses:FIXME  -220.00 USD
+
+;; date: 2017-04-25
+;; info: {"filename": "<testdata>/transactions.csv", "line": 1, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-220.00 USD",
+;               "date": "2017-04-25",
+;               "key_value_pairs": {
+;                 "venmo_description": "Tutoring",
+;                 "venmo_payee": "Tom Johnson",
+;                 "venmo_type": "Payment"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2017-04-25 * "Tom Johnson" "Tutoring" ^venmo.2394198259925614643
+  Assets:Venmo    -220.00 USD
+    date: 2017-04-25
+    venmo_description: "Tutoring"
+    venmo_payee: "Tom Johnson"
+    venmo_payment_id: "2394198259925614643"
+    venmo_type: "Payment"
+  Expenses:FIXME   220.00 USD
+
+;; date: 2017-07-04
+;; info: {"filename": "<testdata>/balances.csv", "line": 2, "type": "text/csv"}
+
+2017-07-04 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2017-07-04
+;; info: {"filename": "<testdata>/balances.csv", "line": 3, "type": "text/csv"}
+
+2017-07-04 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2017-09-02
+;; info: {"filename": "<testdata>/transactions.csv", "line": 2, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "559.00 USD",
+;               "date": "2017-09-02",
+;               "key_value_pairs": {
+;                 "venmo_account_description": "Visa Debit *1559",
+;                 "venmo_type": "Payment"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2017-09-02 * "Maria Anderson" "Transfer" ^venmo.3483695350643256240
+  Assets:Venmo     559.00 USD
+    date: 2017-09-02
+    venmo_account_description: "Visa Debit *1559"
+    venmo_description: "Security deposit"
+    venmo_payee: "Maria Anderson"
+    venmo_transfer_id: "3483695350643256240"
+    venmo_type: "Payment"
+  Expenses:FIXME  -559.00 USD
+
+;; date: 2017-09-02
+;; info: {"filename": "<testdata>/transactions.csv", "line": 2, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-559.00 USD",
+;               "date": "2017-09-02",
+;               "key_value_pairs": {
+;                 "venmo_description": "Security deposit",
+;                 "venmo_payee": "Maria Anderson",
+;                 "venmo_type": "Payment"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2017-09-02 * "Maria Anderson" "Security deposit" ^venmo.3483695350643256240
+  Assets:Venmo    -559.00 USD
+    date: 2017-09-02
+    venmo_description: "Security deposit"
+    venmo_payee: "Maria Anderson"
+    venmo_payment_id: "3483695350643256240"
+    venmo_type: "Payment"
+  Expenses:FIXME   559.00 USD
+
+;; date: 2017-09-06
+;; info: {"filename": "<testdata>/transactions.csv", "line": 3, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "1150.00 USD",
+;               "date": "2017-09-06",
+;               "key_value_pairs": {
+;                 "venmo_description": "Rent",
+;                 "venmo_payer": "Sally Smith",
+;                 "venmo_type": "Payment"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2017-09-06 * "Sally Smith" "Rent"
+  Assets:Venmo     1150.00 USD
+    date: 2017-09-06
+    venmo_description: "Rent"
+    venmo_payer: "Sally Smith"
+    venmo_payment_id: "0454063333607815882"
+    venmo_type: "Payment"
+  Expenses:FIXME  -1150.00 USD
+
+;; date: 2017-09-06
+;; info: {"filename": "<testdata>/transactions.csv", "line": 4, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-1150.00 USD",
+;               "date": "2017-09-06",
+;               "key_value_pairs": {
+;                 "venmo_account_description": "Visa Debit *8967",
+;                 "venmo_type": "Standard Transfer"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2017-09-06 * "Venmo" "Transfer"
+  Assets:Venmo    -1150.00 USD
+    date: 2017-09-06
+    venmo_account_description: "Visa Debit *8967"
+    venmo_transfer_id: "355418184"
+    venmo_type: "Standard Transfer"
+  Expenses:FIXME   1150.00 USD
+
+;; date: 2017-10-02
+;; info: {"filename": "<testdata>/balances.csv", "line": 3, "type": "text/csv"}
+
+2017-10-02 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2017-10-02
+;; info: {"filename": "<testdata>/balances.csv", "line": 4, "type": "text/csv"}
+
+2017-10-02 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2017-12-31
+;; info: {"filename": "<testdata>/balances.csv", "line": 4, "type": "text/csv"}
+
+2017-12-31 balance Assets:Venmo                                    1528.25 USD
+
+;; date: 2017-12-31
+;; info: {"filename": "<testdata>/balances.csv", "line": 5, "type": "text/csv"}
+
+2017-12-31 balance Assets:Venmo                                    1528.25 USD
+
+;; date: 2018-01-21
+;; info: {"filename": "<testdata>/balances.csv", "line": 5, "type": "text/csv"}
+
+2018-01-21 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2018-04-05
+;; info: {"filename": "<testdata>/transactions.csv", "line": 5, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "120.00 USD",
+;               "date": "2018-04-05",
+;               "key_value_pairs": {
+;                 "venmo_account_description": "Visa Debit *1559",
+;                 "venmo_type": "Charge"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2018-04-05 * "Maria Anderson" "Transfer" ^venmo.3641977597632667950
+  Assets:Venmo     120.00 USD
+    date: 2018-04-05
+    venmo_account_description: "Visa Debit *1559"
+    venmo_description: "Utilities"
+    venmo_payee: "Maria Anderson"
+    venmo_transfer_id: "3641977597632667950"
+    venmo_type: "Charge"
+  Expenses:FIXME  -120.00 USD
+
+;; date: 2018-04-05
+;; info: {"filename": "<testdata>/transactions.csv", "line": 5, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-120.00 USD",
+;               "date": "2018-04-05",
+;               "key_value_pairs": {
+;                 "venmo_description": "Utilities",
+;                 "venmo_payee": "Maria Anderson",
+;                 "venmo_type": "Charge"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2018-04-05 * "Maria Anderson" "Utilities" ^venmo.3641977597632667950
+  Assets:Venmo    -120.00 USD
+    date: 2018-04-05
+    venmo_description: "Utilities"
+    venmo_payee: "Maria Anderson"
+    venmo_payment_id: "3641977597632667950"
+    venmo_type: "Charge"
+  Expenses:FIXME   120.00 USD
+
+;; date: 2018-04-17
+;; info: {"filename": "<testdata>/transactions.csv", "line": 6, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "3.00 USD",
+;               "date": "2018-04-17",
+;               "key_value_pairs": {
+;                 "venmo_account_description": "Visa Debit *1559",
+;                 "venmo_type": "Payment"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2018-04-17 * "Maria Anderson" "Transfer" ^venmo.4354205292885612406
+  Assets:Venmo     3.00 USD
+    date: 2018-04-17
+    venmo_account_description: "Visa Debit *1559"
+    venmo_description: "Bagels"
+    venmo_payee: "Maria Anderson"
+    venmo_transfer_id: "4354205292885612406"
+    venmo_type: "Payment"
+  Expenses:FIXME  -3.00 USD
+
+;; date: 2018-04-17
+;; info: {"filename": "<testdata>/transactions.csv", "line": 6, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-3.00 USD",
+;               "date": "2018-04-17",
+;               "key_value_pairs": {
+;                 "venmo_description": "Bagels",
+;                 "venmo_payee": "Maria Anderson",
+;                 "venmo_type": "Payment"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2018-04-17 * "Maria Anderson" "Bagels" ^venmo.4354205292885612406
+  Assets:Venmo    -3.00 USD
+    date: 2018-04-17
+    venmo_description: "Bagels"
+    venmo_payee: "Maria Anderson"
+    venmo_payment_id: "4354205292885612406"
+    venmo_type: "Payment"
+  Expenses:FIXME   3.00 USD
+
+;; date: 2018-05-01
+;; info: {"filename": "<testdata>/transactions.csv", "line": 7, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "1423.73 USD",
+;               "date": "2018-05-01",
+;               "key_value_pairs": {
+;                 "venmo_description": "Rent",
+;                 "venmo_payer": "Sally Smith",
+;                 "venmo_type": "Payment"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2018-05-01 * "Sally Smith" "Rent"
+  Assets:Venmo     1423.73 USD
+    date: 2018-05-01
+    venmo_description: "Rent"
+    venmo_payer: "Sally Smith"
+    venmo_payment_id: "3083645406127028805"
+    venmo_type: "Payment"
+  Expenses:FIXME  -1423.73 USD
+
+;; date: 2018-05-19
+;; info: {"filename": "<testdata>/transactions.csv", "line": 8, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-82.50 USD",
+;               "date": "2018-05-19",
+;               "key_value_pairs": {
+;                 "venmo_description": "Utilities",
+;                 "venmo_payee": "Maria Anderson",
+;                 "venmo_type": "Charge"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2018-05-19 * "Maria Anderson" "Utilities"
+  Assets:Venmo    -82.50 USD
+    date: 2018-05-19
+    venmo_description: "Utilities"
+    venmo_payee: "Maria Anderson"
+    venmo_payment_id: "1326234690911981511"
+    venmo_type: "Charge"
+  Expenses:FIXME   82.50 USD
+
+;; date: 2018-05-19
+;; info: {"filename": "<testdata>/transactions.csv", "line": 9, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-1341.23 USD",
+;               "date": "2018-05-19",
+;               "key_value_pairs": {
+;                 "venmo_account_description": "Visa Debit *8967",
+;                 "venmo_type": "Standard Transfer"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2018-05-19 * "Venmo" "Transfer"
+  Assets:Venmo    -1341.23 USD
+    date: 2018-05-19
+    venmo_account_description: "Visa Debit *8967"
+    venmo_transfer_id: "7315187729"
+    venmo_type: "Standard Transfer"
+  Expenses:FIXME   1341.23 USD

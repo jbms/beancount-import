@@ -1,0 +1,80 @@
+;; date: 2014-06-17
+;; info: {"filename": "<testdata>/investment_401k.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "8.846699 FOO",
+;               "date": "2014-06-17",
+;               "key_value_pairs": {
+;                 "ofx_type": "BUYMF"
+;               },
+;               "source_account": "Assets:Retirement:ExampleOrg:Company401k:FOO"
+;             }
+;           ]
+2014-06-17 * "BUYMF"
+  Assets:Retirement:ExampleOrg:Company401k:FOO  8.846699 FOO {22.2908 USD}
+    date: 2014-06-17
+    ofx_fitid: "1"
+    ofx_type: "BUYMF"
+  Expenses:FIXME                                 -197.20 USD
+
+;; date: 2014-06-30
+;; info: {"filename": "<testdata>/investment_401k.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "6.800992 BAR",
+;               "date": "2014-06-30",
+;               "key_value_pairs": {
+;                 "ofx_type": "TRANSFER"
+;               },
+;               "source_account": "Assets:Retirement:ExampleOrg:Company401k:BAR"
+;             }
+;           ]
+2014-06-30 * "TRANSFER"
+  Assets:Retirement:ExampleOrg:Company401k:BAR  6.800992 BAR {1 USD, "FIXME"}
+    date: 2014-06-30
+    ofx_fitid: "2"
+    ofx_type: "TRANSFER"
+  Expenses:FIXME                                 -198.69 USD
+
+;; date: 2014-06-30
+;; info: {"filename": "<testdata>/investment_401k.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-9.060702 BAZ",
+;               "date": "2014-06-30",
+;               "key_value_pairs": {
+;                 "ofx_type": "TRANSFER"
+;               },
+;               "source_account": "Assets:Retirement:ExampleOrg:Company401k:BAZ"
+;             }
+;           ]
+2014-06-30 * "TRANSFER"
+  Assets:Retirement:ExampleOrg:Company401k:BAZ  -9.060702 BAZ {} @ 21.928764 USD
+    date: 2014-06-30
+    ofx_fitid: "3"
+    ofx_type: "TRANSFER"
+  Income:ExampleOrg:Capital-Gains:BAZ
+  Expenses:FIXME                                   198.69 USD
+
+;; date: 2014-06-30
+;; info: {"filename": "<testdata>/investment_401k.ofx", "type": "application/x-ofx"}
+
+2014-06-30 balance Assets:Retirement:ExampleOrg:Company401k:FOO    17.604312 FOO
+
+;; date: 2014-06-30
+;; info: {"filename": "<testdata>/investment_401k.ofx", "type": "application/x-ofx"}
+
+2014-06-30 price FOO                             22.517211 USD
+
+;; date: 2014-06-30
+;; info: {"filename": "<testdata>/investment_401k.ofx", "type": "application/x-ofx"}
+
+2014-06-30 price BAR                             29.214855 USD
+
+;; date: 2014-06-30
+;; info: {"filename": "<testdata>/investment_401k.ofx", "type": "application/x-ofx"}
+
+2014-06-30 price BAZ                                   0.0 USD

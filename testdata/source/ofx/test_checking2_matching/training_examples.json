@@ -1,0 +1,15 @@
+[
+  [
+    {
+      "amount": "-33.72 USD",
+      "date": "2018-06-08",
+      "key_value_pairs": {
+        "desc": "DIRECT DEBIT WELLSFARGO CRCARDPMT",
+        "ofx_memo": "DIRECT DEBIT WELLSFARGO CRCARDPMT",
+        "ofx_type": "INVBANKTRAN"
+      },
+      "source_account": "Assets:Checking:MyBank"
+    },
+    "Liabilities:Credit-Card"
+  ]
+]

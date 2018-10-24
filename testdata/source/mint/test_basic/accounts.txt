@@ -1,0 +1,2 @@
+Assets:Checking
+Liabilities:Credit-Card

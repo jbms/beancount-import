@@ -1,0 +1,50 @@
+plugin "beancount.plugins.auto_accounts"
+
+1900-01-01 open Liabilities:Credit-Card  USD
+  mint_id: "My Credit Card"
+
+1900-01-01 open Assets:Checking  USD
+  mint_id: "My Checking"
+
+2013-11-27 * "CR CARD PAYMENT ALEXANDRIA VA"
+  Liabilities:Credit-Card   66.88 USD
+    invalid0: "1 extra"
+    date: 2013-11-27
+    source_desc: "CR CARD PAYMENT ALEXANDRIA VA"
+    cleared: TRUE
+  Assets:Checking  -66.88 USD
+    date: 2013-12-02
+    source_desc: "NATIONAL FEDERAL DES:TRNSFR"
+    cleared: TRUE
+
+2013-11-27 * "CR CARD PAYMENT ALEXANDRIA VA"
+  Liabilities:Credit-Card   66.88 USD
+    invalid0: "1 extra"
+    date: 2013-11-27
+    source_desc: "CR CARD PAYMENT ALEXANDRIA VA"
+    cleared: TRUE
+  Expenses:FIXME  -66.88 USD
+
+2016-08-10 * "STARBUCKS STORE 12345"
+  Liabilities:Credit-Card  -2.45 USD
+    invalid1: "2 extra"
+    date: 2016-08-10
+    source_desc: "STARBUCKS STORE 12345"
+    cleared: TRUE
+  Expenses:Coffee            2.45 USD
+
+2016-08-10 * "STARBUCKS STORE 12345"
+  Liabilities:Credit-Card  -2.45 USD
+    invalid1: "2 extra"
+    date: 2016-08-10
+    source_desc: "STARBUCKS STORE 12345"
+    cleared: TRUE
+  Expenses:Coffee            2.45 USD
+
+2016-08-10 * "STARBUCKS STORE 12345"
+  Liabilities:Credit-Card  -2.45 USD
+    invalid1: "2 extra"
+    date: 2016-08-10
+    source_desc: "STARBUCKS STORE 12345"
+    cleared: TRUE
+  Expenses:Coffee            2.45 USD

@@ -1,0 +1,13 @@
+[
+  [
+    {
+      "amount": "31.704 TYCDT",
+      "date": "2018-06-21",
+      "key_value_pairs": {
+        "ofx_type": "REINVEST"
+      },
+      "source_account": "Assets:Retirement:Vanguard:Roth-IRA:TYCDT"
+    },
+    "Income:Vanguard:Dividends:TYCDT"
+  ]
+]

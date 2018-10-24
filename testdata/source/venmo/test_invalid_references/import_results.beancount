@@ -1,0 +1,39 @@
+;; date: 2017-04-05
+;; info: {"filename": "<testdata>/balances.csv", "line": 2, "type": "text/csv"}
+
+2017-04-05 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2017-07-04
+;; info: {"filename": "<testdata>/balances.csv", "line": 2, "type": "text/csv"}
+
+2017-07-04 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2017-07-04
+;; info: {"filename": "<testdata>/balances.csv", "line": 3, "type": "text/csv"}
+
+2017-07-04 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2017-10-02
+;; info: {"filename": "<testdata>/balances.csv", "line": 3, "type": "text/csv"}
+
+2017-10-02 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2017-10-02
+;; info: {"filename": "<testdata>/balances.csv", "line": 4, "type": "text/csv"}
+
+2017-10-02 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2017-12-31
+;; info: {"filename": "<testdata>/balances.csv", "line": 4, "type": "text/csv"}
+
+2017-12-31 balance Assets:Venmo                                    1528.25 USD
+
+;; date: 2017-12-31
+;; info: {"filename": "<testdata>/balances.csv", "line": 5, "type": "text/csv"}
+
+2017-12-31 balance Assets:Venmo                                    1528.25 USD
+
+;; date: 2018-01-21
+;; info: {"filename": "<testdata>/balances.csv", "line": 5, "type": "text/csv"}
+
+2018-01-21 balance Assets:Venmo                                    0.00 USD

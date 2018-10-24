@@ -1,0 +1,10 @@
+1900-01-01 commodity VANGUARD-92202V351
+  cusip: "92202V351"
+
+1900-01-01 open Assets:Retirement:Vanguard:Company401k
+  ofx_org: "Vanguard"
+  ofx_broker_id: "vanguard.com"
+  ofx_account_type: "securities_only"
+  account_id: "0123456"
+  capital_gains_account: "Income:Vanguard:Capital-Gains"
+  match_contribution_account: "Income:Company:Match"

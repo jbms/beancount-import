@@ -1,0 +1,13 @@
+plugin "beancount.plugins.auto_accounts"
+1900-01-01 open Assets:Investment:Vanguard
+  ofx_org: "The Vanguard Group"
+  ofx_broker_id: "vanguard.com"
+  ofx_account_type: "securities_and_pending_cash"
+  account_id: "01234567890"
+  capital_gains_account: "Income:Vanguard:Capital-Gains"
+
+2011-07-15 * "Transfer due to: SELLMF - THIS IS A MEMO"
+  Assets:Investment:Vanguard:Cash  -4212.30 USD
+    ofx_fitid: ">01234567890.0123.07152011.0"
+    cleared: TRUE
+  Expenses:FIXME                    4212.30 USD

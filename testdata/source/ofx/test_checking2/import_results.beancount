@@ -1,0 +1,298 @@
+;; date: 2018-06-08
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-33.72 USD",
+;               "date": "2018-06-08",
+;               "key_value_pairs": {
+;                 "desc": "DIRECT DEBIT WELLSFARGO CRCARDPMT",
+;                 "ofx_memo": "DIRECT DEBIT WELLSFARGO CRCARDPMT",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-08 * "INVBANKTRAN - DIRECT DEBIT WELLSFARGO CRCARDPMT"
+  Assets:Checking:MyBank  -33.72 USD
+    date: 2018-06-08
+    ofx_fitid: "46f2144d0ce515a855234ec"
+    ofx_memo: "DIRECT DEBIT WELLSFARGO CRCARDPMT"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           33.72 USD
+
+;; date: 2018-06-11
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-27.68 USD",
+;               "date": "2018-06-11",
+;               "key_value_pairs": {
+;                 "desc": "DEBIT CARD PURCHASE AMAZON MKTPLACE PMTS AMZN.COM/BILL WA",
+;                 "ofx_memo": "DEBIT CARD PURCHASE AMAZON MKTPLACE PMTS AMZN.COM/BILL WA",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-11 * "INVBANKTRAN - DEBIT CARD PURCHASE AMAZON MKTPLACE PMTS AMZN.COM/BILL WA"
+  Assets:Checking:MyBank  -27.68 USD
+    date: 2018-06-11
+    ofx_fitid: "c91d80d9358f433cd9ab34f"
+    ofx_memo: "DEBIT CARD PURCHASE AMAZON MKTPLACE PMTS AMZN.COM/BILL WA"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           27.68 USD
+
+;; date: 2018-06-11
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "75.60 USD",
+;               "date": "2018-06-11",
+;               "key_value_pairs": {
+;                 "desc": "CHECK RECEIVED",
+;                 "ofx_memo": "CHECK RECEIVED",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-11 * "INVBANKTRAN - CHECK RECEIVED"
+  Assets:Checking:MyBank   75.60 USD
+    date: 2018-06-11
+    ofx_fitid: "9a69c0efa290c0aa6cd2e96"
+    ofx_memo: "CHECK RECEIVED"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME          -75.60 USD
+
+;; date: 2018-06-11
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-20.28 USD",
+;               "date": "2018-06-11",
+;               "key_value_pairs": {
+;                 "desc": "DIRECT DEBIT CHASE TRNSFR DR",
+;                 "ofx_memo": "DIRECT DEBIT CHASE TRNSFR DR",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-11 * "INVBANKTRAN - DIRECT DEBIT CHASE TRNSFR DR"
+  Assets:Checking:MyBank  -20.28 USD
+    date: 2018-06-11
+    ofx_fitid: "7565f8c69ff4148710c25d7"
+    ofx_memo: "DIRECT DEBIT CHASE TRNSFR DR"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           20.28 USD
+
+;; date: 2018-06-11
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-36.07 USD",
+;               "date": "2018-06-11",
+;               "key_value_pairs": {
+;                 "desc": "DEBIT CARD PURCHASE POS1234 7-ELEVEN SACRAMENTO CA",
+;                 "ofx_memo": "DEBIT CARD PURCHASE POS1234 7-ELEVEN SACRAMENTO CA",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-11 * "INVBANKTRAN - DEBIT CARD PURCHASE POS1234 7-ELEVEN SACRAMENTO CA"
+  Assets:Checking:MyBank  -36.07 USD
+    date: 2018-06-11
+    ofx_fitid: "bfea1b3fc6b9cd383d62383"
+    ofx_memo: "DEBIT CARD PURCHASE POS1234 7-ELEVEN SACRAMENTO CA"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           36.07 USD
+
+;; date: 2018-06-11
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-79.70 USD",
+;               "date": "2018-06-11",
+;               "key_value_pairs": {
+;                 "desc": "DEBIT CARD PURCHASE STARBUCKS STORE 12345",
+;                 "ofx_memo": "DEBIT CARD PURCHASE STARBUCKS STORE 12345",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-11 * "INVBANKTRAN - DEBIT CARD PURCHASE STARBUCKS STORE 12345"
+  Assets:Checking:MyBank  -79.70 USD
+    date: 2018-06-11
+    ofx_fitid: "13517076f2512f0830a4380"
+    ofx_memo: "DEBIT CARD PURCHASE STARBUCKS STORE 12345"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           79.70 USD
+
+;; date: 2018-06-12
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-94.49 USD",
+;               "date": "2018-06-12",
+;               "key_value_pairs": {
+;                 "desc": "DEBIT CARD PURCHASE POS1234 WAL-MART #1234 SACRAMENTO CA",
+;                 "ofx_memo": "DEBIT CARD PURCHASE POS1234 WAL-MART #1234 SACRAMENTO CA",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-12 * "INVBANKTRAN - DEBIT CARD PURCHASE POS1234 WAL-MART #1234 SACRAMENTO CA"
+  Assets:Checking:MyBank  -94.49 USD
+    date: 2018-06-12
+    ofx_fitid: "d1f6c4345793074d46e3502"
+    ofx_memo: "DEBIT CARD PURCHASE POS1234 WAL-MART #1234 SACRAMENTO CA"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           94.49 USD
+
+;; date: 2018-06-12
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-46.80 USD",
+;               "date": "2018-06-12",
+;               "key_value_pairs": {
+;                 "desc": "DEBIT CARD PURCHASE POS1234 TARGET T-1234",
+;                 "ofx_memo": "DEBIT CARD PURCHASE POS1234 TARGET T-1234",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-12 * "INVBANKTRAN - DEBIT CARD PURCHASE POS1234 TARGET T-1234"
+  Assets:Checking:MyBank  -46.80 USD
+    date: 2018-06-12
+    ofx_fitid: "c994842e8c0170e8262860d"
+    ofx_memo: "DEBIT CARD PURCHASE POS1234 TARGET T-1234"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           46.80 USD
+
+;; date: 2018-06-12
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-46.00 USD",
+;               "date": "2018-06-12",
+;               "key_value_pairs": {
+;                 "desc": "DEBIT CARD PURCHASE POS9999 TARGET T-1234",
+;                 "ofx_memo": "DEBIT CARD PURCHASE POS9999 TARGET T-1234",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-12 * "INVBANKTRAN - DEBIT CARD PURCHASE POS9999 TARGET T-1234"
+  Assets:Checking:MyBank  -46.00 USD
+    date: 2018-06-12
+    ofx_fitid: "3bebaf840f4451980de527a"
+    ofx_memo: "DEBIT CARD PURCHASE POS9999 TARGET T-1234"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           46.00 USD
+
+;; date: 2018-06-13
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-9.90 USD",
+;               "date": "2018-06-13",
+;               "key_value_pairs": {
+;                 "desc": "DEBIT CARD PURCHASE AMAZON MKTPLACE PMTS W WWW.AMAZON.CO WA",
+;                 "ofx_memo": "DEBIT CARD PURCHASE AMAZON MKTPLACE PMTS W WWW.AMAZON.CO WA",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-13 * "INVBANKTRAN - DEBIT CARD PURCHASE AMAZON MKTPLACE PMTS W WWW.AMAZON.CO WA"
+  Assets:Checking:MyBank  -9.90 USD
+    date: 2018-06-13
+    ofx_fitid: "87ddbe56b49fdfad11c9a5b"
+    ofx_memo: "DEBIT CARD PURCHASE AMAZON MKTPLACE PMTS W WWW.AMAZON.CO WA"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           9.90 USD
+
+;; date: 2018-06-14
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "98.16 USD",
+;               "date": "2018-06-14",
+;               "key_value_pairs": {
+;                 "desc": "DIRECT DEPOSIT MYCOMPANY PAYROLL",
+;                 "ofx_memo": "DIRECT DEPOSIT MYCOMPANY PAYROLL",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-14 * "INVBANKTRAN - DIRECT DEPOSIT MYCOMPANY PAYROLL"
+  Assets:Checking:MyBank   98.16 USD
+    date: 2018-06-14
+    ofx_fitid: "e92c27aa0ce372e7842bb27"
+    ofx_memo: "DIRECT DEPOSIT MYCOMPANY PAYROLL"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME          -98.16 USD
+
+;; date: 2018-06-14
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-97.05 USD",
+;               "date": "2018-06-14",
+;               "key_value_pairs": {
+;                 "desc": "DEBIT CARD PURCHASE POS1234 SHELL Service",
+;                 "ofx_memo": "DEBIT CARD PURCHASE POS1234 SHELL Service",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-14 * "INVBANKTRAN - DEBIT CARD PURCHASE POS1234 SHELL Service"
+  Assets:Checking:MyBank  -97.05 USD
+    date: 2018-06-14
+    ofx_fitid: "d3c478700a7412ddea3bc74"
+    ofx_memo: "DEBIT CARD PURCHASE POS1234 SHELL Service"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           97.05 USD
+
+;; date: 2018-06-15
+;; info: {"filename": "<testdata>/checking2.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-70.71 USD",
+;               "date": "2018-06-15",
+;               "key_value_pairs": {
+;                 "desc": "DEBIT CARD PURCHASE COFFEE HOUSE NEW YORK NY",
+;                 "ofx_memo": "DEBIT CARD PURCHASE COFFEE HOUSE NEW YORK NY",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Checking:MyBank"
+;             }
+;           ]
+2018-06-15 * "INVBANKTRAN - DEBIT CARD PURCHASE COFFEE HOUSE NEW YORK NY"
+  Assets:Checking:MyBank  -70.71 USD
+    date: 2018-06-15
+    ofx_fitid: "41fc88f8bb518e9b5c000c7"
+    ofx_memo: "DEBIT CARD PURCHASE COFFEE HOUSE NEW YORK NY"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME           70.71 USD

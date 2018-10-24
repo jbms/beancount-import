@@ -1,0 +1,306 @@
+;; date: 2018-07-02
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-07-02 * "INCOME - DIV"
+  Assets:Investment:MyBank:Cash   62.65 USD
+    date: 2018-07-02
+    ofx_fitid: "fd2561ce31fca077e.87f.0"
+    ofx_type: "INCOME"
+  Income:MyBank:Dividends:URMFO  -62.65 USD
+
+;; date: 2018-07-09
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-07-09 * "INCOME - DIV"
+  Assets:Investment:MyBank:Cash   79.36 USD
+    date: 2018-07-09
+    ofx_fitid: "b7b7c2d1ed2107a05.91c.e"
+    ofx_type: "INCOME"
+  Income:MyBank:Dividends:WDUZQ  -79.36 USD
+
+;; date: 2018-07-09
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-07-09 * "INCOME - DIV"
+  Assets:Investment:MyBank:Cash   84.97 USD
+    date: 2018-07-09
+    ofx_fitid: "86dc8b0770f1583be.6b2.8"
+    ofx_type: "INCOME"
+  Income:MyBank:Dividends:WKPSD  -84.97 USD
+
+;; date: 2018-07-10
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-07-10 * "INCOME - DIV"
+  Assets:Investment:MyBank:Cash   98.24 USD
+    date: 2018-07-10
+    ofx_fitid: "b9ffa5afd2b02b418b.4ed.6"
+    ofx_type: "INCOME"
+  Income:MyBank:Dividends:DGTGU  -98.24 USD
+
+;; date: 2018-07-10
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-07-10 * "INCOME - DIV"
+  Assets:Investment:MyBank:Cash   90.20 USD
+    date: 2018-07-10
+    ofx_fitid: "0dc909094220704bf.c5.6"
+    ofx_type: "INCOME"
+  Income:MyBank:Dividends:MXMUK  -90.20 USD
+
+;; date: 2018-07-10
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-07-10 * "INCOME - DIV"
+  Assets:Investment:MyBank:Cash   86.76 USD
+    date: 2018-07-10
+    ofx_fitid: "ccdb6a24f107053d47.ab3.8"
+    ofx_type: "INCOME"
+  Income:MyBank:Dividends:XBFMS  -86.76 USD
+
+;; date: 2018-07-10
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-07-10 * "INCOME - DIV"
+  Assets:Investment:MyBank:Cash   73.47 USD
+    date: 2018-07-10
+    ofx_fitid: "7c6779dc3ceb37328d.5e0.e"
+    ofx_type: "INCOME"
+  Income:MyBank:Dividends:OMCNS  -73.47 USD
+
+;; date: 2018-07-10
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-07-10 * "INCOME - DIV"
+  Assets:Investment:MyBank:Cash   75.57 USD
+    date: 2018-07-10
+    ofx_fitid: "5edc79aaa46e67da46.cff.7"
+    ofx_type: "INCOME"
+  Income:MyBank:Dividends:RDTAF  -75.57 USD
+
+;; date: 2018-07-24
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-8.48 USD",
+;               "date": "2018-07-24",
+;               "key_value_pairs": {
+;                 "desc": "PORTFOLIO SRVCS. FEE PORTFOLIO S",
+;                 "ofx_name": "PORTFOLIO SRVCS. FEE PORTFOLIO S",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Investment:MyBank:Cash"
+;             }
+;           ]
+2018-07-24 * "INVBANKTRAN - PORTFOLIO SRVCS. FEE PORTFOLIO S"
+  Assets:Investment:MyBank:Cash  -8.48 USD
+    date: 2018-07-24
+    ofx_fitid: "4b50d5-548.13"
+    ofx_name: "PORTFOLIO SRVCS. FEE PORTFOLIO S"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME                  8.48 USD
+
+;; date: 2018-07-31
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-07-31 * "INCOME - INTEREST"
+  Assets:Investment:MyBank:Cash   57.91 USD
+    date: 2018-07-31
+    ofx_fitid: "ea13308d69059413.f73.9"
+    ofx_type: "INCOME"
+  Income:MyBank:Interest:QTSAQ   -57.91 USD
+
+;; date: 2018-08-01
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-08-01 * "BUYSTOCK"
+  Assets:Investment:MyBank:SDVMV         60.01318 SDVMV {67.141053527 USD}
+    date: 2018-08-01
+    ofx_fitid: "aedf1852aa39a54-623ee.4d104.5"
+    ofx_type: "BUYSTOCK"
+  Assets:Investment:MyBank:Cash          -4115.86 USD
+    ofx_fitid: "aedf1852aa39a54-623ee.4d104.5"
+  Expenses:Investment:MyBank:Fees         63.4869 USD
+  Expenses:Investment:MyBank:Commission   23.0233 USD
+
+;; date: 2018-08-01
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-08-01 * "INCOME - DIV"
+  Assets:Investment:MyBank:Cash   42.30 USD
+    date: 2018-08-01
+    ofx_fitid: "ba3db75b5ed7f44e2.f10.0"
+    ofx_type: "INCOME"
+  Income:MyBank:Dividends:URMFO  -42.30 USD
+
+;; date: 2018-08-01
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+; features: []
+2018-08-01 * "SELLSTOCK"
+  Assets:Investment:MyBank:EEBHF         -41.50416 EEBHF {} @ 83.661853593 USD
+    date: 2018-08-01
+    ofx_fitid: "4a5141ead2c672e8a559.65-80e.b"
+    ofx_type: "SELLSTOCK"
+  Income:MyBank:Capital-Gains:EEBHF
+  Assets:Investment:MyBank:Cash            3382.60 USD
+    ofx_fitid: "4a5141ead2c672e8a559.65-80e.b"
+  Expenses:Investment:MyBank:Fees          31.9944 USD
+  Expenses:Investment:MyBank:Commission    57.7239 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:Cash                   7.36 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:FCSNO                  99.80986 FCSNO
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price FCSNO                          47.5020085 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:DSNTH                  97.46709 DSNTH
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price DSNTH                          45.6437641 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:MCYFM                  18.61553 MCYFM
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price MCYFM                          43.6188596 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:URMFO                  44.71348 URMFO
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price URMFO                          19.9728700 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:DGTGU                  99.97586 DGTGU
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price DGTGU                          25.3577699 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:MXMUK                  82.54558 MXMUK
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price MXMUK                          81.7052756 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:XBFMS                  72.07965 XBFMS
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price XBFMS                          97.2183155 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:OMCNS                  85.74475 OMCNS
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price OMCNS                          93.7687778 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:RDTAF                  15.30638 RDTAF
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price RDTAF                          80.9348507 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:IQVJK                  51.68027 IQVJK
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price IQVJK                          27.7635148 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:SDVMV                  13.02776 SDVMV
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price SDVMV                          62.3900924 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:SVDIE                  96.94912 SVDIE
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price SVDIE                          85.7179472 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:WDUZQ                  44.21114 WDUZQ
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price WDUZQ                          52.1515218 USD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 balance Assets:Investment:MyBank:WKPSD                  48.99957 WKPSD
+
+;; date: 2018-08-04
+;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
+
+2018-08-04 price WKPSD                          24.7722967 USD

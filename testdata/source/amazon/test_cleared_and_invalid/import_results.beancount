@@ -1,0 +1,60 @@
+;; date: 2016-02-07
+;; info: {"filename": "<testdata>/166-7926740-5141621.html", "type": "text/html"}
+
+; features: [
+;             {
+;               "amount": "1.13 USD",
+;               "date": "2016-02-07",
+;               "key_value_pairs": {
+;                 "amazon_item_description": [
+;                   "Casio Men's W916-8AV Alarm Chronograph Watch, classic"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2016-02-07 * "Amazon.com" "Order"
+  amazon_account: "name@domain.com"
+  amazon_order_id: "166-7926740-5141621"
+  associated_data0: "{\"description\": \"Amazon order invoice\", \"meta\": [\"amazon_order_id\", \"166-7926740-5141621\"], \"path\": \"<testdata>/166-7926740-5141621.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A          11.87 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Casio Men's W916-8AV Alarm Chronograph Watch, classic"
+    amazon_item_quantity: 1
+    amazon_seller: "Amazon.com LLC"
+    shipped_date: 2016-02-08
+  Expenses:FIXME:A           1.13 USD
+    amazon_invoice_description: "Sales Tax"
+  Income:Amazon:Cashback    -1.06 USD
+    amazon_posttax_adjustment: "Rewards Points"
+  Liabilities:Credit-Card  -11.94 USD
+    amazon_credit_card_description: "Amazon.com Visa Signature ending in 1234"
+    transaction_date: 2016-02-08
+
+;; date: 2016-06-30
+;; info: {"filename": "<testdata>/D56-5204779-4181560.html", "type": "text/html"}
+
+; features: [
+;             {
+;               "amount": "14.99 USD",
+;               "date": "2016-06-30",
+;               "key_value_pairs": {
+;                 "amazon_item_description": [
+;                   "Case for Mars"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2016-06-30 * "Amazon.com" "Order"
+  amazon_account: "name@domain.com"
+  amazon_order_id: "D56-5204779-4181560"
+  associated_data0: "{\"description\": \"Amazon order invoice\", \"meta\": [\"amazon_order_id\", \"D56-5204779-4181560\"], \"path\": \"<testdata>/D56-5204779-4181560.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A          14.99 USD
+    amazon_item_by: "Robert Zubrin, Arthur C. Clarke, Richard Wagner"
+    amazon_item_description: "Case for Mars"
+    amazon_item_url: "https://www.amazon.com/dp/B004G8QU6U/ref=docs-os-doi_0"
+    amazon_seller: "Simon and Schuster Digital Sales Inc"
+  Liabilities:Credit-Card  -14.99 USD
+    amazon_credit_card_description: "VISA ending in 1234"
+    transaction_date: 2016-06-30

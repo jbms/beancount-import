@@ -1,0 +1,130 @@
+[
+  [
+    {
+      "amount": "-22.97 USD",
+      "date": "2016-08-30",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Visa Signature ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-22.97 USD",
+      "date": "2016-08-30",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Visa Signature ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-71.06 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-16.21 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-12.60 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-34.33 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-12.00 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-7.99 USD",
+      "date": "2017-03-23",
+      "key_value_pairs": {
+        "amazon_account": [
+          "name@domain.com"
+        ],
+        "amazon_credit_card_description": [
+          "Amazon.com Store Card ending in 1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ]
+]

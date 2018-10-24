@@ -1,0 +1,81 @@
+[
+  [
+    {
+      "amount": "-300.00 USD",
+      "date": "2016-01-16",
+      "key_value_pairs": {
+        "desc": "Investment: VIIIX",
+        "healthequity_transaction_type": "Other"
+      },
+      "source_account": "Assets:HSA:HealthEquity:Cash"
+    },
+    "Assets:HSA:HealthEquity:VIIIX"
+  ],
+  [
+    {
+      "amount": "1.745 VIIIX",
+      "date": "2016-01-19",
+      "key_value_pairs": {
+        "desc": "Buy"
+      },
+      "source_account": "Assets:HSA:HealthEquity:VIIIX"
+    },
+    "Assets:HSA:HealthEquity:Cash"
+  ],
+  [
+    {
+      "amount": "-1600.03 USD",
+      "date": "2016-03-11",
+      "key_value_pairs": {
+        "desc": "Investment: VIIIX",
+        "healthequity_transaction_type": "Other"
+      },
+      "source_account": "Assets:HSA:HealthEquity:Cash"
+    },
+    "Assets:HSA:HealthEquity:VIIIX"
+  ],
+  [
+    {
+      "amount": "8.622 VIIIX",
+      "date": "2016-03-11",
+      "key_value_pairs": {
+        "desc": "Buy"
+      },
+      "source_account": "Assets:HSA:HealthEquity:VIIIX"
+    },
+    "Assets:HSA:HealthEquity:Cash"
+  ],
+  [
+    {
+      "amount": "0.056 VIIIX",
+      "date": "2016-03-16",
+      "key_value_pairs": {
+        "desc": "Dividend"
+      },
+      "source_account": "Assets:HSA:HealthEquity:VIIIX"
+    },
+    "Income:HealthEquity:Dividends:VIIIX"
+  ],
+  [
+    {
+      "amount": "0.051 VIIIX",
+      "date": "2016-06-16",
+      "key_value_pairs": {
+        "desc": "Dividend"
+      },
+      "source_account": "Assets:HSA:HealthEquity:VIIIX"
+    },
+    "Income:HealthEquity:Dividends:VIIIX"
+  ],
+  [
+    {
+      "amount": "0.051 VIIIX",
+      "date": "2016-06-16",
+      "key_value_pairs": {
+        "desc": "Dividend"
+      },
+      "source_account": "Assets:HSA:HealthEquity:VIIIX"
+    },
+    "Income:HealthEquity:Dividends:VIIIX"
+  ]
+]

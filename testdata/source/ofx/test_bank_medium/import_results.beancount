@@ -1,0 +1,73 @@
+;; date: 2009-04-01
+;; info: {"filename": "<testdata>/bank_medium.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-6.60 CAD",
+;               "date": "2009-04-01",
+;               "key_value_pairs": {
+;                 "desc": "POS MERCHANDISE;MCDONALD'S #112",
+;                 "ofx_memo": "POS MERCHANDISE;MCDONALD'S #112",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Assets:Checking"
+;             }
+;           ]
+2009-04-01 * "STMTTRN - POS MERCHANDISE;MCDONALD'S #112"
+  Assets:Checking  -6.60 CAD
+    date: 2009-04-01
+    ofx_fitid: "0000123456782009040100001"
+    ofx_memo: "POS MERCHANDISE;MCDONALD'S #112"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME    6.60 CAD
+
+;; date: 2009-04-02
+;; info: {"filename": "<testdata>/bank_medium.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-316.67 CAD",
+;               "date": "2009-04-02",
+;               "key_value_pairs": {
+;                 "desc": "MISCELLANEOUS PAYMENTS;Joe's Bald Hairstyles",
+;                 "ofx_memo": "MISCELLANEOUS PAYMENTS;Joe's Bald Hairstyles",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Assets:Checking"
+;             }
+;           ]
+2009-04-02 * "STMTTRN - MISCELLANEOUS PAYMENTS;Joe's Bald Hairstyles"
+  Assets:Checking  -316.67 CAD
+    date: 2009-04-02
+    ofx_fitid: "0000123456782009040200004"
+    ofx_memo: "MISCELLANEOUS PAYMENTS;Joe's Bald Hairstyles"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME    316.67 CAD
+
+;; date: 2009-04-03
+;; info: {"filename": "<testdata>/bank_medium.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-22.00 CAD",
+;               "date": "2009-04-03",
+;               "key_value_pairs": {
+;                 "desc": "POS MERCHANDISE;CONNIE'S HAIR D",
+;                 "ofx_memo": "POS MERCHANDISE;CONNIE'S HAIR D",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Assets:Checking"
+;             }
+;           ]
+2009-04-03 * "STMTTRN - POS MERCHANDISE;CONNIE'S HAIR D"
+  Assets:Checking  -22.00 CAD
+    date: 2009-04-03
+    ofx_fitid: "0000123456782009040300005"
+    ofx_memo: "POS MERCHANDISE;CONNIE'S HAIR D"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME    22.00 CAD
+
+;; date: 2009-05-23
+;; info: {"filename": "<testdata>/bank_medium.ofx", "type": "application/x-ofx"}
+
+2009-05-23 balance Assets:Checking                                 382.34 CAD

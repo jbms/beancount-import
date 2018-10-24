@@ -1,0 +1,35 @@
+[
+  [
+    {
+      "amount": "66.88 USD",
+      "date": "2013-11-27",
+      "key_value_pairs": {
+        "desc": "CR CARD PAYMENT ALEXANDRIA VA"
+      },
+      "source_account": "Liabilities:Credit-Card"
+    },
+    "Assets:Checking"
+  ],
+  [
+    {
+      "amount": "-66.88 USD",
+      "date": "2013-12-02",
+      "key_value_pairs": {
+        "desc": "NATIONAL FEDERAL DES:TRNSFR"
+      },
+      "source_account": "Assets:Checking"
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-2.45 USD",
+      "date": "2016-08-10",
+      "key_value_pairs": {
+        "desc": "STARBUCKS STORE 12345"
+      },
+      "source_account": "Liabilities:Credit-Card"
+    },
+    "Expenses:Coffee"
+  ]
+]

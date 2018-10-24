@@ -1,0 +1,16 @@
+plugin "beancount.plugins.auto_accounts"
+
+1900-01-01 open Assets:Checking:MyBank
+  ofx_org: "MyBank"
+  ofx_broker_id: "MyBank"
+  ofx_account_type: "cash_only"
+  account_id: "123456789"
+
+2018-06-08 * "INVBANKTRAN - DIRECT DEBIT WELLSFARGO CRCARDPMT"
+  Assets:Checking:MyBank  -33.72 USD
+    date: 2018-06-08
+    ofx_fitid: "46f2144d0ce515a855234ec"
+    ofx_memo: "DIRECT DEBIT WELLSFARGO CRCARDPMT"
+    ofx_type: "INVBANKTRAN"
+    cleared: TRUE
+  Liabilities:Credit-Card           33.72 USD

@@ -228,7 +228,27 @@ For development of this package, make sure to install Beancount-import using the
 you previously ran the `install` command, you can simply re-run `setup.py` with
 the `develop` command.
 
+## Testing
+
 You can run the tests using the `pytest` command.
+
+Many of the tests are "golden" tests, which work by creating a textual
+representation of some state and comparing it with the contents of a particular
+file in the [testdata/](testdata/) directory.  If you change one of these tests
+or add a new one, you can have the tests automatically generate the output by
+setting the environment variable `BEANCOUNT_IMPORT_GENERATE_GOLDEN_TESTDATA=1`,
+e.g.:
+
+```shell
+BEANCOUNT_IMPORT_GENERATE_GOLDEN_TESTDATA=1 pytest
+```
+
+Make sure to commit to at least stage any changes you've made to the relevant
+`testdata` files prior to running the tests with this environment variable set.
+That way you can manually verify any changes between the existing output and the
+new output using `git diff`.
+
+## Web frontend
 
 The web frontend source code is in the [frontend/](frontend/) directory.  Refer
 to the README.md file there for how to rebuild and run the frontend after making

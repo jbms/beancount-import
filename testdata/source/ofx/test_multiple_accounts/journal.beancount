@@ -1,0 +1,11 @@
+1900-01-01 open Assets:Checking
+  ofx_org: "blah"
+  ofx_broker_id: ""
+  account_id: "9100"
+  ofx_account_type: "cash_only"
+
+1900-01-01 open Assets:Savings
+  ofx_org: "blah"
+  ofx_broker_id: ""
+  account_id: "9200"
+  ofx_account_type: "cash_only"

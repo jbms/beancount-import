@@ -1,4 +1,5 @@
 from typing import List, Optional, Union, Tuple, Dict
+import os
 
 import pytest
 import py
@@ -18,10 +19,8 @@ def parse(text: str) -> Entries:
 def format_entries(entries: Entries, indent=0):
     result = '\n\n'.join(
         beancount.parser.printer.format_entry(e) for e in entries)
-    if indent:
-        indent_str = ' ' * indent
-        result = '\n'.join(indent_str + x for x in result.split('\n'))
-    return result
+    indent_str = ' ' * indent
+    return '\n'.join(indent_str + x.rstrip() for x in result.split('\n'))
 
 
 def normalize_metadata(meta: Optional[Meta]) -> Optional[Meta]:
@@ -41,3 +40,25 @@ def normalize_entry(entry: Union[Directive, Posting]) -> Directive:
         entry = entry._replace(
             postings=[normalize_entry(p) for p in entry.postings])
     return entry
+
+
+def check_golden_contents(path: str,
+                          expected_contents: str,
+                          replacements: List[Tuple[str, str]] = [],
+                          write: Optional[bool] = None) -> None:
+    if write is None:
+        write = os.getenv('BEANCOUNT_IMPORT_GENERATE_GOLDEN_TESTDATA',
+                          None) == '1'
+
+    for old, new in replacements:
+        expected_contents = expected_contents.replace(old, new)
+    if write:
+        dir_name = os.path.dirname(path)
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
+        with open(path, 'w') as f:
+            f.write(expected_contents)
+    else:
+        with open(path, 'r') as f:
+            contents = f.read()
+        assert contents == expected_contents

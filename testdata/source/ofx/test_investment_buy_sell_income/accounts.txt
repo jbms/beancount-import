@@ -1,0 +1,17 @@
+Assets:Investment:MyBank
+Assets:Investment:MyBank:Cash
+Assets:Investment:MyBank:DGTGU
+Assets:Investment:MyBank:DSNTH
+Assets:Investment:MyBank:EEBHF
+Assets:Investment:MyBank:FCSNO
+Assets:Investment:MyBank:IQVJK
+Assets:Investment:MyBank:MCYFM
+Assets:Investment:MyBank:MXMUK
+Assets:Investment:MyBank:OMCNS
+Assets:Investment:MyBank:RDTAF
+Assets:Investment:MyBank:SDVMV
+Assets:Investment:MyBank:SVDIE
+Assets:Investment:MyBank:URMFO
+Assets:Investment:MyBank:WDUZQ
+Assets:Investment:MyBank:WKPSD
+Assets:Investment:MyBank:XBFMS

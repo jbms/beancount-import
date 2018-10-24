@@ -1,0 +1,6 @@
+1900-01-01 open Assets:Retirement:ExampleOrg:Company401k
+  ofx_org: "EXAMPLE"
+  ofx_broker_id: "example.org"
+  ofx_account_type: "securities_only"
+  account_id: "12345678.123456-01"
+  capital_gains_account: "Income:ExampleOrg:Capital-Gains"

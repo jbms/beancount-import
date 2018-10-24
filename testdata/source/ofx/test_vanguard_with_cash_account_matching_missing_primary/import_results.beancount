@@ -1,0 +1,33 @@
+;; date: 2011-07-15
+;; info: {"filename": "<testdata>/vanguard.ofx", "type": "application/x-ofx"}
+
+; features: []
+2011-07-15 * "SELLMF - THIS IS A MEMO"
+  Assets:Investment:Vanguard:VFINX     -42.123 VFINX {} @ 100 USD
+    date: 2011-07-15
+    ofx_fitid: "01234567890.0123.07152011.0"
+    ofx_memo: "THIS IS A MEMO"
+    ofx_type: "SELLMF"
+  Income:Vanguard:Capital-Gains:VFINX
+  Assets:Investment:Vanguard:Cash      4212.30 USD
+    ofx_fitid: "01234567890.0123.07152011.0"
+
+;; date: 2011-07-26
+;; info: {"filename": "<testdata>/vanguard.ofx", "type": "application/x-ofx"}
+
+2011-07-26 balance Assets:Investment:Vanguard:VFINX                102.0 VFINX
+
+;; date: 2011-07-26
+;; info: {"filename": "<testdata>/vanguard.ofx", "type": "application/x-ofx"}
+
+2011-07-26 price VFINX                              100.00 USD
+
+;; date: 2011-07-26
+;; info: {"filename": "<testdata>/vanguard.ofx", "type": "application/x-ofx"}
+
+2011-07-26 balance Assets:Investment:Vanguard:VFIAX                142.2 VFIAX
+
+;; date: 2011-07-26
+;; info: {"filename": "<testdata>/vanguard.ofx", "type": "application/x-ofx"}
+
+2011-07-26 price VFIAX                              100.42 USD

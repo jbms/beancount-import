@@ -1,0 +1,19 @@
+;; date: 2011-07-26
+;; info: {"filename": "<testdata>/vanguard.ofx", "type": "application/x-ofx"}
+
+2011-07-26 balance Assets:Investment:Vanguard:VFINX                102.0 VFINX
+
+;; date: 2011-07-26
+;; info: {"filename": "<testdata>/vanguard.ofx", "type": "application/x-ofx"}
+
+2011-07-26 price VFINX                              100.00 USD
+
+;; date: 2011-07-26
+;; info: {"filename": "<testdata>/vanguard.ofx", "type": "application/x-ofx"}
+
+2011-07-26 balance Assets:Investment:Vanguard:VFIAX                142.2 VFIAX
+
+;; date: 2011-07-26
+;; info: {"filename": "<testdata>/vanguard.ofx", "type": "application/x-ofx"}
+
+2011-07-26 price VFIAX                              100.42 USD
