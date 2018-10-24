@@ -252,7 +252,7 @@ from .amazon_invoice import parse_invoice, DigitalItem, Order
 
 from ..matching import FIXME_ACCOUNT, SimpleInventory
 from ..posting_date import POSTING_DATE_KEY, POSTING_TRANSACTION_DATE_KEY
-from . import ImportResult, Source, SourceResults, InvalidSourceReference
+from . import ImportResult, Source, SourceResults, InvalidSourceReference, AssociatedData
 from ..journal_editor import JournalEditor
 
 ITEM_DESCRIPTION_KEY = 'amazon_item_description'
@@ -482,6 +482,20 @@ class AmazonSource(Source):
     @property
     def name(self):
         return 'amazon'
+
+    def get_associated_data(self,
+                            entry: Directive) -> Optional[List[AssociatedData]]:
+        order_id = _get_entry_order_id(entry, self.amazon_account)
+        if not order_id: return None
+        return [
+            AssociatedData(
+                meta=(ORDER_ID_KEY, order_id),
+                description='Amazon order invoice',
+                type='text/html',
+                path=os.path.realpath(
+                    os.path.join(self.directory, order_id + '.html')),
+            ),
+        ]
 
 
 def load(spec, log_status):
