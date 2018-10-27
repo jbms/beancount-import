@@ -116,8 +116,9 @@ Refer to the individual data source documentation for details on configuration.
 # Usage
 
 To run Beancount-import, create a Python script that invokes the
-`beancount_import.webserver.main` function.  Refer to the example
-[examples/run.py](examples/run.py) file.
+`beancount_import.webserver.main` function.  Refer to the examples
+[fresh](examples/fresh/run.py) and
+[manually_entered](examples/manually_entered/run.py).
 
 ## Errors
 
