@@ -1,6 +1,6 @@
 Beancount-import is a tool for semi-automatically importing financial data from
 external data sources into the [Beancount](http://furius.ca/beancount/)
-bookkeping system, as well as merging and reconciling imported transactions with
+bookkeeping system, as well as merging and reconciling imported transactions with
 each other and with existing transactions.
 
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
