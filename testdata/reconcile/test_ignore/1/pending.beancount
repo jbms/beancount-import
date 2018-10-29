@@ -1,0 +1,19 @@
+;; source: mint
+;; date: 2013-12-02
+;; info: {"filename": "<testdata>/source/mint/mint.csv", "line": 3, "type": "text/csv"}
+
+2013-12-02 * "NATIONAL FEDERAL DES:TRNSFR"
+  Assets:Checking  -66.88 USD
+    date: 2013-12-02
+    source_desc: "NATIONAL FEDERAL DES:TRNSFR"
+  Expenses:FIXME    66.88 USD
+
+;; source: mint
+;; date: 2016-08-10
+;; info: {"filename": "<testdata>/source/mint/mint.csv", "line": 1, "type": "text/csv"}
+
+2016-08-10 * "STARBUCKS STORE 12345"
+  Liabilities:Credit-Card  -2.45 USD
+    date: 2016-08-10
+    source_desc: "STARBUCKS STORE 12345"
+  Expenses:FIXME            2.45 USD

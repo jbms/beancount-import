@@ -41,6 +41,8 @@ LineRange = Tuple[int, int]
 # -1 -> delete, 0 -> keep, +1 -> add
 LineChangeType = int
 
+line_change_indicators = {-1: '-', 0: ' ', 1: '+'}
+
 LineChange = Tuple[LineChangeType, str]
 
 LineChangeSet = NamedTuple('LineChangeSet', [
@@ -877,3 +879,12 @@ class StagedChanges(object):
             for _, line_changes in file_change_set:
                 combined_changes.extend(line_changes)
         return combined_changes
+
+    def get_textual_diff(self) -> str:
+        out = io.StringIO()
+        for filename, file_change_set in self.get_diff().change_sets:
+            out.write(filename + '\n')
+            for _, line_changes in file_change_set:
+                for change_type, line in line_changes:
+                    out.write('%s%s\n' % (line_change_indicators[change_type], line))
+        return out.getvalue()

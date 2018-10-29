@@ -1,0 +1,9 @@
+<journal-dir>/journal.beancount
++
++2013-12-02 * "NATIONAL FEDERAL DES:TRNSFR"
++  Assets:Checking       -66.88 USD
++    date: 2013-12-02
++    source_desc: "NATIONAL FEDERAL DES:TRNSFR"
++  [0]Expenses:FIXME   66.88 USD
++
++2013-12-02 open Expenses:FIXME                                  USD
