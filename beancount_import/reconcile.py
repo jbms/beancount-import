@@ -1,7 +1,7 @@
 import collections
 import datetime
 import re
-from typing import List, Optional, Union, Callable, Dict, Tuple, Any, Iterable, Set
+from typing import List, Optional, Union, Callable, Dict, Tuple, Any, Iterable, Set, NamedTuple
 import argparse
 import os
 import tempfile
@@ -19,7 +19,7 @@ import beancount.parser.printer
 from . import training
 from . import matching
 from . import journal_editor
-from .source import ImportResult, load_source, SourceResults, Source, LogFunction
+from .source import ImportResult, load_source, SourceResults, Source, LogFunction, AssociatedData, InvalidSourceReference
 from .posting_date import get_posting_date
 
 from .thread_helpers import call_in_new_thread
@@ -30,8 +30,19 @@ display_prediction_explanation = False
 
 classifier_cache_version_number = 1
 
-PendingEntry = collections.namedtuple(
-    'PendingEntry', ['date', 'entries', 'source', 'info', 'formatted', 'id'])
+PendingEntry = NamedTuple('PendingEntry', [
+    ('date', datetime.date),
+    ('entries', Entries),
+    ('source', Source),
+    ('info', Dict[str, Any]),
+    ('formatted', str),
+    ('id', str),
+])
+
+AcceptCandidateResult = NamedTuple('AcceptCandidateResult', [
+    ('new_entries', Entries),
+    ('modified_filenames', List[str]),
+])
 
 
 def is_account_unknown(posting: Posting) -> bool:
@@ -169,7 +180,7 @@ class Candidate(object):
             used_transactions: List[Transaction],
             substituted_accounts: Optional[List[AccountSubstitution]] = None,
             original_transaction_properties: Optional[dict] = None,
-            substitute: Optional[Callable[[Dict[str, Any]], 'Candidate']] = None
+            substitute: Optional[Callable[[Dict[str, Any]], 'Candidate']] = None,
     ) -> None:
         self.staged_changes = staged_changes
         self.staged_changes_with_unique_account_names = staged_changes_with_unique_account_names
@@ -185,17 +196,32 @@ class Candidate(object):
         self.substitute = substitute
 
         self.used_transaction_ids = None  # type: Optional[List[int]]
+        self.associated_data = []  # type: List[AssociatedData]
+
+    def update_associated_data(self, sources: List[Source]) -> None:
+        self.associated_data = []
+        diff = self.staged_changes.get_diff()
+        for entry in diff.new_entries:
+            for source in sources:
+                results = source.get_associated_data(entry)
+                if results is not None:
+                    self.associated_data.extend(results)
 
 
 class Candidates(object):
-    def __init__(self,
-                 candidates: List[Candidate],
-                 pending_data: List[PendingEntry],
-                 date: Optional[datetime.date] = None,
-                 number: Optional[Decimal] = None) -> None:
+    def __init__(
+            self,
+            candidates: List[Candidate],
+            pending_data: List[PendingEntry],
+            sources: List[Source],
+            date: Optional[datetime.date] = None,
+            number: Optional[Decimal] = None,
+    ) -> None:
         self.candidates = candidates
         self.date = date
         self.number = number
+        self.pending_data = pending_data
+        self.sources = sources
 
         used_transaction_ids = collections.OrderedDict(
         )  # type: Dict[int, Tuple[Transaction, int]]
@@ -206,6 +232,7 @@ class Candidates(object):
                     (transaction, len(used_transaction_ids)))[1]
                 for transaction in candidate.used_transactions
             ]
+            candidate.update_associated_data(self.sources)
         used_transaction_id_to_pending_index = {
             id(pending.entries[0]): index
             for index, pending in enumerate(pending_data)
@@ -218,9 +245,9 @@ class Candidates(object):
 
     def change_transaction(self, candidate_index: int, changes: Dict[str, Any]):
         candidate = self.candidates[candidate_index]
-        substitute = candidate.substitute
         new_candidate = candidate.substitute(changes)  # type: ignore
         new_candidate.used_transaction_ids = candidate.used_transaction_ids
+        new_candidate.update_associated_data(self.sources)
         self.candidates[candidate_index] = new_candidate
 
 
@@ -235,7 +262,7 @@ def with_metadata(x, new_meta):
     return x._replace(meta=meta)
 
 
-def get_filename_from_map(account_map, account_name, default_output):
+def get_filename_from_map(account_map: List[Tuple[str, str]], account_name: str, default_output: str) -> str:
     if account_map is not None:
         for pattern, filename in account_map:
             if re.match(pattern, account_name):
@@ -343,7 +370,8 @@ class LoadedReconciler(object):
     def __init__(self, reconciler, sources=None, classifier=None) -> None:
         self.reconciler = reconciler
         reconciler.log_status('Loading journal')
-        self.editor = journal_editor.JournalEditor(reconciler.journal_path)
+        self.editor = journal_editor.JournalEditor(reconciler.journal_path,
+                                                   reconciler.ignore_path)
         self.errors = [('error', e[1], e[0]) for e in self.editor.errors]
 
         if sources is not None:
@@ -481,7 +509,8 @@ class LoadedReconciler(object):
         )  # type: Dict[Source, List[Directive]]
 
         import_results = []
-        invalid_references = []
+        invalid_references = [
+        ]  # type: List[Tuple[Source, InvalidSourceReference]]
         self.account_source_map = dict()
         for source in self.sources:
             source_results = SourceResults()
@@ -799,6 +828,7 @@ class LoadedReconciler(object):
                 date=next_entry.date,
                 number=self._get_primary_transaction_amount_number(next_entry),
                 pending_data=self.pending_data,
+                sources=self.sources,
             )
         else:
             assert next_pending.source is not None
@@ -813,6 +843,7 @@ class LoadedReconciler(object):
                 ],
                 date=next_pending.date,
                 pending_data=self.pending_data,
+                sources=self.sources,
             )
         return result
 
@@ -840,8 +871,19 @@ class LoadedReconciler(object):
             skip_ids[pending.id] += 1
         return skip_ids
 
-    def accept_candidate(self, candidate: Candidate):
-        _, old_entries, new_entries = candidate.staged_changes.get_diff()
+    def accept_candidate(self, candidate: Candidate, ignore=False) -> AcceptCandidateResult:
+        ignored_path = self.editor.ignored_path
+        if ignored_path is None:
+            raise RuntimeError(
+                'Cannot ignore candidate without an "ignored" journal having been specified.'
+            )
+        staged_changes = candidate.staged_changes
+        if ignore:
+            staged_changes = staged_changes.make_with_new_output_filename(
+                ignored_path)
+        result = staged_changes.apply()
+        old_entries = result.old_entries
+        new_entries = result.new_entries
 
         for entry in old_entries:
             if isinstance(entry, Transaction):
@@ -865,7 +907,6 @@ class LoadedReconciler(object):
 
         self._extract_training_examples(new_entries)
 
-        candidate.staged_changes.apply()
         used_import_result_ids = frozenset(
             map(id, candidate.used_import_results))
         self.pending_data = [
@@ -873,17 +914,20 @@ class LoadedReconciler(object):
             if id(e) not in used_import_result_ids and
             id(e.entries[0]) not in used_import_result_ids
         ]
-
-        return new_entries
+        return AcceptCandidateResult(
+            new_entries=new_entries + result.new_ignored_entries,
+            modified_filenames=staged_changes.get_modified_filenames(),
+        )
 
 
 class Reconciler(object):
     """Holds the reconciler configuration and asynchronously loads a reconciler."""
 
     def __init__(self, journal_path: str, log_status: LogFunction,
-                 options: dict) -> None:
+                 ignore_path: str, options: dict) -> None:
         self.options = options
         self.journal_path = journal_path
+        self.ignore_path = ignore_path
         self.log_status = log_status
         self.entry_file_selector = EntryFileSelector.from_args(options)
         self.loaded_future = call_in_new_thread(
