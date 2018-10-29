@@ -23,7 +23,7 @@ Item = NamedTuple('Item', [
     ('quantity', decimal.Decimal),
     ('description', str),
     ('sold_by', str),
-    ('condition', str),
+    ('condition', Optional[str]),
     ('price', Amount),
 ])
 
@@ -63,7 +63,7 @@ Order = NamedTuple('Order', [
     ('errors', Errors),
 ])
 
-pretax_adjustment_fields_pattern = 'Shipping & Handling:|Free Shipping:|Promotion Applied:|Your Coupon Savings:|[0-9]+% off savings:|Subscribe & Save:|[0-9]+ Audible Credit Applied:|.*[0-9]+% Off.*:|Courtesy Credit:'
+pretax_adjustment_fields_pattern = 'Shipping & Handling:|Free Shipping:|Promotion Applied:|Your Coupon Savings:|[0-9]+% off savings:|Subscribe & Save:|[0-9]+ Audible Credit Applied:|.*[0-9]+% Off.*:|Courtesy Credit:|(.*) Discount:'
 posttax_adjustment_fields_pattern = 'Gift Card Amount:|Rewards Points:'
 
 
@@ -175,19 +175,27 @@ def parse_shipments(soup) -> List[Shipment]:
             price_node = tds[1]
             price = price_node.text.strip()
 
-            m = re.match(
-                r'^\s*([0-9]+)\s+of:(.*)\n\s*Sold by: ([^\n]+)\n.*\n\s*Condition: ([^\n]+)',
-                description_node.text, re.UNICODE | re.DOTALL)
+            pattern_without_condition = r'^\s*(?P<quantity>[0-9]+)\s+of:(?P<description>.*)\n\s*Sold by: (?P<sold_by>[^\n]+)'
+            pattern_with_condition = pattern_without_condition + r'\n.*\n\s*Condition: (?P<condition>[^\n]+)'
+
+            m = re.match(pattern_with_condition, description_node.text,
+                         re.UNICODE | re.DOTALL)
+            if m is None:
+                m = re.match(pattern_without_condition, description_node.text,
+                             re.UNICODE | re.DOTALL)
             assert m is not None
-            description = re.sub(r'\s+', ' ', m.group(2).strip())
-            sold_by = re.sub(r'\s+', ' ', m.group(3).strip())
-            condition = re.sub(r'\s+', ' ', m.group(4).strip())
+            description = re.sub(r'\s+', ' ', m.group('description').strip())
+            sold_by = re.sub(r'\s+', ' ', m.group('sold_by').strip())
+            try:
+                condition = re.sub(r'\s+', ' ', m.group('condition').strip())
+            except IndexError:
+                condition = None
             suffix = ' (seller profile)'
             if sold_by.endswith(suffix):
                 sold_by = sold_by[:-len(suffix)]
             items.append(
                 Item(
-                    quantity=D(m.group(1)),
+                    quantity=D(m.group('quantity')),
                     description=description,
                     sold_by=sold_by,
                     condition=condition,
@@ -216,7 +224,7 @@ def parse_shipments(soup) -> List[Shipment]:
         expected_total_before_tax = reduce_amounts(pretax_parts)
         if expected_total_before_tax != total_before_tax:
             errors.append(
-                'expected total before tax is %r, but parsed value is %r' %
+                'expected total before tax is %s, but parsed value is %s' %
                 (expected_total_before_tax, total_before_tax))
 
         sales_tax = get_adjustments_in_table(shipment_table, 'Sales Tax:')
@@ -228,7 +236,7 @@ def parse_shipments(soup) -> List[Shipment]:
             get_field_in_table(shipment_table, 'Total for This Shipment:'))
         expected_total = reduce_amounts(posttax_parts)
         if expected_total != total:
-            errors.append('expected total is %r, but parsed value is %r' %
+            errors.append('expected total is %s, but parsed value is %s' %
                           (expected_total, total))
 
         shipments.append(
@@ -325,7 +333,7 @@ def parse_regular_order_invoice(path: str) -> Order:
         a.amount for a in output_fields['pretax_adjustments'])
     if expected_amount != amount:
         errors.append(
-            'expected total pretax adjustment to be %r, but parsed total is %r'
+            'expected total pretax adjustment to be %s, but parsed total is %s'
             % (expected_amount, amount))
 
     payments_total_adjustments = []
@@ -356,7 +364,7 @@ def parse_regular_order_invoice(path: str) -> Order:
                 shipments_total_adjustments.append(amount)
             elif payment_amount != shipments_amount:
                 errors.append(
-                    'expected total %r to be %r, but parsed total is %r' %
+                    'expected total %r to be %s, but parsed total is %s' %
                     (key, shipments_amount, payment_amount))
             all_adjustments[key] = amount
         return [Adjustment(k, v) for k, v in all_adjustments.items()]
@@ -370,7 +378,7 @@ def parse_regular_order_invoice(path: str) -> Order:
         a.amount for shipment in shipments for a in shipment.tax)
     if expected_tax != tax:
         errors.append(
-            'expected tax is %r, but parsed value is %r' % (expected_tax, tax))
+            'expected tax is %s, but parsed value is %s' % (expected_tax, tax))
 
     payments_total_adjustment = reduce_amounts(payments_total_adjustments)
     shipments_total_adjustment = reduce_amounts(shipments_total_adjustments)

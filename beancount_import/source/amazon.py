@@ -305,7 +305,8 @@ def make_amazon_transaction(
                     meta[ITEM_BY_KEY] = item.by
                 quantity = ONE
             else:
-                meta[ITEM_CONDITION_KEY] = item.condition
+                if item.condition:
+                    meta[ITEM_CONDITION_KEY] = item.condition
                 meta[SHIPPED_DATE_KEY] = shipment.shipped_date
                 meta[ITEM_QUANTITY_KEY] = item.quantity
                 quantity = item.quantity
