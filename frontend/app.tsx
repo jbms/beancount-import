@@ -11,12 +11,16 @@ import {
   InvalidReference,
   JournalError
 } from "./server_connection";
-import { EditorComponent } from "./editor";
+import {
+  EditorComponent,
+  SelectFileOptions as EditorSelectFileOptions
+} from "./editor";
 import { PendingEntriesComponent, PendingEntryHighlightState } from "./pending";
 import { JournalErrorsComponent } from "./journal_errors";
-import { CandidatesComponent } from "./candidates";
+import { CandidatesComponent, CandidateSelectionState } from "./candidates";
 import { InvalidReferencesComponent } from "./invalid_references";
 import { UnclearedPostingsComponent } from "./uncleared";
+import { SourceDataComponent } from "./source_data";
 
 import commonPrefix from "common-prefix";
 
@@ -26,14 +30,17 @@ import styled from "styled-components";
 import { VirtualListScrollState } from "./virtual_list";
 import { ServerVirtualListState } from "./server_virtual_list";
 
+export interface SelectFileOptions extends EditorSelectFileOptions {
+  switchTo?: boolean;
+}
+
 export interface AssociatedDataViewController {
   selectFile(
     filename?: string,
     line?: number,
-    focus?: boolean,
-    refresh?: boolean
+    options?: SelectFileOptions
   ): void;
-  selectFileByMeta(meta: any, focus?: boolean, refresh?: boolean): void;
+  selectFileByMeta(meta: any, options?: SelectFileOptions): void;
   highlightPending(index: number): void;
 }
 
@@ -89,7 +96,8 @@ enum TabKeys {
 
 enum DataTabKeys {
   pending,
-  journal
+  journal,
+  source
 }
 
 function enumValueFor<U>(
@@ -113,6 +121,8 @@ class AppComponent
   implements AssociatedDataViewController {
   private editorRef = React.createRef<EditorComponent>();
   private pendingHighlightState = new PendingEntryHighlightState();
+
+  private candidateSelectionState = new CandidateSelectionState();
 
   private pendingListState = new ServerVirtualListState<PendingEntry>(
     this.props.serverConnection,
@@ -187,19 +197,21 @@ class AppComponent
   selectFile = (
     filename?: string,
     line?: number,
-    focus = true,
-    refresh = false
+    options: SelectFileOptions = {}
   ) => {
     const editor = this.editorRef.current;
     if (editor === null) {
       return;
     }
-    this.setState({ selectedDataTab: DataTabKeys.journal });
-    editor.selectFile(filename, line, focus, refresh);
+    const { switchTo = true } = options;
+    if (switchTo) {
+      this.setState({ selectedDataTab: DataTabKeys.journal });
+    }
+    editor.selectFile(filename, line, options);
   };
 
-  selectFileByMeta(meta: any, focus = true, refresh = false) {
-    this.selectFile(meta["filename"], meta["lineno"] - 1, focus, refresh);
+  selectFileByMeta(meta: any, options?: SelectFileOptions) {
+    this.selectFile(meta["filename"], meta["lineno"] - 1, options);
   }
 
   private handleSelectTab = (index: number) => {
@@ -297,6 +309,7 @@ class AppComponent
                         candidatesGeneration={this.state.candidates_generation!}
                         candidates={this.state.candidates!}
                         highlightPending={this.highlightPending}
+                        candidateSelectionState={this.candidateSelectionState}
                       />
                     ) : (
                       undefined
@@ -319,6 +332,7 @@ class AppComponent
                       {getOptionalCount(this.state.pending)}
                     </Tab>
                     <Tab>Editor</Tab>
+                    <Tab>Source data</Tab>
                   </TabList>
                   <AppTabPanel>
                     {this.state.pending != null && (
@@ -336,6 +350,11 @@ class AppComponent
                       commonJournalPrefix={commonJournalPrefix}
                       serverConnection={this.props.serverConnection}
                       dirtyStateDidChange={this.dirtyStateDidChange}
+                    />
+                  </AppTabPanel>
+                  <AppTabPanel>
+                    <SourceDataComponent
+                      candidateSelectionState={this.candidateSelectionState}
                     />
                   </AppTabPanel>
                 </AppTabs>

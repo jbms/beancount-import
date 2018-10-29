@@ -10,17 +10,17 @@ each other and with existing transactions.
 
 - Pluggable data source architecture, including existing support for OFX (cash,
   investment, and retirement accounts), Mint.com, Amazon.com, and Venmo.
-  
+
 - Robustly associates imported transactions with the source data, to
   automatically avoid duplicates.
-  
+
 - Automatically predicts unknown legs of imported transactions based on a
   learned classifier (currently decision tree-based).
-  
+
 - Sophisticated transaction matching/merging system that can semi-automatically
   combine and reconcile both manually entered and imported transactions from
   independent sources.
-  
+
 - Easy-to-use, powerful web-based user interface.
 
 # Basic operation
@@ -59,7 +59,7 @@ postings that serve several purposes:
    predicting unknown accounts;
  - providing information to the user that may be helpful for identifying and
    understanding the transaction.
-   
+
 # Installation
 
 1. Ensure you have activated a suitable Python 3 virtualenv if desired.
@@ -174,7 +174,20 @@ several ways to correct any incorrectly-predicted accounts:
    then accept this entry, the transaction including these FIXME accounts will
    be added to your journal, and the next time you start Beancount-import the
    transaction will be treated as a pending entry.
-   
+
+## Viewing associated source data
+
+Data sources may indicate that additional source data is associated with
+particular candidate entries, typically based on the metadata fields and/or
+links that are included in the transaction.  For example, the
+`beancount_import.source.amazon` data source associates the order invoice HTML
+page with the transaction, and the `beancount_import.source.google_purchases`
+data source associates the purchase details HTML page.  Other possible source
+data types include PDF statements and receipt images.
+
+You can view any associated source data for the currently selected candidate by
+selecting the `Source data` tab.
+
 ## Changing the narration, payee, links or tags
 
 To modify the narration of an entry, you can click on it, click the `Narration`
@@ -204,6 +217,34 @@ Typical causes of uncleared postings include:
 4. The source data is missing or cannot be imported, but the posting was
    manually verified.  Such postings can be ignored by adding a `cleared: TRUE`
    metadata field to them.
+
+## Skipping and ignoring imported entries
+
+If you are presented with a pending entry that you don't wish to import, you
+have several options:
+
+1. You can skip past it by selecting a different transaction in the `Pending`
+   tab, or can skip to the next pending entry by clicking on the button labeled
+   `⏩` or pressing the `]` key.  This skips it in the current session, but it
+   remains as a pending entry and will be included again if you restart
+   beancount-import.
+
+2. You can click on the button labeled `Fixme later` or press the `f` key to
+   reset all unknown accounts, and then accept the candidate.  This will add the
+   transaction to your journal, but with the unknown accounts left as
+   `Expenses:FIXME`.  This is useful for transactions for which you don't know
+   how to assign an account, or which you expect to match to another transaction
+   that will be generated from data that hasn't yet been downloaded.  Any
+   transactions in the journal with `Expenses:FIXME` accounts will be included
+   at the end of the list of pending entries the next time you start
+   beancount-import.
+
+3. You can click on the button labeled `Ignore` or press the `i` key to add the
+   selected candidate to the special "ignored" journal file.  This is useful for
+   transactions that are erroneous, such as actual duplicates.  Entries that are
+   ignored will not be presented again if you restart beancount-import.
+   However, if you manually delete them from the "ignored" journal file, they
+   will return as pending entries.
 
 # Use with an existing Beancount journal
 

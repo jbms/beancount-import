@@ -46,6 +46,7 @@ def json_encode_beancount_entry(x):
         result['meta'].pop('__tolerances__', None)
     return result
 
+
 def format_transaction(transaction: Transaction) -> str:
     printer = beancount.parser.printer.EntryPrinter()
     return printer(transaction)
@@ -53,13 +54,14 @@ def format_transaction(transaction: Transaction) -> str:
 
 def format_posting(posting: Posting, indent: str = '  ') -> str:
     printer = beancount.parser.printer.EntryPrinter()
-    flag_account, position_str, weight_str = printer.render_posting_strings(posting)
+    flag_account, position_str, weight_str = printer.render_posting_strings(
+        posting)
     oss = io.StringIO()
-    oss.write(('%s%s  %s' % (indent, flag_account, position_str)).rstrip() + '\n')
+    oss.write(('%s%s  %s' % (indent, flag_account, position_str)).rstrip() +
+              '\n')
     if posting.meta:
         printer.write_metadata(posting.meta, oss, '  ' + indent)
     return oss.getvalue()
-
 
 
 def convert_uncleared(p: Tuple[Transaction, Posting]):
@@ -69,14 +71,20 @@ def convert_uncleared(p: Tuple[Transaction, Posting]):
         'transaction_formatted': format_transaction(p[0]),
     }
 
-def convert_uncleared_list(uncleared_entries: List[Tuple[Transaction, Posting]]) -> List[Any]:
+
+def convert_uncleared_list(
+        uncleared_entries: List[Tuple[Transaction, Posting]]) -> List[Any]:
     return [convert_uncleared(p) for p in uncleared_entries]
 
+
 def convert_invalid_reference(ref: Tuple[Source, InvalidSourceReference]):
-    def convert_transaction_posting_pair(pair: Tuple[Transaction, Optional[Posting]]) -> dict:
+    def convert_transaction_posting_pair(
+            pair: Tuple[Transaction, Optional[Posting]]) -> dict:
         transaction, posting = pair
-        result = {'transaction': json_encode_beancount_entry(transaction),
-                  'posting': json_encode_beancount_entry(posting)}
+        result = {
+            'transaction': json_encode_beancount_entry(transaction),
+            'posting': json_encode_beancount_entry(posting)
+        }
         result['transaction_formatted'] = format_transaction(transaction)
         if posting is not None:
             result['posting_formatted'] = format_posting(posting, indent='')
@@ -85,7 +93,8 @@ def convert_invalid_reference(ref: Tuple[Source, InvalidSourceReference]):
     return {
         'num_extras':
         ref[1].num_extras,
-        'source': ref[0].name,
+        'source':
+        ref[0].name,
         'transaction_posting_pairs': [
             convert_transaction_posting_pair(p)
             for p in ref[1].transaction_posting_pairs
@@ -97,24 +106,38 @@ def convert_invalid_references(entries):
     return [convert_invalid_reference(ref) for ref in entries]
 
 
+def json_encode_candidates(candidates: reconcile.Candidates):
+    result = {}  # type: Dict[str, Any]
 
-def json_encode_candidates(candidates):
-    result = {}
-    result['used_transactions'] = [{
-        'formatted':
-        format_transaction(transaction),
-        'entry':
-        json_encode_beancount_entry(transaction),
-        'pending_index':
-        index,
-    } for transaction, index in candidates.used_transactions]
+    def encode_used_transaction(transaction: Transaction,
+                                index: Optional[int]) -> dict:
+        if index is None:
+            pending = None
+            info = None
+            source = None
+        else:
+            pending = candidates.pending_data[index]
+            info = pending.info
+            source = None if pending.source is None else pending.source.name
+        return {
+            'formatted': format_transaction(transaction),
+            'entry': json_encode_beancount_entry(transaction),
+            'pending_index': index,
+            'info': info,
+            'source': source,
+        }
+
+    result['used_transactions'] = [
+        encode_used_transaction(transaction, index)
+        for transaction, index in candidates.used_transactions
+    ]
     result['candidates'] = candidates.candidates
     result['date'] = candidates.date
     result['number'] = candidates.number
     return result
 
 
-def json_encode_candidate(obj):
+def json_encode_candidate(obj: reconcile.Candidate):
     change_sets, _, _ = obj.staged_changes_with_unique_account_names.get_diff()
     _, _, new_entries = obj.staged_changes.get_diff()
     return dict(
@@ -122,10 +145,12 @@ def json_encode_candidate(obj):
         used_transaction_ids=obj.used_transaction_ids,
         substituted_accounts=obj.substituted_accounts or [],
         original_transaction_properties=obj.original_transaction_properties,
-        new_entries=[json_encode_beancount_entry(x) for x in new_entries])
+        new_entries=[json_encode_beancount_entry(x) for x in new_entries],
+        associated_data=[x.__dict__ for x in obj.associated_data],
+    )
 
 
-def json_encode_pending_candidate(pending):
+def json_encode_pending_candidate(pending: reconcile.PendingEntry):
     return {
         'date': pending.date,
         'formatted': pending.formatted,
@@ -135,14 +160,14 @@ def json_encode_pending_candidate(pending):
         'id': pending.id
     }
 
-def json_convert_pending_list(pending_data):
-    return [
-        json_encode_pending_candidate(x)
-        for x in pending_data
-    ]
+
+def json_convert_pending_list(pending_data: List[reconcile.PendingEntry]):
+    return [json_encode_pending_candidate(x) for x in pending_data]
+
 
 def convert_errors(x):
     return x
+
 
 def json_encode_state(obj):
     if isinstance(obj, Decimal):
@@ -156,6 +181,7 @@ def json_encode_state(obj):
     if isinstance(obj, reconcile.Candidates):
         return json_encode_candidates(obj)
 
+
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
         frontend_dist = self.application.frontend_dist
@@ -163,9 +189,11 @@ class IndexHandler(tornado.web.RequestHandler):
         import pkg_resources
         contents = pkg_resources.resource_string(
             __name__, 'frontend_dist/%s/index.html' % frontend_dist)
-        contents = contents.replace(self.application.secret_key_pattern.encode(),
-                                    self.application.secret_key.encode())
+        contents = contents.replace(
+            self.application.secret_key_pattern.encode(),
+            self.application.secret_key.encode())
         self.write(contents)
+
 
 data_convert_functions = {
     'errors': convert_errors,
@@ -190,7 +218,8 @@ class GetDataHandler(tornado.web.RequestHandler):
             value = getattr(self.application,
                             'current_%s' % data_type)[begin_index:end_index]
             converted_value = data_convert_functions[data_type](value)
-            json_encoding = json.dumps(converted_value, default=json_encode_state)
+            json_encoding = json.dumps(
+                converted_value, default=json_encode_state)
             self.set_header('Content-Type', 'application/json')
             self.write(json_encoding.encode())
         except:
@@ -198,6 +227,41 @@ class GetDataHandler(tornado.web.RequestHandler):
             import traceback
             traceback.print_exc()
             return self.finish('Error writing data')
+
+
+class ChangeCandidateHandler(tornado.web.RequestHandler):
+    def post(self):
+        msg = json.loads(self.request.body)
+        self.application.handle_change_candidate(msg)
+        self.set_header('Content-Type', 'application/json')
+        self.write(json.dumps(None).encode())
+
+
+class SelectCandidateHandler(tornado.web.RequestHandler):
+    def post(self):
+        msg = json.loads(self.request.body)
+        new_entries = self.application.handle_select_candidate(msg) or []
+        self.set_header('Content-Type', 'application/json')
+        self.write(
+            json.dumps(
+                [json_encode_beancount_entry(x) for x in new_entries],
+                default=json_encode_state).encode())
+
+
+class SkipHandler(tornado.web.RequestHandler):
+    def post(self):
+        msg = json.loads(self.request.body)
+        self.application.handle_skip(msg)
+        self.set_header('Content-Type', 'application/json')
+        self.write(json.dumps(None).encode())
+
+
+class RetrainHandler(tornado.web.RequestHandler):
+    def post(self):
+        self.application.retrain()
+        self.set_header('Content-Type', 'application/json')
+        self.write(json.dumps(None).encode())
+
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self, *args):
@@ -215,9 +279,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         try:
             message = json.loads(message)
             f = getattr(self, 'on_message_%s' % message['type'], None)
-            if f is None:
-                f = getattr(self.application, 'on_message_%s' % message['type'],
-                            None)
             if f is None:
                 raise TypeError('Invalid message type: %r' % message)
             self.application.ioloop.add_callback(f, message['value'])
@@ -314,22 +375,42 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         except:
             traceback.print_exc()
 
+
+class GetFileHandler(tornado.web.RequestHandler):
+    def get(self):
+        path = self.get_argument('path')
+        content_type = self.get_argument('content_type')
+        try:
+            with open(path, 'rb') as f:
+                contents = f.read()
+            self.set_header('Content-Type', content_type)
+            self.write(contents)
+        except:
+            self.set_status(404)
+            self.finish('File not found')
+
+
 class Application(tornado.web.Application):
     def __init__(self, args, ioloop, **kwargs):
 
         # Secret key that prevents cross-origin access to the websocket.
         # The key is contained in the html response.
-        secret_key = 'BEANCOUNT_IMPORT_SECRET_KEY_%s' % binascii.hexlify(os.urandom(20)).decode()
-        self.secret_key_pattern = 'BEANCOUNT_IMPORT_SECRET_KEY_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
+        secret_key = 'BEANCOUNT_IMPORT_SECRET_KEY_%s' % binascii.hexlify(
+            os.urandom(20)).decode()
+        self.secret_key_pattern = 'BEANCOUNT_IMPORT_SECRET_KEY_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
         self.secret_key = secret_key
         self.ioloop = ioloop
-        super(Application, self).__init__(
-            [
-                ('/', IndexHandler),
-                (r'/%s/(errors|pending|invalid|uncleared)/([^/]*)/(\d+)-(\d+)' % secret_key, GetDataHandler),
-                (r'/%s/websocket' % secret_key, WebSocketHandler),
-            ],
-            **kwargs)
+        super(Application, self).__init__([
+            ('/', IndexHandler),
+            (r'/%s/(errors|pending|invalid|uncleared)/([^/]*)/(\d+)-(\d+)' %
+             secret_key, GetDataHandler),
+            (r'/%s/websocket' % secret_key, WebSocketHandler),
+            (r'/%s/get_file' % secret_key, GetFileHandler),
+            (r'/%s/change_candidate' % secret_key, ChangeCandidateHandler),
+            (r'/%s/select_candidate' % secret_key, SelectCandidateHandler),
+            (r'/%s/skip' % secret_key, SkipHandler),
+            (r'/%s/retrain' % secret_key, RetrainHandler),
+        ], **kwargs)
         self.frontend_dist = args.frontend_dist
         self.socket_clients = set()
         self.watched_files = dict()
@@ -342,6 +423,7 @@ class Application(tornado.web.Application):
 
         self.reconciler = reconcile.Reconciler(
             journal_path=args.journal_input,
+            ignore_path=args.ignored_journal,
             log_status=self.log_status,
             options=vars(args))
         self.reset()
@@ -355,22 +437,25 @@ class Application(tornado.web.Application):
         self.generation += 1
         return generation
 
+    def _notify_modified_files(self, modified_filenames: List[str]):
+        for filename in modified_filenames:
+            watchers = self.watched_files.get(filename, None)
+            if watchers:
+                try:
+                    with open(filename, 'r') as f:
+                        contents = f.read()
+                    for watcher in watchers:
+                        watcher.send_file_update(filename, contents)
+                except:
+                    traceback.print_exc()
+
     def _check_modification(self):
         if self.reconciler.loaded_future.done():
             loaded_reconciler = self.reconciler.loaded_future.result()
             modified_filenames = loaded_reconciler.editor.check_any_journal_modification(
             )
             if modified_filenames:
-                for filename in modified_filenames:
-                    watchers = self.watched_files.get(filename, None)
-                    if watchers:
-                        try:
-                            with open(filename, 'r') as f:
-                                contents = f.read()
-                            for watcher in watchers:
-                                watcher.send_file_update(filename, contents)
-                        except:
-                            traceback.print_exc()
+                self._notify_modified_files(list(modified_filenames))
                 self.reconciler.reload_journal()
                 self.reset()
 
@@ -424,15 +509,13 @@ class Application(tornado.web.Application):
         if new_pending:
             kwargs.update(
                 pending=(generation, len(loaded_reconciler.pending_data)),
-                uncleared=(generation, len(loaded_reconciler.uncleared_postings)),
+                uncleared=(generation,
+                           len(loaded_reconciler.uncleared_postings)),
             )
         self.current_pending = loaded_reconciler.pending_data
         self.current_uncleared = loaded_reconciler.uncleared_postings
         if self.next_candidates is None:
-            self.set_state(
-                candidates=None,
-                pending_index=None,
-                **kwargs)
+            self.set_state(candidates=None, pending_index=None, **kwargs)
         else:
             self.set_state(
                 candidates=self.next_candidates,
@@ -466,7 +549,7 @@ class Application(tornado.web.Application):
         logging.info(message)
         self.set_state(message=message)
 
-    def on_message_change_candidate(self, msg):
+    def handle_change_candidate(self, msg):
         try:
             if (self.next_candidates is not None and
                     self.current_state['candidates_generation'] ==
@@ -477,25 +560,28 @@ class Application(tornado.web.Application):
         except:
             traceback.print_exc()
 
-    def on_message_select_candidate(self, msg):
+    def handle_select_candidate(self, msg):
         try:
-            print('select_candidate: %r' % msg)
             if (self.next_candidates is not None and msg['generation'] ==
                     self.current_state['candidates_generation']):
                 index = msg['index']
                 if index >= 0 and index < len(self.next_candidates.candidates):
                     candidate = self.next_candidates.candidates[index]
-                    print('accepting candidate %r' % index)
-                    self.reconciler.loaded_future.result().accept_candidate(
-                        candidate)
-                    print('getting next candidates')
+                    ignore = msg.get('ignore', None) is True
+                    result = self.reconciler.loaded_future.result(
+                    ).accept_candidate(
+                        candidate,
+                        ignore=ignore,
+                    )
+                    self._notify_modified_files(result.modified_filenames)
+                    return result.new_entries
                     self.get_next_candidates(new_pending=True)
         except:
             traceback.print_exc()
             print('got error')
             pdb.post_mortem()
 
-    def on_message_skip(self, msg):
+    def handle_skip(self, msg):
         pending_generation = int(msg['generation'])
         pending_index = int(msg['index'])
         pending_state = self.current_state['pending']
@@ -511,7 +597,7 @@ class Application(tornado.web.Application):
         self.skip_ids = loaded_reconciler.get_skip_ids_by_index(pending_index)
         self.get_next_candidates(new_pending=False)
 
-    def on_message_retrain(self, _):
+    def handle_retrain(self, _):
         self.retrain()
 
 
@@ -522,6 +608,10 @@ def main(argv, **kwargs):
         '--journal_input',
         help='Top-level Beancount input file',
         required=kwargs.get('journal_input') is None)
+    argparser.add_argument(
+        '--ignored_journal',
+        help='Beancount input file containing ignored entries',
+        required=kwargs.get('ignored_journal') is None)
     argparser.add_argument(
         '--data_sources',
         help='Data sources JSON specification',

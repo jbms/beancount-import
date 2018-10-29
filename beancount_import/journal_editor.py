@@ -888,3 +888,6 @@ class StagedChanges(object):
                 for change_type, line in line_changes:
                     out.write('%s%s\n' % (line_change_indicators[change_type], line))
         return out.getvalue()
+
+    def get_modified_filenames(self) -> List[str]:
+        return [filename for filename, _ in self.get_diff().change_sets]

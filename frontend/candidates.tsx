@@ -1,12 +1,15 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import styled from "styled-components";
+import { EventEmitter, EventSubscription } from "fbemitter";
 import scrollIntoView from "scroll-into-view-if-needed";
 import {
   Candidates,
   ServerConnection,
   BeancountTransaction,
-  TransactionProperties
+  TransactionProperties,
+  executeServerCommand,
+  BeancountEntry
 } from "./server_connection";
 import { AccountInputComponent } from "./account_input";
 import { UsedTransactionsComponent } from "./used_transactions";
@@ -20,6 +23,55 @@ const CandidateListElement = styled.div`
   flex-basis: 0;
 `;
 
+export class CandidateSelectionState {
+  selectedCandidateIndex: number = 0;
+  candidates?: Candidates;
+  selectedAssociatedDataIndex: number = 0;
+  emitter = new EventEmitter();
+  get selectedCandidate() {
+    const { selectedCandidateIndex, candidates } = this;
+    if (
+      candidates == null ||
+      selectedCandidateIndex < 0 ||
+      selectedCandidateIndex >= candidates.candidates.length
+    ) {
+      return undefined;
+    }
+    return candidates.candidates[selectedCandidateIndex];
+  }
+
+  get selectedAssociatedData() {
+    const { selectedCandidate } = this;
+    if (selectedCandidate == null) {
+      return undefined;
+    }
+    const { selectedAssociatedDataIndex } = this;
+    const associatedData = selectedCandidate.associated_data;
+    return associatedData[selectedAssociatedDataIndex];
+  }
+
+  setSelectedCandidate(
+    candidates: Candidates | undefined,
+    selectedCandidateIndex: number
+  ) {
+    if (
+      candidates !== this.candidates ||
+      selectedCandidateIndex !== this.selectedCandidateIndex
+    ) {
+      this.candidates = candidates;
+      this.selectedCandidateIndex = selectedCandidateIndex;
+      this.selectedAssociatedDataIndex = 0;
+      this.emitter.emit("change");
+    }
+  }
+  setSelectedAssociatedDataItem(index: number) {
+    if (this.selectedAssociatedDataIndex !== index) {
+      this.selectedAssociatedDataIndex = index;
+      this.emitter.emit("change");
+    }
+  }
+}
+
 interface CandidatesComponentProps {
   candidates: Candidates;
   candidatesGeneration: number;
@@ -29,6 +81,7 @@ interface CandidatesComponentProps {
   numPending: number;
   accounts: string[];
   associatedDataViewController: AssociatedDataViewController;
+  candidateSelectionState: CandidateSelectionState;
 }
 
 export type ActiveInputState = {
@@ -41,11 +94,11 @@ export type ActiveInputState = {
 
 interface CandidatesComponentState {
   disabledUsedTransactions: Set<number>;
-  selectedCandidateIndex: number;
   hoverCandidateIndex?: number;
   candidates?: Candidates;
   candidatesGeneration?: number;
   inputState?: ActiveInputState;
+  selectedCandidateIndex: number;
 }
 
 export class CandidatesComponent extends React.PureComponent<
@@ -66,11 +119,14 @@ export class CandidatesComponent extends React.PureComponent<
   ) {
     const updates: Partial<CandidatesComponentState> = {};
     let hasUpdate = false;
+    const candidates = props.candidates;
+    let selectedCandidateIndex = state.selectedCandidateIndex;
     if (props.candidatesGeneration !== state.candidatesGeneration) {
       Object.assign(updates, {
         candidatesGeneration: props.candidatesGeneration,
         selectedCandidateIndex: 0
       });
+      selectedCandidateIndex = 0;
       hasUpdate = true;
     }
     if (props.candidates !== state.candidates) {
@@ -80,6 +136,10 @@ export class CandidatesComponent extends React.PureComponent<
       });
       hasUpdate = true;
     }
+    props.candidateSelectionState.setSelectedCandidate(
+      candidates,
+      selectedCandidateIndex
+    );
     return hasUpdate ? updates : null;
   }
 
@@ -167,18 +227,15 @@ export class CandidatesComponent extends React.PureComponent<
   private sendChangeAccounts(candidateIndex: number, newAccounts: string[]) {
     const candidate = this.props.candidates.candidates[candidateIndex];
     const transaction = candidate.new_entries[0] as BeancountTransaction;
-    this.props.serverConnection.send({
-      type: "change_candidate",
-      value: {
-        generation: this.props.candidatesGeneration,
-        candidate_index: candidateIndex,
-        changes: {
-          accounts: newAccounts,
-          tags: transaction.tags,
-          links: transaction.links,
-          narration: transaction.narration,
-          payee: transaction.payee
-        }
+    return executeServerCommand("change_candidate", {
+      generation: this.props.candidatesGeneration,
+      candidate_index: candidateIndex,
+      changes: {
+        accounts: newAccounts,
+        tags: transaction.tags,
+        links: transaction.links,
+        narration: transaction.narration,
+        payee: transaction.payee
       }
     });
   }
@@ -200,7 +257,7 @@ export class CandidatesComponent extends React.PureComponent<
   };
 
   private retrain = () => {
-    this.props.serverConnection.send({ type: "retrain", value: null });
+    executeServerCommand("retrain", null);
   };
 
   private changeSelectedCandidateAllAccounts = () => {
@@ -214,9 +271,12 @@ export class CandidatesComponent extends React.PureComponent<
     }
     const candidate = this.selectedCandidate;
     const substituted = candidate.substituted_accounts;
-    if (substituted.length === 0) return;
+    if (substituted.length === 0) return Promise.resolve(undefined);
     const newAccounts = substituted.map(x => x[3]);
-    this.sendChangeAccounts(this.state.selectedCandidateIndex, newAccounts);
+    return this.sendChangeAccounts(
+      this.state.selectedCandidateIndex,
+      newAccounts
+    );
   };
 
   private handleAccountInput = (value?: string) => {
@@ -355,6 +415,12 @@ export class CandidatesComponent extends React.PureComponent<
           >
             Revert
           </button>
+          <button
+            onClick={this.handleIgnore}
+            title="Add the selected candidate to the ignore file."
+          >
+            Ignore
+          </button>
         </div>
         <UsedTransactionsComponent
           usedTransactions={this.props.candidates.used_transactions}
@@ -417,18 +483,15 @@ export class CandidatesComponent extends React.PureComponent<
     const newAccounts = substituted.map(
       ([uniqueName, accountName]) => accountName
     );
-    this.props.serverConnection.send({
-      type: "change_candidate",
-      value: {
-        generation: this.props.candidatesGeneration,
-        candidate_index: candidateIndex,
-        changes: {
-          accounts: newAccounts,
-          tags: properties.tags,
-          links: properties.links,
-          narration: properties.narration,
-          payee: properties.payee
-        }
+    executeServerCommand("change_candidate", {
+      generation: this.props.candidatesGeneration,
+      candidate_index: candidateIndex,
+      changes: {
+        accounts: newAccounts,
+        tags: properties.tags,
+        links: properties.links,
+        narration: properties.narration,
+        payee: properties.payee
       }
     });
   };
@@ -521,7 +584,12 @@ export class CandidatesComponent extends React.PureComponent<
         this.selectCandidateRelative(1);
         break;
       case "Enter":
-        this.acceptCandidate(this.state.selectedCandidateIndex);
+        this.acceptCandidate(this.state.selectedCandidateIndex, {
+          showInEditor: event.shiftKey
+        });
+        break;
+      case "i":
+        this.ignoreCandidate(event.shiftKey);
         break;
       case "#":
         this.editCurrentTransaction("tag");
@@ -548,23 +616,28 @@ export class CandidatesComponent extends React.PureComponent<
     candidateRef.startEdit(action);
   }
 
-  private acceptCandidate = (candidateIndex: number) => {
-    this.props.serverConnection.send({
-      type: "select_candidate",
-      value: {
-        index: candidateIndex,
-        generation: this.props.candidatesGeneration
+  private acceptCandidate = (
+    candidateIndex: number,
+    { showInEditor = false, ignore = false } = {}
+  ) => {
+    const promise = executeServerCommand("select_candidate", {
+      index: candidateIndex,
+      generation: this.props.candidatesGeneration,
+      ignore
+    });
+    promise.then((newEntries: BeancountEntry[]) => {
+      if (newEntries.length > 0) {
+        this.props.associatedDataViewController.selectFileByMeta(
+          newEntries[0]["meta"],
+          {
+            focus: showInEditor,
+            refresh: true,
+            switchTo: showInEditor
+          }
+        );
       }
     });
-    const candidate = this.props.candidates.candidates[candidateIndex];
-    const newEntries = candidate.new_entries;
-    if (newEntries.length > 0) {
-      this.props.associatedDataViewController.selectFileByMeta(
-        newEntries[0]["meta"],
-        /*focus=*/ false,
-        /*refresh=*/ true
-      );
-    }
+    return promise;
   };
 
   private selectCandidateRelative(amount: number) {
@@ -609,14 +682,22 @@ export class CandidatesComponent extends React.PureComponent<
     const newAccounts = substituted.map(
       ([uniqueName, accountName]) => accountName
     );
-    this.props.serverConnection.send({
-      type: "change_candidate",
-      value: {
-        generation: this.props.candidatesGeneration,
-        candidate_index: candidateIndex,
-        changes: {}
-      }
+    return executeServerCommand("change_candidate", {
+      generation: this.props.candidatesGeneration,
+      candidate_index: candidateIndex,
+      changes: {}
     });
+  };
+
+  private ignoreCandidate(showInEditor = false) {
+    const candidateIndex = this.state.selectedCandidateIndex;
+    this.fixme()!.then(() =>
+      this.acceptCandidate(candidateIndex, { showInEditor, ignore: true })
+    );
+  }
+
+  private handleIgnore = () => {
+    this.ignoreCandidate(false);
   };
 
   private handleAddLink = () => {

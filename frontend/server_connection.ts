@@ -94,18 +94,29 @@ export interface TransactionProperties {
   links: string[];
 }
 
+export interface AssociatedEntryData {
+  meta?: [string, any] | null;
+  link?: string | null;
+  description: string;
+  type: string;
+  path: string;
+}
+
 export interface Candidate {
   used_transaction_ids: number[];
   substituted_accounts: SubstitutedAccount[];
   change_sets: FileChangeSet[];
   original_transaction_properties?: TransactionProperties;
   new_entries: BeancountEntry[];
+  associated_data: AssociatedEntryData[];
 }
 
 export interface UsedTransaction {
   formatted: string;
   entry: BeancountEntry;
   pending_index: number;
+  source: string | null;
+  info: any;
 }
 
 export interface Candidates {
@@ -491,7 +502,7 @@ export class ServerConnection {
     if (newIndex < 0 || newIndex >= pending[1]) {
       return;
     }
-    this.skipTo(pending_index + amount);
+    return this.skipTo(pending_index + amount);
   }
 
   skipTo(index: number) {
@@ -502,6 +513,22 @@ export class ServerConnection {
     if (index < 0) {
       index += pending[1];
     }
-    this.send({ type: "skip", value: { generation: pending[0], index } });
+    return executeServerCommand("skip", { generation: pending[0], index });
   }
+}
+
+export function executeServerCommand(command: string, msg: any): Promise<any> {
+  return fetch(`/${secretKey}/${command}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json; charset=utf-8"
+    },
+    body: JSON.stringify(msg)
+  }).then(response => response.json());
+}
+
+export function getServerFileUrl(path: string, contentType: string): string {
+  return `/${secretKey}/get_file?path=${encodeURIComponent(
+    path
+  )}&content_type=${encodeURIComponent(contentType)}`;
 }

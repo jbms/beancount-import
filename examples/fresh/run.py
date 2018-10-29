@@ -37,6 +37,7 @@ def run_reconcile(extra_args):
     beancount_import.webserver.main(
         extra_args,
         journal_input=os.path.join(journal_dir, 'journal.beancount'),
+        ignored_journal=os.path.join(journal_dir, 'ignored.beancount'),
         default_output=os.path.join(journal_dir, 'transactions.beancount'),
         open_account_output_map=[
             ('.*', os.path.join(journal_dir, 'accounts.beancount')),

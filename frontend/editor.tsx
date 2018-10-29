@@ -31,6 +31,11 @@ import "./third_party/fava/codemirror/hint-beancount";
 
 import "./third_party/fava/codemirror/mode-beancount.js";
 
+export interface SelectFileOptions {
+  focus?: boolean;
+  refresh?: boolean;
+}
+
 interface EditorComponentProps {
   serverConnection: ServerConnection;
   dirtyStateDidChange?: (dirty: boolean) => void;
@@ -153,9 +158,9 @@ export class EditorComponent extends React.PureComponent<
   selectFile(
     filename: string | undefined,
     line?: number,
-    focus = true,
-    refresh = false
+    options: SelectFileOptions = {}
   ) {
+    const { focus = true, refresh = false } = options;
     if (filename === "") {
       filename = undefined;
     }
