@@ -229,7 +229,7 @@ class FeatureExtractor(object):
                 transaction.postings)
             if len(non_ignored_postings) != 2: return None
             source_posting = (non_ignored_postings[0] if is_unknown_account(
-                non_ignored_postings[1].account) else non_ignored_postings[0])
+                non_ignored_postings[1].account) else non_ignored_postings[1])
             cur_source = self.account_source_map.get(source_posting.account)
             if cur_source is None: return None
             key_value_pairs = cur_source.get_example_key_value_pairs(
