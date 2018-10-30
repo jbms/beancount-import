@@ -1,0 +1,11 @@
+{
+  "id": "79184124027478022589",
+  "payment_processor": "Square",
+  "merchant": "Some merchant",
+  "items": [
+    "Some purchase"
+  ],
+  "timestamp": 1532403683000,
+  "units": 10.0,
+  "currency": "USD"
+}

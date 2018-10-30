@@ -110,6 +110,9 @@ The currently supported set of data sources is:
 - [beancount_import.source.healthequity](beancount_import/source/healthequity.py):
   supports [HealthEquity.com](https://healthequity.com) HSA accounts, including
   both cash and investment transactions.
+- [beancount_import.source.google_purchases](beancount_import/source/google_purchases.py):
+  imports purchases from that Google has [heuristically extracted from Gmail
+  messages](https://myaccount.google.com/purchases).
 
 Refer to the individual data source documentation for details on configuration.
 

@@ -1,0 +1,23 @@
+;; date: 2017-10-15
+;; info: {"filename": "<testdata>/88348393419580772365.html", "type": "text/html"}
+
+; features: [
+;             null,
+;             null
+;           ]
+2017-10-15 * "AutoZone" "Relay - Blower Motor" ^google_purchase.88348393419580772365
+  associated_data0: "{\"description\": \"Purchase details\", \"link\": \"google_purchase.88348393419580772365\", \"path\": \"<testdata>/88348393419580772365.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME   21.84 USD
+  Expenses:FIXME  -21.84 USD
+
+;; date: 2018-07-23
+;; info: {"filename": "<testdata>/79184124027478022589.html", "type": "text/html"}
+
+; features: [
+;             null,
+;             null
+;           ]
+2018-07-23 * "Square - Some merchant" "Some purchase" ^google_purchase.79184124027478022589
+  associated_data0: "{\"description\": \"Purchase details\", \"link\": \"google_purchase.79184124027478022589\", \"path\": \"<testdata>/79184124027478022589.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME   10.00 USD
+  Expenses:FIXME  -10.00 USD
