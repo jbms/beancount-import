@@ -485,7 +485,7 @@ class Application(tornado.web.Application):
             self.set_state(
                 errors=(generation, len(loaded_reconciler.errors)),
                 invalid=(generation, len(loaded_reconciler.invalid_references)),
-                accounts=list(loaded_reconciler.editor.accounts.keys()),
+                accounts=sorted(loaded_reconciler.editor.accounts.keys()),
                 journal_filenames=sorted(
                     list(loaded_reconciler.editor.journal_filenames)))
             self.current_errors = loaded_reconciler.errors
@@ -510,6 +510,11 @@ class Application(tornado.web.Application):
                 uncleared=(generation,
                            len(loaded_reconciler.uncleared_postings)),
             )
+
+        accounts = sorted(loaded_reconciler.editor.accounts.keys())
+        if accounts != self.current_state['accounts']:
+            kwargs.update(accounts=accounts)
+
         self.current_pending = loaded_reconciler.pending_data
         self.current_uncleared = loaded_reconciler.uncleared_postings
         if self.next_candidates is None:
@@ -572,8 +577,8 @@ class Application(tornado.web.Application):
                         ignore=ignore,
                     )
                     self._notify_modified_files(result.modified_filenames)
-                    return result.new_entries
                     self.get_next_candidates(new_pending=True)
+                    return result.new_entries
         except:
             traceback.print_exc()
             print('got error')
