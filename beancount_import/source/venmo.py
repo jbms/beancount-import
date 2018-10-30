@@ -117,6 +117,7 @@ import datetime
 import os
 import collections
 import csv
+import re
 from typing import Dict, Tuple, List, Union, Sequence
 
 import dateutil.parser
@@ -366,7 +367,7 @@ class VenmoSource(Source):
                         (VENMO_TYPE_KEY, txn_type),
                     ]),
                 )
-        note = raw_txn[CSV_NOTE_KEY]
+        note = re.sub(r'\s+', ' ', raw_txn[CSV_NOTE_KEY])
         payee = 'Venmo'
         if is_payment_txn:
             if original_amount.number > ZERO:
