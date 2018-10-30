@@ -1,26 +1,28 @@
 """Parses an Amazon.com regular or digital order details HTML file."""
 
 from typing import NamedTuple, Optional, List, Union, Iterable, Dict, Sequence, cast
-import bs4
 import collections
 import re
-import decimal
 import os
+import functools
 import datetime
+
+import bs4
 import dateutil.parser
 import beancount.core.amount
 from beancount.core.amount import Amount
-from beancount.core.number import D, ZERO
-import functools
+from beancount.core.number import D, ZERO, Decimal
 
 from ..amount_parsing import parse_amount, parse_number
+
+
 Errors = List[str]
 Adjustment = NamedTuple('Adjustment', [
     ('description', str),
     ('amount', Amount),
 ])
 Item = NamedTuple('Item', [
-    ('quantity', decimal.Decimal),
+    ('quantity', Decimal),
     ('description', str),
     ('sold_by', str),
     ('condition', Optional[str]),
@@ -74,7 +76,7 @@ def to_json(obj):
         return [to_json(x) for x in obj]
     if isinstance(obj, dict):
         return collections.OrderedDict((k, to_json(v)) for k, v in obj.items())
-    if isinstance(obj, decimal.Decimal):
+    if isinstance(obj, Decimal):
         return str(obj)
     if isinstance(obj, datetime.date):
         return obj.strftime('%Y-%m-%d')
@@ -254,13 +256,16 @@ def parse_shipments(soup) -> List[Shipment]:
 
 
 def parse_credit_card_transactions_from_payments_table(
-        payment_table, order_date: datetime.date) -> List[CreditCardTransaction]:
+        payment_table,
+        order_date: datetime.date) -> List[CreditCardTransaction]:
     payment_text = '\n'.join(payment_table.strings)
     m = re.search(r'\n\s*Grand Total:\s+(.*)\n', payment_text)
     assert m is not None
     grand_total = parse_amount(m.group(1).strip())
 
-    m = re.search(r'\n\s*([^\s|][^|\n]*[^|\s])\s+\|\s+Last (?:4 )?digits:\s+([0-9]{4})\n', payment_text)
+    m = re.search(
+        r'\n\s*([^\s|][^|\n]*[^|\s])\s+\|\s+Last (?:4 )?digits:\s+([0-9]{4})\n',
+        payment_text)
     if m is None:
         m = re.search(r'\n\s*(.+)\s+ending in\s+([0-9]{4})\n', payment_text)
 
@@ -641,6 +646,7 @@ def main():
             print(repr(result))
     if args.json:
         print(json.dumps(to_json(results), indent=4))
+
 
 if __name__ == '__main__':
     main()

@@ -9,11 +9,10 @@ import hashlib
 import string
 import random
 import pickle
-from decimal import Decimal
 
 from beancount.core.data import Transaction, Posting, Balance, Open, Close, Price, Directive, Entries, Amount
 from beancount.core.flags import FLAG_PADDING
-from beancount.core.number import MISSING
+from beancount.core.number import MISSING, Decimal
 import beancount.parser.printer
 
 from . import training

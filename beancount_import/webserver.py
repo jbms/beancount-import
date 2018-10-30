@@ -22,10 +22,8 @@ import tornado.httpserver
 import tornado.netutil
 import tornado.websocket
 
-from decimal import Decimal
-
 from beancount.core.data import Transaction, Posting
-from beancount.core.number import MISSING
+from beancount.core.number import MISSING, Decimal
 import beancount.parser.printer
 
 from . import reconcile

@@ -120,14 +120,12 @@ set.  The resulting sum must equal 0 within a small tolerance.
 
 """
 
-import bisect
 import datetime
 import collections
 import itertools
-from decimal import Decimal
 from typing import Sequence, Tuple, List, NamedTuple, Dict, Callable, Optional, Iterable, Set, cast, FrozenSet, Union, Any
 
-from beancount.core.number import MISSING, ZERO
+from beancount.core.number import MISSING, ZERO, Decimal
 from beancount.core.data import Transaction, Posting, Meta, Cost, CostSpec
 from beancount.core.amount import mul as amount_mul
 from beancount.core.amount import Amount
