@@ -418,7 +418,6 @@ import re
 from typing import Set, Tuple, Any, Dict, Union, List, Optional, NamedTuple
 import os
 import collections
-from decimal import Decimal
 import datetime
 import tempfile
 
@@ -427,6 +426,7 @@ from beancount.core.data import Transaction, Posting, Balance, Commodity, Price,
 from beancount.core.flags import FLAG_OKAY
 from beancount.core.number import D
 from beancount.core.number import ZERO
+from beancount.core.number import Decimal
 from beancount.core.amount import Amount
 from beancount.core.position import CostSpec
 from beancount.core.number import MISSING
