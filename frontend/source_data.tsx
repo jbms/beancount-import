@@ -36,7 +36,9 @@ const SourceDataListItem = styled<{ selected: boolean }, "div">("div")`
   cursor: pointer;
   background-color: ${p => (p.selected ? "#fcc" : "transparent")};
 
-  :hover { text-decoration: underline; }
+  :hover {
+    text-decoration: underline;
+  }
 `;
 
 const SourceDataIdentifier = styled.span`
