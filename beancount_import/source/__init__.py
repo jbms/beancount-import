@@ -110,6 +110,11 @@ InvalidSourceReference = NamedTuple('InvalidSourceReference', [
 ])
 
 
+def invalid_source_reference_sort_key(
+        x: InvalidSourceReference) -> List[datetime.date]:
+    return [p[0].date for p in x.transaction_posting_pairs]
+
+
 class SourceResults:
     def __init__(self):
         self.pending = []  # type: List[ImportResult]

@@ -18,7 +18,7 @@ import beancount.parser.printer
 from . import training
 from . import matching
 from . import journal_editor
-from .source import ImportResult, load_source, SourceResults, Source, LogFunction, AssociatedData, InvalidSourceReference
+from .source import ImportResult, load_source, SourceResults, Source, LogFunction, AssociatedData, InvalidSourceReference, invalid_source_reference_sort_key
 from .posting_date import get_posting_date
 
 from .thread_helpers import call_in_new_thread
@@ -556,6 +556,7 @@ class LoadedReconciler(object):
                     ImportResult(date=entry.date, entries=(entry, ), info=None),
                     None))
 
+        invalid_references.sort(key=invalid_source_reference_sort_key)
         self.invalid_references = invalid_references
         self.uncleared_postings = []  # type: List[Tuple[Transaction, Posting]]
         self._get_uncleared_postings()

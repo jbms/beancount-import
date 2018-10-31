@@ -10,7 +10,7 @@ import beancount.parser.printer
 from beancount.core.data import Posting, Transaction, Meta, Directive, Entries
 
 from ..journal_editor import JournalEditor
-from . import load_source as _load_source, ImportResult, SourceResults, SourceSpec, InvalidSourceReference, PredictionInput, Source
+from . import load_source as _load_source, ImportResult, SourceResults, SourceSpec, InvalidSourceReference, PredictionInput, Source, invalid_source_reference_sort_key
 from .. import training
 from .. import test_util
 
@@ -151,7 +151,10 @@ def check_source_example(example_dir: str,
     extractor = training.FeatureExtractor(
         sources=sources, account_source_map=account_source_map)
     for filename, new_contents in _add_invalid_reference_and_cleared_metadata(
-            editor, source, results.invalid_references).items():
+            editor, source,
+            sorted(
+                results.invalid_references,
+                key=invalid_source_reference_sort_key)).items():
         test_util.check_golden_contents(
             filename,
             new_contents,
