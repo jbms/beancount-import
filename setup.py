@@ -29,6 +29,7 @@ setup(
         'scipy',
         'scikit-learn',
         'nltk',
+        'dateutil',
     ],
     test_requirements=[
         'pytest',

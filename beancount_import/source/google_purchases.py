@@ -37,6 +37,12 @@ end with a `.` or other delimiter.  It is concatenated with the purchase `id` to
 form a unique `link` to apply to the generated transaction that associates it
 with the purchase data.
 
+You may also optionally specify a `time_zone` property to specify the time zone
+to use to convert the timestamps to dates.  The value of `time_zone` should be a
+IANA time zone name, or a valid TZ environment variable value, or `None` (to
+indicate local time), and is passed to the `dateutil.tz.gettz` function.  By
+default, the local time is used.
+
 Imported transaction format
 ===========================
 
@@ -62,6 +68,7 @@ import os
 import collections
 import json
 
+import dateutil.tz
 from beancount.core.number import D, ZERO
 from beancount.core.data import Open, Transaction, Posting, Amount, Pad, Balance, Entries, Directive
 from beancount_import.source import ImportResult, SourceResults, Source, InvalidSourceReference, AssociatedData
@@ -71,9 +78,11 @@ date_format = '%Y-%m-%d'
 
 
 def make_import_result(purchase: Any, link_prefix: str,
+                       tz_info: Optional[datetime.tzinfo],
                        html_path: str) -> ImportResult:
     purchase_id = str(purchase['id'])
-    date = datetime.date.fromtimestamp(purchase['timestamp'] / 1000)
+    date = datetime.datetime.fromtimestamp(purchase['timestamp'] / 1000,
+                                           tz_info).date()
     payment_processor = purchase['payment_processor']
     merchant = purchase['merchant']
     items = purchase['items']
@@ -129,10 +138,12 @@ def make_import_result(purchase: Any, link_prefix: str,
 
 
 class GooglePurchasesSource(Source):
-    def __init__(self, directory: str, link_prefix: str, **kwargs) -> None:
+    def __init__(self, directory: str, link_prefix: str,
+                 time_zone: Optional[str], **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
         self.link_prefix = link_prefix
+        self.tz_info = dateutil.tz.gettz(time_zone)
 
     def _preprocess_entries(self,
                             entries: Entries) -> Dict[str, List[Transaction]]:
@@ -162,6 +173,7 @@ class GooglePurchasesSource(Source):
             results.add_pending_entry(
                 make_import_result(
                     receipt,
+                    tz_info=self.tz_info,
                     link_prefix=self.link_prefix,
                     html_path=self._get_html_path(receipt_id)))
         for receipt_id, entries in receipts_seen_in_journal.items():

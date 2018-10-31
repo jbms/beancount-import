@@ -22,5 +22,6 @@ def test_source(name: str):
             'module': 'beancount_import.source.google_purchases',
             'directory': testdata_dir,
             'link_prefix': 'google_purchase.',
+            'time_zone': 'US/Pacific',
         },
         replacements=[(testdata_dir, '<testdata>')])
