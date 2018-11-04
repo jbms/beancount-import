@@ -32,8 +32,8 @@ classifier_cache_version_number = 1
 PendingEntry = NamedTuple('PendingEntry', [
     ('date', datetime.date),
     ('entries', Entries),
-    ('source', Source),
-    ('info', Dict[str, Any]),
+    ('source', Optional[Source]),
+    ('info', Optional[Dict[str, Any]]),
     ('formatted', str),
     ('id', str),
 ])
@@ -349,7 +349,7 @@ def stage_missing_accounts(stage, entry_file_selector, account_map=None):
         stage.add_entry(open_entry, entry_file_selector(open_entry))
 
 
-def make_pending_entry(import_result: ImportResult, source: Source):
+def make_pending_entry(import_result: ImportResult, source: Optional[Source]):
     printer = beancount.parser.printer.EntryPrinter()
     formatted = '\n'.join(printer(e) for e in import_result.entries)
     identifier = hashlib.sha256(formatted.encode()).hexdigest()
@@ -392,8 +392,9 @@ class LoadedReconciler(object):
         self.balance_entries = dict(
         )  # type: Dict[Tuple[datetime.date, str, str], Decimal]
         self.price_values = set()  # type: Set[Tuple[datetime.date, str, Amount]]
-        self._match_sources()
+        all_source_results = self._prepare_sources()
         self._preprocess_entries()
+        self._match_sources(all_source_results)
         self._feature_extractor = training.FeatureExtractor(
             account_source_map=self.account_source_map,
             ignore_account_pattern=reconciler.options[
@@ -502,15 +503,12 @@ class LoadedReconciler(object):
             #         errors += 1
             # print('Classifier accuracy: %.4f', 1 - float(errors) / len(training_examples))
 
-    def _match_sources(self):
+    def _prepare_sources(self) -> List[SourceResults]:
         self.reconciler.log_status('Matching source data')
-        source_balance_and_price_entries = collections.OrderedDict(
-        )  # type: Dict[Source, List[Directive]]
-
-        import_results = []
+        self.account_source_map = dict()  # type: Dict[str, Source]
         invalid_references = [
         ]  # type: List[Tuple[Source, InvalidSourceReference]]
-        self.account_source_map = dict()
+        all_source_results = []  # type: List[SourceResults]
         for source in self.sources:
             source_results = SourceResults()
             source.prepare(self.editor, source_results)
@@ -524,10 +522,22 @@ class LoadedReconciler(object):
                         if k in meta:
                             message_source[k] = meta[k]
                 self.errors.append((message[0], message[1], message_source))
-            filtered_import_results, balance_and_price_entries = self._filter_import_results(
-                source, source_results.pending)
             invalid_references.extend(
                 (source, r) for r in source_results.invalid_references)
+            all_source_results.append(source_results)
+        invalid_references.sort(
+            key=lambda x: invalid_source_reference_sort_key(x[1]))
+        self.invalid_references = invalid_references
+        return all_source_results
+
+    def _match_sources(self, all_source_results: List[SourceResults]):
+        source_balance_and_price_entries = collections.OrderedDict(
+        )  # type: Dict[Source, List[Directive]]
+
+        import_results = []
+        for source, source_results in zip(self.sources, all_source_results):
+            filtered_import_results, balance_and_price_entries = self._filter_import_results(
+                source, source_results.pending)
             if balance_and_price_entries:
                 balance_and_price_entries.sort(key=lambda x: x.date)
                 source_balance_and_price_entries[
@@ -556,8 +566,6 @@ class LoadedReconciler(object):
                     ImportResult(date=entry.date, entries=(entry, ), info=None),
                     None))
 
-        invalid_references.sort(key=invalid_source_reference_sort_key)
-        self.invalid_references = invalid_references
         self.uncleared_postings = []  # type: List[Tuple[Transaction, Posting]]
         self._get_uncleared_postings()
 
@@ -636,7 +644,7 @@ class LoadedReconciler(object):
 
     def _filter_import_results(self, source: Source,
                                import_results: List[ImportResult]
-                               ) -> Tuple[List[ImportResult], List[Directive]]:
+                               ) -> Tuple[List[PendingEntry], List[Directive]]:
         account_pattern = self.reconciler.options['account_pattern']
         output = []
         balance_and_price_entries = []  # type: List[Directive]

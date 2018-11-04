@@ -22,7 +22,8 @@ mint_data_path = os.path.realpath(
 def _encode_pending_entries(pending_list: List[reconcile.PendingEntry]) -> str:
     out = io.StringIO()
     for pending in pending_list:
-        out.write(';; source: %s\n' % (pending.source.name, ))
+        out.write(';; source: %s\n' % (pending.source.name
+                                       if pending.source else 'fixme', ))
         out.write(';; date: %s\n' % pending.date.strftime('%Y-%m-%d'))
         out.write(';; info: %s\n\n' % json.dumps(pending.info, sort_keys=True))
         for entry in pending.entries:
@@ -268,3 +269,47 @@ def test_ignore(tmpdir: py.path.local):
     tester.snapshot()
     tester.accept_candidate(0, ignore=True)
     tester.snapshot()
+
+def test_ofx_basic(tmpdir: py.path.local):
+    tester = ReconcileGoldenTester(
+        golden_directory=os.path.join(testdata_root, 'reconcile',
+                                      'test_ofx_basic'),
+        temp_dir=str(tmpdir),
+        replacements=[
+            (testdata_root, '<testdata>'),
+        ],
+        options=dict(
+            data_sources=[
+                {
+                    'module':
+                    'beancount_import.source.ofx',
+                    'ofx_filenames': [
+                        os.path.join(testdata_root, 'source', 'ofx',
+                                     'vanguard_roth_ira.ofx')
+                    ],
+                },
+            ],
+        ),
+    )
+
+def test_ofx_matching(tmpdir: py.path.local):
+    tester = ReconcileGoldenTester(
+        golden_directory=os.path.join(testdata_root, 'reconcile',
+                                      'test_ofx_matching'),
+        temp_dir=str(tmpdir),
+        replacements=[
+            (testdata_root, '<testdata>'),
+        ],
+        options=dict(
+            data_sources=[
+                {
+                    'module':
+                    'beancount_import.source.ofx',
+                    'ofx_filenames': [
+                        os.path.join(testdata_root, 'source', 'ofx',
+                                     'vanguard_roth_ira.ofx')
+                    ],
+                },
+            ],
+        ),
+    )

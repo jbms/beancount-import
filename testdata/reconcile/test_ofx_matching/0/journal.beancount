@@ -1,0 +1,19 @@
+plugin "beancount.plugins.auto_accounts"
+
+1900-01-01 open Assets:Retirement:Vanguard:Roth-IRA
+  ofx_org: "MyBank"
+  ofx_broker_id: "MyBank"
+  ofx_account_type: "securities_only"
+  account_id: "123456789"
+  div_income_account: "Income:Vanguard:Dividends"
+
+2018-06-21 * "REINVEST - DIV"
+  Assets:Retirement:Vanguard:Roth-IRA:TYCDT  31.704 TYCDT {2.94 USD}
+    date: 2018-06-21
+    ofx_fitid: "7c9254b784a.a9bd.edcfa27b.b"
+    ofx_type: "REINVEST"
+  Income:Vanguard:Dividends:TYCDT            -93.21 USD
+
+2018-07-03 balance Assets:Retirement:Vanguard:Roth-IRA:TYCDT       31.704 TYCDT
+
+2018-07-03 price TYCDT                               84.20 USD

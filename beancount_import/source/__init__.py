@@ -100,9 +100,11 @@ if False:
 
 from ..training import TrainingExamples, PredictionInput, ExampleKeyValuePairs
 
-ImportResult = NamedTuple('ImportResult', [('date', datetime.date),
-                                           ('entries', Entries),
-                                           ('info', Dict[str, Any])])
+ImportResult = NamedTuple('ImportResult', [
+    ('date', datetime.date),
+    ('entries', Entries),
+    ('info', Optional[Dict[str, Any]]),
+])
 
 InvalidSourceReference = NamedTuple('InvalidSourceReference', [
     ('num_extras', int),
