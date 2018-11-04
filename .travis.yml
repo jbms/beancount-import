@@ -18,5 +18,7 @@ matrix:
         - npm run build
 install:
   - pip install tox-travis
+  - pip install coveralls
 script:
   - tox
+  - coveralls

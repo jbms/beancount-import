@@ -5,3 +5,5 @@
 frontend/node_modules
 beancount_import/frontend_dist
 .tox
+.coverage
+htmlcov/

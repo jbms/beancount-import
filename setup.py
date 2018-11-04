@@ -33,5 +33,6 @@ setup(
     ],
     test_requirements=[
         'pytest',
+        'coverage',
     ],
 )
