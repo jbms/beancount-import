@@ -138,8 +138,11 @@ def make_import_result(purchase: Any, link_prefix: str,
 
 
 class GooglePurchasesSource(Source):
-    def __init__(self, directory: str, link_prefix: str,
-                 time_zone: Optional[str], **kwargs) -> None:
+    def __init__(self,
+                 directory: str,
+                 link_prefix: str,
+                 time_zone: Optional[str] = None,
+                 **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
         self.link_prefix = link_prefix
