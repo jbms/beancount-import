@@ -1,0 +1,9 @@
+plugin "beancount.plugins.auto_accounts"
+
+2017-10-15 * "AutoZone" "Relay - Blower Motor" ^google_purchase.88348393419580772365
+  Expenses:Car   21.84 USD
+  Assets:Checking  -21.84 USD
+
+2018-07-23 * "Square - Some merchant" "Some purchase" ^google_purchase.79184124027478022589
+  Expenses:Miscellaneous   10.00 USD
+  Assets:Checking  -10.00 USD

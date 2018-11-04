@@ -11,6 +11,8 @@ testdata_dir = os.path.realpath(
 
 examples = [
     'test_basic',
+    'test_matching',
+    'test_invalid',
 ]
 
 
