@@ -5,6 +5,7 @@ each other and with existing transactions.
 
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
 [![Build Status](https://travis-ci.com/jbms/beancount-import.svg?branch=master)](https://travis-ci.com/jbms/beancount-import)
+[![Coverage Status](https://coveralls.io/repos/github/jbms/beancount-import/badge.svg?branch=master)](https://coveralls.io/github/jbms/beancount-import?branch=master)
 
 # Key features
 
