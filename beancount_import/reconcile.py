@@ -12,7 +12,7 @@ import pickle
 
 from beancount.core.data import Transaction, Posting, Balance, Open, Close, Price, Directive, Entries, Amount
 from beancount.core.flags import FLAG_PADDING
-from beancount.core.number import MISSING, Decimal
+from beancount.core.number import MISSING, Decimal, ZERO
 import beancount.parser.printer
 
 from . import training
@@ -593,6 +593,8 @@ class LoadedReconciler(object):
             if entry.flag == FLAG_PADDING: continue
             for posting in entry.postings:
                 if posting.meta and posting.meta.get(CLEARED_KEY) == True:
+                    continue
+                if posting.units is not MISSING and posting.units.number == ZERO:
                     continue
                 source = account_source_map.get(posting.account)
                 if source is None: continue
