@@ -30,6 +30,7 @@ setup(
         'scikit-learn',
         'nltk',
         'python-dateutil',
+        'atomicwrites',
     ],
     test_requirements=[
         'pytest',

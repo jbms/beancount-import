@@ -422,6 +422,7 @@ import datetime
 import tempfile
 
 import bs4
+from atomicwrites import atomic_write
 from beancount.core.data import Transaction, Posting, Balance, Commodity, Price, Open, EMPTY_SET
 from beancount.core.flags import FLAG_OKAY
 from beancount.core.number import D
@@ -1333,20 +1334,8 @@ class OfxSource(Source):
                 'source_fitids': self.source_fitids,
                 'parsed_files': self.parsed_files
             }
-            renamed = False
-            with tempfile.NamedTemporaryFile(
-                    mode='wb',
-                    dir=os.path.dirname(cache_filename),
-                    prefix='.' + os.path.basename(cache_filename),
-                    suffix='.tmp',
-                    delete=False) as wcache_f:
-                try:
-                    pickle.dump(cache_data, wcache_f)
-                    os.rename(cache_f.name, cache_filename)
-                    renamed = True
-                finally:
-                    if not renamed:
-                        os.remove(wcache_f.name)
+            with atomic_write(cache_filename, mode='wb', overwrite=True) as wcache_f:
+                pickle.dump(cache_data, wcache_f)
 
     def get_example_key_value_pairs(self, transaction: Transaction,
                                     posting: Posting) -> ExampleKeyValuePairs:
