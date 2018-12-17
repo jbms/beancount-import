@@ -130,11 +130,6 @@ from . import ImportResult, Source, SourceResults, InvalidSourceReference
 from ..matching import FIXME_ACCOUNT
 from ..journal_editor import JournalEditor
 
-SOURCE_DATA_KEYS = ['source_data'] + ['source_data%d' % x for x in range(1, 3)]
-SOURCE_DESC_KEYS = ['source_desc'] + ['source_desc%d' % x for x in range(1, 3)]
-
-MATCHED_METADATA_KEYS = frozenset(SOURCE_DESC_KEYS)
-
 VENMO_TRANSFER_KEY = 'venmo_transfer_id'
 VENMO_PAYMENT_KEY = 'venmo_payment_id'
 VENMO_TYPE_KEY = 'venmo_type'
