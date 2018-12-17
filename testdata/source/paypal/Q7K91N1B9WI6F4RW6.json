@@ -1,0 +1,82 @@
+{
+  "itemDetails": {
+    "itemList": [
+      {
+        "name": "Men's Jeans",
+        "number": "123457890123",
+        "quantity": 2,
+        "url": "http://cgi.ebay.com/ws/eBayISAPI.dll?ViewItem&item=123457890123",
+        "price": "$12.99",
+        "isNegative": false,
+        "itemTotalPrice": "$25.98"
+      }
+    ],
+    "salesTax": "$2.34",
+    "shippingAmount": "$13.00"
+  },
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "CREDIT_CARD",
+        "last4": "1234",
+        "institution": "VISA",
+        "issuer_product_description": "Chase Visa",
+        "statementName": "PAYPAL *ABCDEF",
+        "amount": "$41.32",
+        "currencyCode": "USD"
+      }
+    ]
+  },
+  "fptiTag": "purchase",
+  "counterparty": {
+    "detailsCounterpartyText": "abcdef (abcdef)",
+    "name": "eBay - abcdef (abcdef)",
+    "url": "",
+    "isBusiness": true
+  },
+  "actions": {},
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/cgi-bin/webscr?cmd=_comres_flow&trans_id=Q7K91N1B9WI6F4RW6&select_dispute_type=1"
+    }
+  },
+  "paidWithHeader": "Paid with",
+  "showClassicDetails": false,
+  "merchantCategory": "Retail",
+  "viewContext": "activity",
+  "displayStatus": "Refunded",
+  "transactionTypeEnum": "EBAY_PURCHASE",
+  "transactionType": "Payment",
+  "txnTypeServiceKey": "PAYMENT",
+  "status": "PARTIALLY_REFUNDED",
+  "date": "November 27, 2016",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": false,
+  "isBuyer": true,
+  "isSeller": false,
+  "transactionId": "Q7K91N1B9WI6F4RW6",
+  "amount": {
+    "grossAmount": "$41.32",
+    "netAmount": "$41.32",
+    "fullPageNetAmount": "$41.32",
+    "feeAmount": "$0.00",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Fee"
+  },
+  "isShipped": true,
+  "flags": {
+    "isWinSMBEligible": true,
+    "isEbay": true,
+    "claimStatusMessage": null,
+    "showPurchaseDetails": true,
+    "hasActions": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/Q7K91N1B9WI6F4RW6",
+    "target": "_blank"
+  },
+  "partner": {}
+}

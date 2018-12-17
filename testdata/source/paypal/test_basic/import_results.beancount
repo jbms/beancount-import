@@ -1,0 +1,366 @@
+;; date: 2012-10-16
+;; info: {"filename": "<testdata>/JNNTICIP9966PELUB.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "12.70 USD",
+;               "date": "2012-10-16",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "Payment Administrator"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2012-10-16 * "Payment Administrator" "Money Sent" ^paypal.JNNTICIP9966PELUB
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.JNNTICIP9966PELUB\", \"path\": \"<testdata>/JNNTICIP9966PELUB.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A   12.70 USD
+    paypal_counterparty: "Payment Administrator"
+    paypal_counterparty_email: "payment@example.com"
+  Assets:Paypal     -12.70 USD
+    date: 2012-10-16
+    paypal_transaction_id: "JNNTICIP9966PELUB"
+
+;; date: 2012-10-16
+;; info: {"filename": "<testdata>/RNPYPAWXEWBUUBNER.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "-12.70 USD",
+;               "date": "2012-10-16",
+;               "key_value_pairs": {
+;                 "paypal_funding_source_institution": [
+;                   "My Bank"
+;                 ],
+;                 "paypal_funding_source_last4": [
+;                   "1234"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2012-10-16 * "Bank Account" "Transfer from Bank" ^paypal.RNPYPAWXEWBUUBNER
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.RNPYPAWXEWBUUBNER\", \"path\": \"<testdata>/RNPYPAWXEWBUUBNER.html\", \"type\": \"text/html\"}"
+  Assets:Paypal    12.70 USD
+    date: 2012-10-16
+    paypal_transaction_id: "RNPYPAWXEWBUUBNER"
+  Expenses:FIXME  -12.70 USD
+    paypal_funding_source_institution: "My Bank"
+    paypal_funding_source_last4: "1234"
+
+;; date: 2013-04-29
+;; info: {"filename": "<testdata>/5TO8EO8C4DZE4QCC7.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "-700.00 USD",
+;               "date": "2013-04-29",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "Bank Account"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2013-04-29 * "Bank Account" "MONEY_TRANSFER" ^paypal.5TO8EO8C4DZE4QCC7
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.5TO8EO8C4DZE4QCC7\", \"path\": \"<testdata>/5TO8EO8C4DZE4QCC7.html\", \"type\": \"text/html\"}"
+  Assets:Paypal    700.00 USD
+    date: 2013-04-29
+    paypal_transaction_id: "5TO8EO8C4DZE4QCC7"
+  Expenses:FIXME  -700.00 USD
+    paypal_counterparty: "Bank Account"
+
+;; date: 2013-04-29
+;; info: {"filename": "<testdata>/LZ63BPLO2CIA3MUIG.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "-700.00 USD",
+;               "date": "2013-04-29",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "John Smith"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2013-04-29 * "John Smith" "Money Received" ^paypal.LZ63BPLO2CIA3MUIG
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.LZ63BPLO2CIA3MUIG\", \"path\": \"<testdata>/LZ63BPLO2CIA3MUIG.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A  -700.00 USD
+    paypal_counterparty: "John Smith"
+    paypal_counterparty_email: "john.smith@example.com"
+  Assets:Paypal      700.00 USD
+    date: 2013-04-29
+    paypal_transaction_id: "LZ63BPLO2CIA3MUIG"
+
+;; date: 2014-09-09
+;; info: {"filename": "<testdata>/266LYBQVWC7P8PXV0.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "70.00 USD",
+;               "date": "2014-09-09",
+;               "key_value_pairs": {
+;                 "paypal_funding_source_institution": [
+;                   "My Bank"
+;                 ],
+;                 "paypal_funding_source_last4": [
+;                   "1234"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2014-09-09 * "Bank Account" "Transfer to Bank" ^paypal.266LYBQVWC7P8PXV0
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.266LYBQVWC7P8PXV0\", \"path\": \"<testdata>/266LYBQVWC7P8PXV0.html\", \"type\": \"text/html\"}"
+  Assets:Paypal   -70.00 USD
+    date: 2014-09-09
+    paypal_transaction_id: "266LYBQVWC7P8PXV0"
+  Expenses:FIXME   70.00 USD
+    paypal_funding_source_institution: "My Bank"
+    paypal_funding_source_last4: "1234"
+
+;; date: 2015-03-31
+;; info: {"filename": "<testdata>/2E3QJ9XJSU8TZ8O2D.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "15.90 USD",
+;               "date": "2015-03-31",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "On-Line Taxes, Inc."
+;                 ],
+;                 "paypal_item_name": [
+;                   "Preparation and Efile Federal Tax Return"
+;                 ],
+;                 "paypal_item_number": [
+;                   "FED01DK001"
+;                 ],
+;                 "paypal_merchant_category": [
+;                   "Accounting"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "-15.90 USD",
+;               "date": "2015-03-31",
+;               "key_value_pairs": {
+;                 "paypal_funding_source_description": [
+;                   "Chase Visa"
+;                 ],
+;                 "paypal_funding_source_institution": [
+;                   "VISA"
+;                 ],
+;                 "paypal_funding_source_last4": [
+;                   "1234"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2015-03-31 * "On-Line Taxes, Inc." "Payment" ^paypal.2E3QJ9XJSU8TZ8O2D
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.2E3QJ9XJSU8TZ8O2D\", \"path\": \"<testdata>/2E3QJ9XJSU8TZ8O2D.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A   15.90 USD
+    paypal_counterparty: "On-Line Taxes, Inc."
+    paypal_counterparty_email: "customerservice@olt.com"
+    paypal_counterparty_phone: "816-232-0095"
+    paypal_counterparty_url: "http://www.olt.com"
+    paypal_item_name: "Preparation and Efile Federal Tax Return"
+    paypal_item_number: "FED01DK001"
+    paypal_merchant_category: "Accounting"
+  Expenses:FIXME    -15.90 USD
+    paypal_funding_source_description: "Chase Visa"
+    paypal_funding_source_institution: "VISA"
+    paypal_funding_source_last4: "1234"
+
+;; date: 2016-05-15
+;; info: {"filename": "<testdata>/2RG4T9AJK3BT2DOV6.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "80.00 USD",
+;               "date": "2016-05-15",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "John Smith"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "-82.62 USD",
+;               "date": "2016-05-15",
+;               "key_value_pairs": {
+;                 "paypal_funding_source_description": [
+;                   "Debit Card"
+;                 ],
+;                 "paypal_funding_source_institution": [
+;                   "VISA"
+;                 ],
+;                 "paypal_funding_source_last4": [
+;                   "1234"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2016-05-15 * "John Smith" "Money Sent - Reimbursement for something" ^paypal.2RG4T9AJK3BT2DOV6
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.2RG4T9AJK3BT2DOV6\", \"path\": \"<testdata>/2RG4T9AJK3BT2DOV6.html\", \"type\": \"text/html\"}"
+  Expenses:Financial:Paypal:Fees    2.62 USD
+  Expenses:FIXME:A                 80.00 USD
+    paypal_counterparty: "John Smith"
+    paypal_counterparty_email: "john.smith@example.com"
+    paypal_note: "Reimbursement for something"
+  Expenses:FIXME                  -82.62 USD
+    paypal_funding_source_description: "Debit Card"
+    paypal_funding_source_institution: "VISA"
+    paypal_funding_source_last4: "1234"
+
+;; date: 2016-11-27
+;; info: {"filename": "<testdata>/Q7K91N1B9WI6F4RW6.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "13.00 USD",
+;               "date": "2016-11-27",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "eBay - abcdef (abcdef)",
+;                   "eBay - abcdef (abcdef)",
+;                   "eBay - abcdef (abcdef)"
+;                 ],
+;                 "paypal_item_name": [
+;                   "Men's Jeans"
+;                 ],
+;                 "paypal_item_number": [
+;                   "123457890123"
+;                 ],
+;                 "paypal_merchant_category": [
+;                   "Retail",
+;                   "Retail",
+;                   "Retail"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "-41.32 USD",
+;               "date": "2016-11-27",
+;               "key_value_pairs": {
+;                 "paypal_funding_source_description": [
+;                   "Chase Visa"
+;                 ],
+;                 "paypal_funding_source_institution": [
+;                   "VISA"
+;                 ],
+;                 "paypal_funding_source_last4": [
+;                   "1234"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2016-11-27 * "eBay - abcdef (abcdef)" "Payment" ^paypal.Q7K91N1B9WI6F4RW6
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.Q7K91N1B9WI6F4RW6\", \"path\": \"<testdata>/Q7K91N1B9WI6F4RW6.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A   25.98 USD
+    paypal_counterparty: "eBay - abcdef (abcdef)"
+    paypal_item_name: "Men's Jeans"
+    paypal_item_number: "123457890123"
+    paypal_item_quantity: 2
+    paypal_item_url: "http://cgi.ebay.com/ws/eBayISAPI.dll?ViewItem&item=123457890123"
+    paypal_merchant_category: "Retail"
+  Expenses:FIXME:A    2.34 USD
+    paypal_counterparty: "eBay - abcdef (abcdef)"
+    paypal_item_type: "salesTax"
+    paypal_merchant_category: "Retail"
+  Expenses:FIXME:A   13.00 USD
+    paypal_counterparty: "eBay - abcdef (abcdef)"
+    paypal_item_type: "shippingAmount"
+    paypal_merchant_category: "Retail"
+  Expenses:FIXME    -41.32 USD
+    paypal_funding_source_description: "Chase Visa"
+    paypal_funding_source_institution: "VISA"
+    paypal_funding_source_last4: "1234"
+
+;; date: 2016-11-28
+;; info: {"filename": "<testdata>/QP94N44GI0CANF206.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "-25.98 USD",
+;               "date": "2016-11-28",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "eBay - Alex smith"
+;                 ],
+;                 "paypal_item_name": [
+;                   "Purchase amount"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2016-11-28 * "eBay - Alex smith" "Refund" ^paypal.QP94N44GI0CANF206
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.QP94N44GI0CANF206\", \"path\": \"<testdata>/QP94N44GI0CANF206.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A  -25.98 USD
+    paypal_counterparty: "eBay - Alex smith"
+    paypal_item_name: "Purchase amount"
+  Assets:Paypal      25.98 USD
+    date: 2016-11-28
+    paypal_transaction_id: "QP94N44GI0CANF206"
+
+;; date: 2017-12-31
+;; info: {"filename": "<testdata>/5NQL1Z2P9VQI76J2A.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "1000.00 USD",
+;               "date": "2017-12-31",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "PayPal Giving Fund"
+;                 ],
+;                 "paypal_item_name": [
+;                   "Donation via PayPal Giving Fund for The Against Malaria Foundation (US)"
+;                 ],
+;                 "paypal_merchant_category": [
+;                   "Donations"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "-1000.00 USD",
+;               "date": "2017-12-31",
+;               "key_value_pairs": {
+;                 "paypal_funding_source_description": [
+;                   "Chase Visa"
+;                 ],
+;                 "paypal_funding_source_institution": [
+;                   "VISA"
+;                 ],
+;                 "paypal_funding_source_last4": [
+;                   "1234"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2017-12-31 * "PayPal Giving Fund" "Payment" ^paypal.5NQL1Z2P9VQI76J2A
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.5NQL1Z2P9VQI76J2A\", \"path\": \"<testdata>/5NQL1Z2P9VQI76J2A.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A   1000.00 USD
+    paypal_counterparty: "PayPal Giving Fund"
+    paypal_counterparty_email: "care@paypalgivingfund.org"
+    paypal_counterparty_phone: "888-221-1161"
+    paypal_counterparty_url: "http://www.paypal.com/us/givingfund/contact"
+    paypal_item_name: "Donation via PayPal Giving Fund for The Against Malaria Foundation (US)"
+    paypal_merchant_category: "Donations"
+  Expenses:FIXME    -1000.00 USD
+    paypal_funding_source_description: "Chase Visa"
+    paypal_funding_source_institution: "VISA"
+    paypal_funding_source_last4: "1234"

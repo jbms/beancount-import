@@ -1,0 +1,94 @@
+{
+  "itemDetails": {
+    "itemList": [
+      {
+        "name": "Preparation and Efile Federal Tax Return",
+        "number": "FED01DK001",
+        "price": "$15.90",
+        "isNegative": false,
+        "itemTotalPrice": "$15.90"
+      }
+    ]
+  },
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "CREDIT_CARD",
+        "last4": "1234",
+        "institution": "VISA",
+        "issuer_product_description": "Chase Visa",
+        "statementName": "PAYPAL *ONLINETAXES",
+        "amount": "$15.90",
+        "currencyCode": "USD"
+      }
+    ]
+  },
+  "shippingDetails": [
+    {
+      "address": {
+        "countryCode": "US",
+        "line1": "3003 California St.",
+        "city": "Berkeley",
+        "state": "CA",
+        "postalCode": "94703",
+        "countryName": "United States",
+        "addresseeName": "Jeremy Maitin-Shepard"
+      }
+    }
+  ],
+  "fptiTag": "purchase",
+  "counterparty": {
+    "detailsCounterpartyText": "On-Line Taxes, Inc.",
+    "name": "On-Line Taxes, Inc.",
+    "email": "customerservice@olt.com",
+    "url": "http://www.olt.com",
+    "phone": "816-232-0095",
+    "isBusiness": true
+  },
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/cgi-bin/webscr?cmd=_comres_flow&trans_id=2E3QJ9XJSU8TZ8O2D&select_dispute_type=1"
+    }
+  },
+  "paidWithHeader": "Paid with",
+  "showClassicDetails": false,
+  "merchantCategory": "Accounting",
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "PAYMENT_SENT",
+  "transactionType": "Payment",
+  "txnTypeServiceKey": "PAYMENT",
+  "status": "COMPLETED",
+  "date": "March 31, 2015",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": false,
+  "isBuyer": true,
+  "isSeller": false,
+  "transactionId": "2E3QJ9XJSU8TZ8O2D",
+  "amount": {
+    "grossAmount": "$15.90",
+    "netAmount": "$15.90",
+    "fullPageNetAmount": "$15.90",
+    "feeAmount": "$0.00",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Fee"
+  },
+  "isShipped": false,
+  "flags": {
+    "isWinSMBEligible": true,
+    "claimStatusMessage": null,
+    "showPurchaseDetails": true,
+    "hasActions": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/2E3QJ9XJSU8TZ8O2D",
+    "target": "_blank"
+  },
+  "partner": {
+    "contactPhone": "816-232-0095",
+    "contactEmail": "customerservice@olt.com"
+  }
+}

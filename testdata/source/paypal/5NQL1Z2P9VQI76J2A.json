@@ -1,0 +1,79 @@
+{
+  "itemDetails": {
+    "itemList": [
+      {
+        "name": "Donation via PayPal Giving Fund for The Against Malaria Foundation (US)",
+        "price": "$1,000.00",
+        "isNegative": false,
+        "itemTotalPrice": "$1,000.00"
+      }
+    ]
+  },
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "CREDIT_CARD",
+        "last4": "1234",
+        "institution": "VISA",
+        "issuer_product_description": "Chase Visa",
+        "statementName": "PAYPAL *GIVING FUND",
+        "amount": "$1,000.00",
+        "currencyCode": "USD"
+      }
+    ]
+  },
+  "fptiTag": "purchase",
+  "counterparty": {
+    "detailsCounterpartyText": "PayPal Giving Fund",
+    "name": "PayPal Giving Fund",
+    "email": "care@paypalgivingfund.org",
+    "url": "http://www.paypal.com/us/givingfund/contact",
+    "phone": "888-221-1161",
+    "isBusiness": true
+  },
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/cgi-bin/webscr?cmd=_comres_flow&trans_id=5NQL1Z2P9VQI76J2A&select_dispute_type=1"
+    }
+  },
+  "paidWithHeader": "Paid with",
+  "showClassicDetails": false,
+  "merchantCategory": "Donations",
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "PAYMENT_SENT",
+  "transactionType": "Payment",
+  "txnTypeServiceKey": "PAYMENT",
+  "status": "COMPLETED",
+  "date": "December 31, 2017",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": false,
+  "isBuyer": true,
+  "isSeller": false,
+  "transactionId": "5NQL1Z2P9VQI76J2A",
+  "amount": {
+    "grossAmount": "$1,000.00",
+    "netAmount": "$1,000.00",
+    "fullPageNetAmount": "$1,000.00",
+    "feeAmount": "$0.00",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Fee"
+  },
+  "flags": {
+    "isWinSMBEligible": true,
+    "claimStatusMessage": null,
+    "showPurchaseDetails": true,
+    "hasActions": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/5NQL1Z2P9VQI76J2A",
+    "target": "_blank"
+  },
+  "partner": {
+    "contactPhone": "888-221-1161",
+    "contactEmail": "care@paypalgivingfund.org"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "BANK_ACCOUNT",
+        "last4": "1234",
+        "institution": "My Bank",
+        "amount": "$12.70",
+        "currencyCode": "USD"
+      }
+    ]
+  },
+  "fptiTag": "transfrombank",
+  "counterparty": {
+    "detailsCounterpartyText": "Bank Account",
+    "name": "Bank Account",
+    "url": "",
+    "isBusiness": true
+  },
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/cgi-bin/webscr?cmd=_comres_flow&trans_id=RNPYPAWXEWBUUBNER&select_dispute_type=1"
+    },
+    "sellerProtectionPolicy": {
+      "target": "_blank",
+      "linkUrl": "/webapps/mpp/ua/useragreement-full#11"
+    }
+  },
+  "showClassicDetails": false,
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "TRANSFER_FROM_BANK",
+  "transactionType": "Transfer from Bank",
+  "txnTypeServiceKey": "MONEY_TRANSFER",
+  "status": "COMPLETED",
+  "date": "October 16, 2012",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": true,
+  "isBuyer": false,
+  "isSeller": true,
+  "transactionId": "RNPYPAWXEWBUUBNER",
+  "amount": {
+    "grossAmount": "$12.70",
+    "netAmount": "$12.70",
+    "fullPageNetAmount": "$12.70",
+    "feeAmount": "$0.00",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Fee"
+  },
+  "flags": {
+    "isWinSMBEligible": true,
+    "hasActions": true,
+    "isDeposit": true,
+    "isBalanceTransfer": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/RNPYPAWXEWBUUBNER",
+    "target": "_blank"
+  },
+  "partner": {}
+}

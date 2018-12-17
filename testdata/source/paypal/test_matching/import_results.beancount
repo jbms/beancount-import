@@ -1,0 +1,108 @@
+;; date: 2016-05-15
+;; info: {"filename": "<testdata>/2RG4T9AJK3BT2DOV6.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "80.00 USD",
+;               "date": "2016-05-15",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "John Smith"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "-82.62 USD",
+;               "date": "2016-05-15",
+;               "key_value_pairs": {
+;                 "paypal_funding_source_description": [
+;                   "Debit Card"
+;                 ],
+;                 "paypal_funding_source_institution": [
+;                   "VISA"
+;                 ],
+;                 "paypal_funding_source_last4": [
+;                   "1234"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2016-05-15 * "John Smith" "Money Sent - Reimbursement for something" ^paypal.2RG4T9AJK3BT2DOV6
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.2RG4T9AJK3BT2DOV6\", \"path\": \"<testdata>/2RG4T9AJK3BT2DOV6.html\", \"type\": \"text/html\"}"
+  Expenses:Financial:Paypal:Fees    2.62 USD
+  Expenses:FIXME:A                 80.00 USD
+    paypal_counterparty: "John Smith"
+    paypal_counterparty_email: "john.smith@example.com"
+    paypal_note: "Reimbursement for something"
+  Expenses:FIXME                  -82.62 USD
+    paypal_funding_source_description: "Debit Card"
+    paypal_funding_source_institution: "VISA"
+    paypal_funding_source_last4: "1234"
+
+;; date: 2016-11-27
+;; info: {"filename": "<testdata>/Q7K91N1B9WI6F4RW6.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "13.00 USD",
+;               "date": "2016-11-27",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "eBay - abcdef (abcdef)",
+;                   "eBay - abcdef (abcdef)",
+;                   "eBay - abcdef (abcdef)"
+;                 ],
+;                 "paypal_item_name": [
+;                   "Men's Jeans"
+;                 ],
+;                 "paypal_item_number": [
+;                   "123457890123"
+;                 ],
+;                 "paypal_merchant_category": [
+;                   "Retail",
+;                   "Retail",
+;                   "Retail"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "-41.32 USD",
+;               "date": "2016-11-27",
+;               "key_value_pairs": {
+;                 "paypal_funding_source_description": [
+;                   "Chase Visa"
+;                 ],
+;                 "paypal_funding_source_institution": [
+;                   "VISA"
+;                 ],
+;                 "paypal_funding_source_last4": [
+;                   "1234"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2016-11-27 * "eBay - abcdef (abcdef)" "Payment" ^paypal.Q7K91N1B9WI6F4RW6
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.Q7K91N1B9WI6F4RW6\", \"path\": \"<testdata>/Q7K91N1B9WI6F4RW6.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A   25.98 USD
+    paypal_counterparty: "eBay - abcdef (abcdef)"
+    paypal_item_name: "Men's Jeans"
+    paypal_item_number: "123457890123"
+    paypal_item_quantity: 2
+    paypal_item_url: "http://cgi.ebay.com/ws/eBayISAPI.dll?ViewItem&item=123457890123"
+    paypal_merchant_category: "Retail"
+  Expenses:FIXME:A    2.34 USD
+    paypal_counterparty: "eBay - abcdef (abcdef)"
+    paypal_item_type: "salesTax"
+    paypal_merchant_category: "Retail"
+  Expenses:FIXME:A   13.00 USD
+    paypal_counterparty: "eBay - abcdef (abcdef)"
+    paypal_item_type: "shippingAmount"
+    paypal_merchant_category: "Retail"
+  Expenses:FIXME    -41.32 USD
+    paypal_funding_source_description: "Chase Visa"
+    paypal_funding_source_institution: "VISA"
+    paypal_funding_source_last4: "1234"

@@ -1,0 +1,70 @@
+{
+  "itemDetails": {
+    "itemList": [
+      {
+        "name": "Purchase amount",
+        "price": "$25.98",
+        "isNegative": false,
+        "itemTotalPrice": "$0.00"
+      }
+    ]
+  },
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "BALANCE",
+        "amount": "$25.98",
+        "currencyCode": "USD"
+      }
+    ]
+  },
+  "fptiTag": "purchase:refund",
+  "counterparty": {
+    "detailsCounterpartyText": "Alex smith",
+    "name": "eBay - Alex smith",
+    "isBusiness": true
+  },
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/cgi-bin/webscr?cmd=_comres_flow&trans_id=QP94N44GI0CANF206&select_dispute_type=1"
+    }
+  },
+  "paidWithHeader": "Paid with",
+  "showClassicDetails": false,
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "REFUND",
+  "transactionType": "Refund",
+  "txnTypeServiceKey": "REFUND",
+  "status": "COMPLETED",
+  "date": "November 28, 2016",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": true,
+  "isBuyer": true,
+  "isSeller": false,
+  "transactionId": "QP94N44GI0CANF206",
+  "amount": {
+    "grossAmount": "$25.98",
+    "netAmount": "$25.98",
+    "fullPageNetAmount": "$25.98",
+    "feeAmount": "$0.00",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Fee"
+  },
+  "flags": {
+    "isWinSMBEligible": true,
+    "isRefund": true,
+    "hasActions": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/QP94N44GI0CANF206",
+    "target": "_blank"
+  },
+  "partner": {
+    "contactPhone": "123-456-7890",
+    "contactEmail": "alex@example.com"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "BANK_ACCOUNT",
+        "last4": "1234",
+        "institution": "My Bank",
+        "amount": "$12.70",
+        "currencyCode": "USD"
+      }
+    ]
+  },
+  "fptiTag": "moneysent",
+  "counterparty": {
+    "detailsCounterpartyText": "Payment Administrator",
+    "name": "Payment Administrator",
+    "email": "payment@example.com",
+    "url": "",
+    "isBusiness": false
+  },
+  "backupFundingSource": {
+    "type": "CREDIT_CARD",
+    "last4": "1234",
+    "institution": "VISA"
+  },
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/cgi-bin/webscr?cmd=_comres_flow&trans_id=JNNTICIP9966PELUB&select_dispute_type=1"
+    }
+  },
+  "paidWithHeader": "Paid with",
+  "showClassicDetails": false,
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "SEND_MONEY_SENT",
+  "transactionType": "Money Sent",
+  "txnTypeServiceKey": "PAYMENT",
+  "status": "COMPLETED",
+  "date": "October 16, 2012",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": false,
+  "isBuyer": true,
+  "isSeller": false,
+  "transactionId": "JNNTICIP9966PELUB",
+  "amount": {
+    "grossAmount": "$12.70",
+    "netAmount": "$12.70",
+    "fullPageNetAmount": "$12.70",
+    "feeAmount": "$0.00",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Fee"
+  },
+  "flags": {
+    "isWinSMBEligible": true,
+    "claimStatusMessage": null,
+    "isP2PPersonal": true,
+    "showPaymentDetails": true,
+    "hasActions": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/JNNTICIP9966PELUB",
+    "target": "_blank"
+  },
+  "partner": {}
+}

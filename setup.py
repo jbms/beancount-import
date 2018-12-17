@@ -31,6 +31,7 @@ setup(
         'nltk',
         'python-dateutil',
         'atomicwrites',
+        'jsonschema',
     ],
     test_requirements=[
         'pytest',

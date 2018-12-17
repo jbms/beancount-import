@@ -1,0 +1,69 @@
+{
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "CREDIT_CARD",
+        "last4": "1234",
+        "institution": "VISA",
+        "issuer_product_description": "Debit Card",
+        "statementName": "PAYPAL *JOHNSMITH JOHN",
+        "amount": "$82.62",
+        "currencyCode": "USD"
+      }
+    ]
+  },
+  "fptiTag": "moneysent",
+  "counterparty": {
+    "detailsCounterpartyText": "John Smith",
+    "name": "John Smith",
+    "email": "john.smith@example.com",
+    "url": "",
+    "isBusiness": false
+  },
+  "notesInfo": {
+    "context": "to",
+    "note": "Reimbursement for something"
+  },
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/cgi-bin/webscr?cmd=_comres_flow&trans_id=2RG4T9AJK3BT2DOV6&select_dispute_type=1"
+    }
+  },
+  "paidWithHeader": "Paid with",
+  "showClassicDetails": false,
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "SEND_MONEY_SENT",
+  "transactionType": "Money Sent",
+  "txnTypeServiceKey": "PAYMENT",
+  "status": "COMPLETED",
+  "date": "May 15, 2016",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": false,
+  "isBuyer": true,
+  "isSeller": false,
+  "transactionId": "2RG4T9AJK3BT2DOV6",
+  "amount": {
+    "grossAmount": "$80.00",
+    "netAmount": "$82.62",
+    "fullPageNetAmount": "$82.62",
+    "feeAmount": "$2.62",
+    "grossExceedsNet": false,
+    "isZeroFee": false,
+    "feeLabel": "Fee"
+  },
+  "flags": {
+    "isWinSMBEligible": true,
+    "claimStatusMessage": null,
+    "isP2PPersonal": true,
+    "showPaymentDetails": true,
+    "hasActions": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/2RG4T9AJK3BT2DOV6",
+    "target": "_blank"
+  },
+  "partner": {}
+}

@@ -1,0 +1,68 @@
+plugin "beancount.plugins.auto_accounts"
+
+2012-10-16 * "Payment Administrator" "Money Sent" ^paypal.JNNTICIP9966PELUB
+  Expenses:Admin   12.70 USD
+    paypal_counterparty: "Payment Administrator"
+    paypal_counterparty_email: "payment@example.com"
+  Assets:Paypal   -12.70 USD
+
+2012-10-16 * "Bank Account" "Transfer from Bank" ^paypal.RNPYPAWXEWBUUBNER
+  Assets:Paypal    12.70 USD
+    paypal_transaction_id: "RNPYPAWXEWBUUBNER"
+    cleared: TRUE
+  Assets:Checking  -12.70 USD
+    paypal_funding_source_institution: "My Bank"
+    paypal_funding_source_last4: "1234"
+
+2013-04-29 * "Bank Account" "MONEY_TRANSFER" ^paypal.5TO8EO8C4DZE4QCC7
+  Assets:Paypal    700.00 USD
+    paypal_transaction_id: "5TO8EO8C4DZE4QCC7"
+    cleared: TRUE
+  Assets:Checking  -700.00 USD
+    paypal_counterparty: "Bank Account"
+
+2013-04-29 * "John Smith" "Money Received" ^paypal.LZ63BPLO2CIA3MUIG
+  Assets:Receivable:John-Smith  -700.00 USD
+    paypal_counterparty: "John Smith"
+    paypal_counterparty_email: "john.smith@example.com"
+  Assets:Paypal    700.00 USD
+
+2014-09-09 * "Bank Account" "Transfer to Bank" ^paypal.266LYBQVWC7P8PXV0
+  Assets:Paypal   -70.00 USD
+    paypal_transaction_id: "266LYBQVWC7P8PXV0"
+    cleared: TRUE
+  Assets:Checking   70.00 USD
+    paypal_funding_source_institution: "My Bank"
+    paypal_funding_source_last4: "1234"
+
+2015-03-31 * "On-Line Taxes, Inc." "Payment" ^paypal.2E3QJ9XJSU8TZ8O2D
+  Expenses:Tax-Preparation   15.90 USD
+    paypal_counterparty: "On-Line Taxes, Inc."
+    paypal_counterparty_email: "customerservice@olt.com"
+    paypal_counterparty_phone: "816-232-0095"
+    paypal_counterparty_url: "http://www.olt.com"
+    paypal_item_name: "Preparation and Efile Federal Tax Return"
+  Liabilities:Credit-Card    -15.90 USD
+    paypal_funding_source_description: "Chase Visa"
+    paypal_funding_source_institution: "VISA"
+    paypal_funding_source_last4: "1234"
+
+2016-11-28 * "eBay - Alex smith" "Refund" ^paypal.QP94N44GI0CANF206
+  Expenses:Clothing  -25.98 USD
+    paypal_counterparty: "eBay - Alex smith"
+    paypal_item_name: "Purchase amount"
+  Assets:Paypal      25.98 USD
+    paypal_transaction_id: "QP94N44GI0CANF206"
+    cleared: TRUE
+
+2017-12-31 * "PayPal Giving Fund" "Payment" ^paypal.5NQL1Z2P9VQI76J2A
+  Expenses:Donations   1000.00 USD
+    paypal_counterparty: "PayPal Giving Fund"
+    paypal_counterparty_email: "care@paypalgivingfund.org"
+    paypal_counterparty_phone: "888-221-1161"
+    paypal_counterparty_url: "http://www.paypal.com/us/givingfund/contact"
+    paypal_item_name: "Donation via PayPal Giving Fund for The Against Malaria Foundation (US)"
+  Liabilities:Credit-Card    -1000.00 USD
+    paypal_funding_source_description: "Chase Visa"
+    paypal_funding_source_institution: "VISA"
+    paypal_funding_source_last4: "1234"

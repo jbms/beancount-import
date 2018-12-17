@@ -1,0 +1,159 @@
+[
+  [
+    {
+      "amount": "12.70 USD",
+      "date": "2012-10-16",
+      "key_value_pairs": {
+        "paypal_counterparty": [
+          "Payment Administrator"
+        ]
+      },
+      "source_account": ""
+    },
+    "Expenses:Admin"
+  ],
+  [
+    {
+      "amount": "-12.70 USD",
+      "date": "2012-10-16",
+      "key_value_pairs": {
+        "paypal_funding_source_institution": [
+          "My Bank"
+        ],
+        "paypal_funding_source_last4": [
+          "1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Assets:Checking"
+  ],
+  [
+    {
+      "amount": "-700.00 USD",
+      "date": "2013-04-29",
+      "key_value_pairs": {
+        "paypal_counterparty": [
+          "Bank Account"
+        ]
+      },
+      "source_account": ""
+    },
+    "Assets:Checking"
+  ],
+  [
+    {
+      "amount": "-700.00 USD",
+      "date": "2013-04-29",
+      "key_value_pairs": {
+        "paypal_counterparty": [
+          "John Smith"
+        ]
+      },
+      "source_account": ""
+    },
+    "Assets:Receivable:John-Smith"
+  ],
+  [
+    {
+      "amount": "70.00 USD",
+      "date": "2014-09-09",
+      "key_value_pairs": {
+        "paypal_funding_source_institution": [
+          "My Bank"
+        ],
+        "paypal_funding_source_last4": [
+          "1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Assets:Checking"
+  ],
+  [
+    {
+      "amount": "15.90 USD",
+      "date": "2015-03-31",
+      "key_value_pairs": {
+        "paypal_counterparty": [
+          "On-Line Taxes, Inc."
+        ],
+        "paypal_item_name": [
+          "Preparation and Efile Federal Tax Return"
+        ]
+      },
+      "source_account": ""
+    },
+    "Expenses:Tax-Preparation"
+  ],
+  [
+    {
+      "amount": "-15.90 USD",
+      "date": "2015-03-31",
+      "key_value_pairs": {
+        "paypal_funding_source_description": [
+          "Chase Visa"
+        ],
+        "paypal_funding_source_institution": [
+          "VISA"
+        ],
+        "paypal_funding_source_last4": [
+          "1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ],
+  [
+    {
+      "amount": "-25.98 USD",
+      "date": "2016-11-28",
+      "key_value_pairs": {
+        "paypal_counterparty": [
+          "eBay - Alex smith"
+        ],
+        "paypal_item_name": [
+          "Purchase amount"
+        ]
+      },
+      "source_account": ""
+    },
+    "Expenses:Clothing"
+  ],
+  [
+    {
+      "amount": "1000.00 USD",
+      "date": "2017-12-31",
+      "key_value_pairs": {
+        "paypal_counterparty": [
+          "PayPal Giving Fund"
+        ],
+        "paypal_item_name": [
+          "Donation via PayPal Giving Fund for The Against Malaria Foundation (US)"
+        ]
+      },
+      "source_account": ""
+    },
+    "Expenses:Donations"
+  ],
+  [
+    {
+      "amount": "-1000.00 USD",
+      "date": "2017-12-31",
+      "key_value_pairs": {
+        "paypal_funding_source_description": [
+          "Chase Visa"
+        ],
+        "paypal_funding_source_institution": [
+          "VISA"
+        ],
+        "paypal_funding_source_last4": [
+          "1234"
+        ]
+      },
+      "source_account": ""
+    },
+    "Liabilities:Credit-Card"
+  ]
+]

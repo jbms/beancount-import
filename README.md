@@ -114,6 +114,8 @@ The currently supported set of data sources is:
 - [beancount_import.source.google_purchases](beancount_import/source/google_purchases.py):
   imports purchases from that Google has [heuristically extracted from Gmail
   messages](https://myaccount.google.com/purchases).
+- [beancount_import.source.paypal](beancount_import/source/paypal.py):
+  imports Paypal transactions.
 
 Refer to the individual data source documentation for details on configuration.
 

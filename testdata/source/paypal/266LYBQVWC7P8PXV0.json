@@ -1,0 +1,61 @@
+{
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "BANK_ACCOUNT",
+        "last4": "1234",
+        "institution": "My Bank",
+        "amount": "$70.00",
+        "currencyCode": "USD"
+      }
+    ]
+  },
+  "fptiTag": "trans2bank",
+  "counterparty": {
+    "detailsCounterpartyText": "Bank Account",
+    "name": "Bank Account",
+    "url": "",
+    "isBusiness": true
+  },
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/cgi-bin/webscr?cmd=_comres_flow&trans_id=266LYBQVWC7P8PXV0&select_dispute_type=1"
+    }
+  },
+  "paidWithHeader": "Paid with",
+  "showClassicDetails": false,
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "TRANSFER_TO_BANK",
+  "transactionType": "Transfer to Bank",
+  "txnTypeServiceKey": "MONEY_TRANSFER",
+  "status": "COMPLETED",
+  "date": "September 9, 2014",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": false,
+  "isBuyer": true,
+  "isSeller": false,
+  "transactionId": "266LYBQVWC7P8PXV0",
+  "amount": {
+    "grossAmount": "$70.00",
+    "netAmount": "$70.00",
+    "fullPageNetAmount": "$70.00",
+    "feeAmount": "$0.00",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Fee"
+  },
+  "flags": {
+    "isWinSMBEligible": true,
+    "hasActions": true,
+    "isWithdrawToBank": true,
+    "isBalanceTransfer": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/266LYBQVWC7P8PXV0",
+    "target": "_blank"
+  },
+  "partner": {}
+}

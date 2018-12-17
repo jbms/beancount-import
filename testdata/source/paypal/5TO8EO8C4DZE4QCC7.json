@@ -1,0 +1,51 @@
+{
+  "fptiTag": "paymentrec",
+  "counterparty": {
+    "detailsCounterpartyText": "Bank Account",
+    "name": "Bank Account",
+    "url": "",
+    "isBusiness": true
+  },
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/cgi-bin/webscr?cmd=_comres_flow&trans_id=5TO8EO8C4DZE4QCC7&select_dispute_type=1"
+    },
+    "sellerProtectionPolicy": {
+      "target": "_blank",
+      "linkUrl": "/webapps/mpp/ua/useragreement-full#11"
+    }
+  },
+  "showClassicDetails": false,
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "MONEY_TRANSFER",
+  "transactionType": "MONEY_TRANSFER",
+  "txnTypeServiceKey": "MONEY_TRANSFER",
+  "status": "COMPLETED",
+  "date": "April 29, 2013",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": true,
+  "isBuyer": false,
+  "isSeller": true,
+  "transactionId": "5TO8EO8C4DZE4QCC7",
+  "amount": {
+    "grossAmount": "$700.00",
+    "netAmount": "$700.00",
+    "fullPageNetAmount": "$700.00",
+    "feeAmount": "$0.00",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Fee"
+  },
+  "flags": {
+    "isWinSMBEligible": true,
+    "hasActions": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/5TO8EO8C4DZE4QCC7",
+    "target": "_blank"
+  },
+  "partner": {}
+}
