@@ -239,7 +239,8 @@ class Source:
     that generates key-value features from the metadata value.
     """
 
-    def __init__(self, log_status: Callable[[str], None]) -> None:
+    def __init__(self, log_status: Callable[[str], None], **kwargs) -> None:
+        super().__init__(**kwargs)  # type: ignore
         self.log_status = log_status
         self.example_posting_key_extractors = dict(
         )  # type: Dict[str, ExampleKeyExtractor]

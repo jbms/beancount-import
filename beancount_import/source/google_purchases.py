@@ -71,8 +71,9 @@ import json
 import dateutil.tz
 from beancount.core.number import D, ZERO
 from beancount.core.data import Open, Transaction, Posting, Amount, Pad, Balance, Entries, Directive
-from beancount_import.source import ImportResult, SourceResults, Source, InvalidSourceReference, AssociatedData
-from beancount_import.matching import FIXME_ACCOUNT
+from . import ImportResult, SourceResults, Source, InvalidSourceReference, AssociatedData
+from .link_based_source import LinkBasedSource
+from ..matching import FIXME_ACCOUNT
 
 date_format = '%Y-%m-%d'
 
@@ -137,39 +138,27 @@ def make_import_result(purchase: Any, link_prefix: str,
     )
 
 
-class GooglePurchasesSource(Source):
+class GooglePurchasesSource(LinkBasedSource, Source):
     def __init__(self,
                  directory: str,
-                 link_prefix: str,
                  time_zone: Optional[str] = None,
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
-        self.link_prefix = link_prefix
         self.tz_info = dateutil.tz.gettz(time_zone)
 
-    def _preprocess_entries(self,
-                            entries: Entries) -> Dict[str, List[Transaction]]:
-        link_prefix = self.link_prefix
-        seen_receipts = dict()  # type: Dict[str, Entries]
-        for entry in entries:
-            if not isinstance(entry, Transaction): continue
-            for link in entry.links:
-                if not link.startswith(link_prefix): continue
-                receipt_id = link[len(link_prefix):]
-                seen_receipts.setdefault(receipt_id, []).append(entry)
-        return seen_receipts
-
     def prepare(self, journal, results: SourceResults):
-        receipts_seen_in_journal = self._preprocess_entries(journal.all_entries)
         json_suffix = '.json'
-        receipts_seen_in_directory = set()
-        for filename in os.listdir(self.directory):
-            if not filename.endswith(json_suffix): continue
-            receipt_id = os.path.basename(filename)[:-len(json_suffix)]
-            receipts_seen_in_directory.add(receipt_id)
+        receipt_ids = frozenset(x[:-len(json_suffix)]
+                                for x in os.listdir(self.directory)
+                                if x.endswith(json_suffix))
+        receipts_seen_in_journal = self.get_entries_with_link(
+            all_entries=journal.all_entries,
+            valid_links=receipt_ids,
+            results=results)
+        for receipt_id in sorted(receipt_ids):
             if receipt_id in receipts_seen_in_journal: continue
-            path = os.path.join(self.directory, filename)
+            path = os.path.join(self.directory, receipt_id + json_suffix)
             self.log_status('google_purchases: processing %s' % (path, ))
             with open(path, 'r') as f:
                 receipt = json.load(f)
@@ -179,33 +168,19 @@ class GooglePurchasesSource(Source):
                     tz_info=self.tz_info,
                     link_prefix=self.link_prefix,
                     html_path=self._get_html_path(receipt_id)))
-        for receipt_id, entries in receipts_seen_in_journal.items():
-            expected_count = 1 if receipt_id in receipts_seen_in_directory else 0
-            if len(entries) == expected_count: continue
-            results.add_invalid_reference(
-                InvalidSourceReference(
-                    num_extras=len(entries) - expected_count,
-                    transaction_posting_pairs=[(t, None) for t in entries]))
 
     def _get_html_path(self, receipt_id: str):
         return os.path.join(self.directory, receipt_id + '.html')
 
-    def get_associated_data(self,
-                            entry: Directive) -> Optional[List[AssociatedData]]:
-        if not isinstance(entry, Transaction): return None
-        link_prefix = self.link_prefix
-        associated_data = []  # type: List[AssociatedData]
-        for link in entry.links:
-            if link.startswith(link_prefix):
-                receipt_id = link[len(link_prefix):]
-                associated_data.append(
-                    AssociatedData(
-                        link=link,
-                        description='Purchase details',
-                        type='text/html',
-                        path=self._get_html_path(receipt_id),
-                    ))
-        return associated_data
+    def get_associated_data_for_link(
+            self, entry_id: str) -> Optional[List[AssociatedData]]:
+        return [
+            AssociatedData(
+                description='Purchase details',
+                type='text/html',
+                path=self._get_html_path(entry_id),
+            )
+        ]
 
     @property
     def name(self):
