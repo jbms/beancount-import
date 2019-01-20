@@ -1,0 +1,23 @@
+;; date: 2019-01-10
+;; info: {"filename": "<testdata>/12345678.jpg", "type": "image/jpeg"}
+
+; features: [
+;             null,
+;             null
+;           ]
+2019-01-10 * "Solar4America Ice" ^waveapps.12345678
+  associated_data0: "{\"description\": \"Receipt image\", \"link\": \"waveapps.12345678\", \"path\": \"<testdata>/12345678.jpg\", \"type\": \"image/jpeg\"}"
+  Expenses:FIXME   34.00 USD
+  Expenses:FIXME  -34.00 USD
+
+;; date: 2019-01-19
+;; info: {"filename": "<testdata>/10000001.jpg", "type": "image/jpeg"}
+
+; features: [
+;             null,
+;             null
+;           ]
+2019-01-19 * "Robee's Falafel" "Falafel plate" ^waveapps.10000001
+  associated_data0: "{\"description\": \"Receipt image\", \"link\": \"waveapps.10000001\", \"path\": \"<testdata>/10000001.jpg\", \"type\": \"image/jpeg\"}"
+  Expenses:FIXME   13.50 USD
+  Expenses:FIXME  -13.50 USD

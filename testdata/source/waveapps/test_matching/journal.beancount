@@ -1,0 +1,5 @@
+plugin "beancount.plugins.auto_accounts"
+
+2019-01-10 * "Solar4America Ice" ^waveapps.12345678
+  Expenses:FIXME   34.00 USD
+  Expenses:FIXME  -34.00 USD

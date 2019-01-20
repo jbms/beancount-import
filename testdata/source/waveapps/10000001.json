@@ -1,0 +1,25 @@
+{
+  "account_pk": null,
+  "active": true,
+  "currency_code": "USD",
+  "date": "2019-01-19",
+  "id": 10000001,
+  "images": [
+    {
+      "file": "https://wave-prod-recpt.s3.amazonaws.com/media/receipt_images/19224701/cee01e10-3e69-44e5-b6ff-beab5a9aa11f.jpg",
+      "medium_size": "https://wave-prod-recpt.s3.amazonaws.com/media/receipt_images/19224701/cee01e10-3e69-44e5-b6ff-beab5a9aa11f.jpg.400x0_q85.jpg",
+      "thumbnail": "https://wave-prod-recpt.s3.amazonaws.com/media/receipt_images/19224701/cee01e10-3e69-44e5-b6ff-beab5a9aa11f.jpg.100x100_q85.jpg"
+    }
+  ],
+  "merchant": "Robee's Falafel",
+  "modified_at": "2019-01-20T11:52:07-05:00",
+  "note": "Falafel plate",
+  "payment_account_pk": null,
+  "receipt_type": "standard",
+  "source": "android",
+  "status": "Ready",
+  "submitted_at": "2019-01-20T11:51:00-05:00",
+  "subtotal": null,
+  "taxes": [],
+  "total": "13.50"
+}

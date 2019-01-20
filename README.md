@@ -116,6 +116,9 @@ The currently supported set of data sources is:
   messages](https://myaccount.google.com/purchases).
 - [beancount_import.source.paypal](beancount_import/source/paypal.py):
   imports Paypal transactions.
+- [beancount_import.source.waveapps](beancount_import/source/waveapps.py):
+  imports receipts from [Wave](https://waveapps.com), a free receipt-scanning
+  website/mobile app.
 
 Refer to the individual data source documentation for details on configuration.
 
