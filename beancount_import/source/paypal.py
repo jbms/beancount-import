@@ -20,7 +20,7 @@ Specifying the source to beancount_import
 =========================================
 
 Within your Python script for invoking beancount_import, you might use an
-expression like the following to specify the venmo source:
+expression like the following to specify the Paypal source:
 
     dict(module='beancount_import.source.paypal',
          directory=os.path.join(journal_dir, 'data', 'paypal', '<account_id>'),
