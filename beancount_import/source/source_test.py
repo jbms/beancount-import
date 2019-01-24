@@ -1,6 +1,7 @@
 from typing import List, Optional, Union, Tuple, Dict, Any
 
 import collections
+import datetime
 import io
 import os
 import json
@@ -31,14 +32,19 @@ def _json_encode_prediction_input(x: Optional[PredictionInput]) -> Any:
     return result
 
 
+def _encode_json_default(obj: Any) -> Any:
+    if isinstance(obj, datetime.date):
+        return obj.strftime('%Y-%m-%d')
+
+
 def _format_import_results(import_results: List[ImportResult],
                            extractor: training.FeatureExtractor,
                            source: Source) -> str:
     out = io.StringIO()
     for import_result in import_results:
         out.write(';; date: %s\n' % import_result.date.strftime('%Y-%m-%d'))
-        out.write(
-            ';; info: %s\n\n' % json.dumps(import_result.info, sort_keys=True))
+        out.write(';; info: %s\n\n' % json.dumps(
+            import_result.info, sort_keys=True, default=_encode_json_default))
         for entry in import_result.entries:
             if isinstance(entry, Transaction):
                 entry = entry._replace(
@@ -68,7 +74,8 @@ def _format_import_results(import_results: List[ImportResult],
                     del data_rep['posting']
                     for key in [k for k, v in data_rep.items() if v is None]:
                         del data_rep[key]
-                    data_json = json.dumps(data_rep, sort_keys=True)
+                    data_json = json.dumps(
+                        data_rep, sort_keys=True, default=_encode_json_default)
                     meta_key = 'associated_data%d' % i
                     if data.posting is not None:
                         data.posting.meta[meta_key] = data_json
