@@ -119,6 +119,9 @@ The currently supported set of data sources is:
 - [beancount_import.source.waveapps](beancount_import/source/waveapps.py):
   imports receipts from [Wave](https://waveapps.com), a free receipt-scanning
   website/mobile app.
+- [beancount_import.source.stockplanconnect](beancount_import/source/stockplanconnect.py):
+  imports release/trade transactions from
+  [Morgan Stanley StockPlan Connect](https://stockplanconnect.com).
 
 Refer to the individual data source documentation for details on configuration.
 
