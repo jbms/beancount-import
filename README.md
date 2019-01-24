@@ -73,12 +73,12 @@ postings that serve several purposes:
 
    Alternatively, to install from a clone of the repository, type:
    ```shell
-   python setup.py install
+   pip install .
    ```
 
    or for development:
    ```shell
-   python setup.py develop
+   pip install -e .
    ```
 
 # Demo
