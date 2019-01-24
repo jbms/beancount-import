@@ -65,7 +65,19 @@ Order = NamedTuple('Order', [
     ('errors', Errors),
 ])
 
-pretax_adjustment_fields_pattern = 'Shipping & Handling:|Free Shipping *:|Promotion Applied:|Your Coupon Savings:|[0-9]+% off savings:|Subscribe & Save:|[0-9]+ Audible Credit Applied:|.*[0-9]+% Off.*:|Courtesy Credit:|(.*) Discount:|Gift[ -]Wrap:'
+pretax_adjustment_fields_pattern = ('(?:' + '|'.join([
+    'Shipping & Handling',
+    'Free Shipping',
+    'Promotion Applied',
+    'Your Coupon Savings',
+    '[0-9]+% off savings',
+    'Subscribe & Save',
+    '[0-9]+ Audible Credit Applied',
+    '.*[0-9]+% Off.*',
+    'Courtesy Credit',
+    '(?:.*) Discount',
+    'Gift[ -]Wrap',
+]) + ') *:')
 posttax_adjustment_fields_pattern = 'Gift Card Amount:|Rewards Points:'
 
 
@@ -99,7 +111,7 @@ def get_field_in_table(table, pattern, allow_multiple=False,
                        return_label=False):
     def predicate(node):
         return node.name == 'td' and re.fullmatch(pattern, node.text.strip(),
-                                                  re.I)
+                                                  re.I) is not None
 
     tds = table.find_all(predicate)
     results = [(td.text.strip().strip(':'),
