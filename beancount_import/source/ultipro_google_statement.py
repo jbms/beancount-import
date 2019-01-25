@@ -30,6 +30,7 @@ def parse(text: str) -> ParseResult:
     """
     date_re = r'[0-9]{2}/[0-9]{2}/[0-9]{4}'
     decimal_re = r'[0-9]+(?:,[0-9]+)*\.[0-9]+'
+    yesno_re = r'(?:Yes|No)'
     currency_amount_re = r'(?:\$' + decimal_re + r'|\(\$' + decimal_re + r'\))'
     number_re = r'[0-9]+'
     account_re = r'[0-9x]+'
@@ -48,6 +49,11 @@ def parse(text: str) -> ParseResult:
         if x.startswith('('):
             return -D(x[1:-1])
         return D(x)
+
+    def parse_yesno(x: Optional[str]) -> Optional[bool]:
+        if x is None:
+            return None
+        return x == 'Yes'
 
     def parse_hours(x: Optional[str]) -> Optional[Decimal]:
         if x is None:
@@ -70,7 +76,7 @@ def parse(text: str) -> ParseResult:
             (r'^(Period Start Date|Period End Date|Pay Date) (' + date_re +
              r')$',
              ('date', parse_date)),
-            (r'^(Document) ([0-9A-Z]+)$',
+            (r'^(Document) ?([0-9A-Z]*)$',
              ('number', str)),
             (r'^(Net Pay) (' + currency_amount_re + r')$',
              ('Amount', parse_currency)),
@@ -131,6 +137,19 @@ def parse(text: str) -> ParseResult:
              [
                  (r'^(' + field_name_re + r')' + 4 *
                   (r' (' + currency_amount_re + r')') + r'$',
+                  ('Current', parse_currency),
+                  ('YTD', parse_currency),
+                  ('Current:Employer', parse_currency),
+                  ('YTD:Employer', parse_currency)),
+             ]),
+            (r'^(Deductions)\nEmployee Employer\nDeduction\sBased\sOn\sPre-\s?Tax Current YTD Current YTD$',
+             [
+                 (r'^(' + field_name_re + r')' +
+                  (r' (' + currency_amount_re + r')') +
+                  (r' (' + yesno_re + r')') + 4 *
+                  (r' (' + currency_amount_re + r')') + r'$',
+                  ('Based On', parse_currency),
+                  ('Pre-tax', parse_yesno),
                   ('Current', parse_currency),
                   ('YTD', parse_currency),
                   ('Current:Employer', parse_currency),
