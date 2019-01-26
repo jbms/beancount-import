@@ -145,7 +145,7 @@ def parse(text: str) -> ParseResult:
             (r'^(Deductions)\nEmployee Employer\nDeduction\sBased\sOn\sPre-\s?Tax Current YTD Current YTD$',
              [
                  (r'^(' + field_name_re + r')' +
-                  (r' (' + currency_amount_re + r')') +
+                  (r'\s(' + currency_amount_re + r')') +
                   (r' (' + yesno_re + r')') + 4 *
                   (r' (' + currency_amount_re + r')') + r'$',
                   ('Based On', parse_currency),
