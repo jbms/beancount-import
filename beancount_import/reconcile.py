@@ -381,6 +381,7 @@ class LoadedReconciler(object):
 
         self.posting_db = matching.PostingDatabase(
             fuzzy_match_days=reconciler.options['fuzzy_match_days'],
+            fuzzy_match_amount=reconciler.options['fuzzy_match_amount'],
             is_cleared=self.is_posting_cleared,
             metadata_keys=frozenset([matching.CHECK_KEY]),
         )

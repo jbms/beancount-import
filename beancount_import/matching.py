@@ -198,20 +198,20 @@ def get_posting_weight(posting: Posting) -> Optional[Amount]:
     return posting.units
 
 
-def _date_amount_key(entry: Transaction, mp: MatchablePosting):
-    return (get_posting_date(entry, mp.posting), mp.weight)
+def _date_key(entry: Transaction, mp: MatchablePosting):
+    return get_posting_date(entry, mp.posting)
 
 
 def _entry_and_posting_ids_key(entry: Transaction, mp: MatchablePosting):
     return (id(entry), ) + tuple(id(p) for p in mp.source_postings)
 
 
-# Key used for querying postings by date and amount.
-DatabaseDateAmountKey = Tuple[datetime.date, Amount]
+# Key used for querying postings by date.
+DatabaseDateKey = datetime.date
 
 # Key used for querying postings by special metadata field, such as `check`.
-# account, key, value, weight
-DatabaseMetadataKey = Tuple[str, str, Any, Amount]
+# account, key, value
+DatabaseMetadataKey = Tuple[str, str, Any]
 
 SourcePostingIds = Tuple[int, ...]
 
@@ -222,11 +222,13 @@ CHECK_KEY = 'check'
 
 class PostingDatabase(object):
     def __init__(self, fuzzy_match_days: int,
+                 fuzzy_match_amount: Decimal,
                  is_cleared: IsClearedFunction,
                  metadata_keys=frozenset()) -> None:
         self.fuzzy_match_days = fuzzy_match_days
+        self.fuzzy_match_amount = fuzzy_match_amount
         self.is_cleared = is_cleared
-        self._postings = {}  # type: Dict[DatabaseDateAmountKey, DatabaseValues]
+        self._postings = {}  # type: Dict[DatabaseDateKey, DatabaseValues]
         self._keyed_postings = {
         }  # type: Dict[DatabaseMetadataKey, DatabaseValues]
         self.metadata_keys = metadata_keys
@@ -245,10 +247,10 @@ class PostingDatabase(object):
             for key in self.metadata_keys:
                 value = meta.get(key)
                 if value is None: continue
-                group = self._keyed_postings.setdefault((account, key, value, mp.weight), {})
+                group = self._keyed_postings.setdefault((account, key, value), {})
                 group[source_posting_ids] = (entry, mp)
 
-        group = self._postings.setdefault(_date_amount_key(entry, mp), {})
+        group = self._postings.setdefault(_date_key(entry, mp), {})
         group[source_posting_ids] = (entry, mp)
 
     def add_transaction(self, transaction: Transaction):
@@ -265,11 +267,11 @@ class PostingDatabase(object):
             for key in self.metadata_keys:
                 value = meta.get(key)
                 if value is None: continue
-                group = self._keyed_postings.get((account, key, value, mp.weight))
+                group = self._keyed_postings.get((account, key, value))
                 if group is not None:
                     group.pop(source_posting_ids, None)
 
-        group = self._postings.get(_date_amount_key(entry, mp))
+        group = self._postings.get(_date_key(entry, mp))
         if group is not None:
             group.pop(source_posting_ids, None)
 
@@ -304,7 +306,8 @@ class PostingDatabase(object):
                 for key in self.metadata_keys:
                     value = meta.get(key)
                     if value is None: continue
-                    cur_matches = self._keyed_postings.get((posting.account, key, value, weight))
+                    cur_matches = self._get_weight_matches(
+                        weight, self._keyed_postings.get((posting.account, key, value)))
                     if cur_matches is not None:
                         matches_dict.update(cur_matches)
         return sorted(matches_dict.values(), key=lambda x: get_posting_date(x[0], x[1].posting))
@@ -314,7 +317,7 @@ class PostingDatabase(object):
             is_date_exact: bool) -> DatabaseValues:
         matches = dict() # type: DatabaseValues
         for adjusted_date in self.get_fuzzy_date_range(date):
-            cur_matches = self._postings.get((adjusted_date, amount))
+            cur_matches = self._postings.get(adjusted_date)
             if cur_matches is not None:
                 for key, (entry, mp) in cur_matches.items():
                     posting = mp.posting
@@ -330,8 +333,18 @@ class PostingDatabase(object):
                             continue
 
                     matches[key] = (entry, mp)
-        return matches
+        return self._get_weight_matches(amount, matches)
 
+    def _get_weight_matches(
+            self,
+            amount: Amount,
+            postings: Optional[DatabaseValues]) -> DatabaseValues:
+        if postings is None: return dict()
+        return {
+            k: (t, mp) for (k, (t, mp)) in postings.items()
+            if mp.weight.currency == amount.currency and
+            abs(mp.weight.number - amount.number) <= self.fuzzy_match_amount
+        }
 
 def is_entry_from_journal(entry: Transaction):
     return entry.meta and 'filename' in entry.meta

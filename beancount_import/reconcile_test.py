@@ -138,6 +138,7 @@ class ReconcileGoldenTester:
                 default_output=journal_path,
                 balance_account_output_map=[],
                 fuzzy_match_days=5,
+                fuzzy_match_amount=0,
                 account_pattern=None,
                 ignore_account_for_classification_pattern=training.
                 DEFAULT_IGNORE_ACCOUNT_FOR_CLASSIFICATION_PATTERN,

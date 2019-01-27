@@ -50,6 +50,7 @@ def assert_match(pending_candidate: str = '',
 
     posting_db = matching.PostingDatabase(
         fuzzy_match_days=3,
+        fuzzy_match_amount=0.01,
         is_cleared=is_cleared,
         metadata_keys=frozenset([matching.CHECK_KEY]),
     )
@@ -691,3 +692,48 @@ def test_transaction_metadata_incompatibility():
           Assets:B 1 USD
             cleared: TRUE
         """)
+
+def test_match_fuzzy_amount():
+  # We match despite a skew of 0.01 USD, our configured fuzzy_match_amount.
+  assert_match(
+      pending_candidate="""
+      2016-01-01 * "Narration"
+        note: "A"
+        Income:A -100 USD
+          note: "A"
+        Expenses:FIXME 100 USD
+      """,
+      pending="""
+      2016-01-01 * "Narration"
+        note2: "B"
+        Assets:B 99.999 STOCK { 1.00 USD }
+          note: "B"
+        Expenses:FIXME -99.999 USD
+      """,
+      matches="""
+      2016-01-01 * "Narration"
+        note: "A"
+        note2: "B"
+        Income:A -100 USD
+          note: "A"
+        Assets:B 99.999 STOCK { 1.00 USD }
+          note: "B"
+      """)
+
+def test_nonmatch_fuzzy_amount():
+  # We don't match with a skew of 0.02, beyond our configured fuzzy_match_amount.
+  assert_match(
+      pending_candidate="""
+      2016-01-01 * "Narration"
+        note: "A"
+        Income:A -100 USD
+          note: "A"
+        Expenses:FIXME 100 USD
+      """,
+      pending="""
+      2016-01-01 * "Narration"
+        note2: "B"
+        Assets:B 99.98 STOCK { 1.00 USD }
+          note: "B"
+        Expenses:FIXME -99.98 USD
+      """)
