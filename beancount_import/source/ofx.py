@@ -131,7 +131,7 @@ specified:
  - `xxx_income_account`, where `xxx` is one of `div`, `interest`, `cgshort`,
    `cglong`, or `misc`: Specifies the income account prefix used for
    transactions with an `INCOMETYPE` of `DIV`, `INTEREST`, `CGSHORT`, `CGLONG`,
-   or `MISC`, respectively.  If you specify a `div_account` of
+   or `MISC`, respectively.  If you specify a `div_income_account` of
    `"Income:MyBank:Dividends"`, and then receive a dividend from a security
    `XYZ`, the income will be posted to `Income:MyBank:Dividends:XYZ`.
 
@@ -150,7 +150,7 @@ specified:
    `"Expenses:Investment-Fees:MyBank:Commission-Fees"`.
 
 Each of the above fields is required if, and only if, an imported transaction
-requires it.  For example, you need not specify a `dividends_account` if you
+requires it.  For example, you need not specify a `div_income_account` if you
 have no dividend transactions.
 
 For 401(k) accounts, several additional metadata fields may also be specified:
@@ -206,7 +206,7 @@ Investment account with cash holdings example
       ofx_broker_id: "vanguard.com"
       account_id: "XXXXXXX"
       ofx_account_type: "securities_only"
-      dividend_account: "Income:Vanguard:Dividends"
+      div_income_account: "Income:Vanguard:Dividends"
       fees_account: "Expenses:Financial:Investment-Fees:Vanguard"
       match_contribution_account: "Income:Company:Match"
       aftertax_account: "Assets:Retirement:Vanguard:Company401k:AfterTax"
