@@ -61,7 +61,7 @@ from beancount.core.amount import sub as amount_sub
 from beancount.core.position import CostSpec
 from beancount.core.number import D, ZERO
 from beancount.core.number import MISSING
-from beancount_import.posting_date import POSTING_DATE_KEY
+from beancount_import.posting_date import POSTING_DATE_KEY, get_posting_date
 from beancount_import.amount_parsing import parse_amount
 from beancount_import.matching import FIXME_ACCOUNT
 from beancount_import.source import ImportResult, Source, InvalidSourceReference, SourceResults, AssociatedData, LogFunction
@@ -98,6 +98,7 @@ class StockplanconnectSource(Source):
                  fees_account: str,
                  payee: str,
                  tax_accounts: Optional[Dict[str, str]] = None,
+                 year: Optional[int] = None,
                  **kwargs):
         super().__init__(**kwargs)
         self.directory = directory
@@ -109,6 +110,7 @@ class StockplanconnectSource(Source):
         self.capital_gains_account = capital_gains_account
         self.tax_accounts = tax_accounts
         self.payee = payee
+        self.year = year
 
         def check_for_duplicates(documents, get_key):
             result = dict()
@@ -178,6 +180,8 @@ class StockplanconnectSource(Source):
         for entry in entries:
             if not isinstance(entry, Transaction): continue
             for posting in entry.postings:
+                if self.year is not None and self.year != get_posting_date(entry, posting).year:
+                    continue
                 if posting.account.startswith(income_account_prefix):
                     date = (posting.meta.get(POSTING_DATE_KEY)
                             if posting.meta is not None else None)

@@ -237,10 +237,11 @@ statement_filename_re = r'([0-9]{4}-[0-9]{2}-[0-9]{2}).statement-(.*)\.pdf'
 
 
 class UltiproSource(Config, Source):
-    def __init__(self, directory: str, rules, **kwargs) -> None:
+    def __init__(self, directory: str, rules, year: Optional[int] = None, **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
         self.rules = rules
+        self.year = year
         self.example_posting_key_extractors = {self.desc_key: None}
 
     def get_statement_path(self, pay_date: datetime.date, document: str) -> str:
@@ -253,7 +254,8 @@ class UltiproSource(Config, Source):
         if not isinstance(entry, Transaction): return None
         meta = entry.meta
         if (meta and self.pay_date_key in meta and self.document_key in meta):
-            return (meta[self.pay_date_key], meta[self.document_key])
+            if self.year is None or self.year == meta[self.pay_date_key].year:
+                return (meta[self.pay_date_key], meta[self.document_key])
         return None
 
     def _preprocess_entries(self, entries: Entries):
