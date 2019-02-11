@@ -20,7 +20,7 @@ option "infer_tolerance_from_cost" "true"
     healthequity_transaction_type: "Other"
     source_desc: "Investment: VIIIX"
     cleared: TRUE
-  Assets:HSA:HealthEquity:VIIIX    1.745 VIIIX {171.92 USD}
+  Assets:HSA:HealthEquity:VIIIX    1.763 VIIIX {{300.00 USD}} @ 170.11 USD
     date: 2016-01-19
     source_desc: "Buy"
     cleared: TRUE
@@ -32,6 +32,18 @@ option "infer_tolerance_from_cost" "true"
     source_desc: "Interest for Jan-16"
     cleared: TRUE
   Expenses:FIXME                           -0.01 USD
+
+2016-02-12 * "Sell"
+  Assets:HSA:HealthEquity:Cash   336.73 USD
+    date: 2016-02-12
+    healthequity_transaction_type: "Other"
+    source_desc: "Investment: VIIIX"
+    cleared: TRUE
+  Assets:HSA:HealthEquity:VIIIX            -1.763 VIIIX {} @ 191.00 USD
+    date: 2016-02-12
+    source_desc: "Sell"
+    cleared: TRUE
+  Income:HealthEquity:Capital-Gains:VIIIX
 
 2016-02-29 * "Interest for Feb-16"
   Assets:HSA:HealthEquity:Cash   0.02 USD
@@ -49,26 +61,27 @@ option "infer_tolerance_from_cost" "true"
     cleared: TRUE
   Expenses:FIXME                           -1600.00 USD
 
+;; Legacy (pre-PR-33) buy with cost but no price to test fallback matching
 2016-03-11 * "Investment: VIIIX"
-  Assets:HSA:HealthEquity:Cash  -1600.03 USD
+  Assets:HSA:HealthEquity:Cash  -1936.76 USD
     date: 2016-03-11
     healthequity_transaction_type: "Other"
     source_desc: "Investment: VIIIX"
     cleared: TRUE
-  Assets:HSA:HealthEquity:VIIIX     8.622 VIIIX {185.58 USD}
+  Assets:HSA:HealthEquity:VIIIX     10.436 VIIIX {185.58 USD}
     date: 2016-03-11
     source_desc: "Buy"
     cleared: TRUE
 
 2016-03-16 * "Dividend"
-  Assets:HSA:HealthEquity:VIIIX   0.056 VIIIX {185.71 USD}
+  Assets:HSA:HealthEquity:VIIIX   0.056 VIIIX {185.71 USD} @ 185.71 USD
     date: 2016-03-16
     source_desc: "Dividend"
     cleared: TRUE
   Income:HealthEquity:Dividends:VIIIX       -10.40 USD
 
 2016-06-16 * "Dividend"
-  Assets:HSA:HealthEquity:VIIIX  0.051 VIIIX {191.57 USD}
+  Assets:HSA:HealthEquity:VIIIX  0.051 VIIIX {191.57 USD} @ 191.57 USD
     date: 2016-06-16
     source_desc: "Dividend"
     cleared: TRUE

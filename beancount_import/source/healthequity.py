@@ -335,8 +335,10 @@ def get_key_from_raw_entry(entry: RawTransaction) -> MatchKey:
                                                 CashTransaction) else None
     cost = None
     if isinstance(entry, FundTransaction):
-        if entry.units.number > ZERO:
-            cost = entry.price
+        # The key for the matching journal entry will be based on its price, if
+        # there is one, or its cost otherwise. For raw entries, these are always
+        # equal, so we don't need any special care to choose between them.
+        cost = entry.price
     return MatchKey(entry.account, entry.date, entry.description,
                     transaction_type, cost, entry.units)
 
@@ -347,12 +349,22 @@ def get_key_from_posting(entry: Transaction, posting: Posting,
     del entry
     del source_postings
     transaction_type = posting.meta and posting.meta.get(TRANSACTION_TYPE_KEY)
-    if isinstance(posting.cost, CostSpec):
+
+    # Since PR 33, we add prices to all transactions, and we presume those are
+    # the least likely field to be modified by the user (costs might be altered
+    # to make a transaction balance in case of a difference between
+    # HealthEquity's rounding and beancount's), so we prefer them. Buys imported
+    # before then won't have prices, though, so we fall back to the cost if no
+    # price is available.
+    if posting.price is not None:
+        cost = posting.price
+    elif isinstance(posting.cost, CostSpec):
         cost = Amount(posting.cost.number_per, posting.cost.currency)
     elif isinstance(posting.cost, Cost):
         cost = Amount(posting.cost.number, posting.cost.currency)
     else:
         cost = None
+
     return MatchKey(posting.account, posting_date, source_desc,
                     transaction_type, cost, posting.units)
 
@@ -377,7 +389,7 @@ def make_import_result(csv_entry: RawTransaction, accounts: Dict[str, Open],
     elif isinstance(csv_entry, FundTransaction):
         total_amount = csv_entry.amount
         if csv_entry.units.number > ZERO:
-            # Buy transaction, specify cost but not price.
+            # Buy transaction, specify cost and price.
             cost = CostSpec(
                 number_per=csv_entry.price.number,
                 currency=csv_entry.price.currency,
@@ -385,7 +397,7 @@ def make_import_result(csv_entry: RawTransaction, accounts: Dict[str, Open],
                 date=None,
                 label=None,
                 merge=False)
-            price = None
+            price = csv_entry.price
             if csv_entry.description == 'Buy':
                 other_account = account_entry.account + ':Cash'
             elif csv_entry.description == 'Dividend':

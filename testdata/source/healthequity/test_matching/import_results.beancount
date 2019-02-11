@@ -11,37 +11,47 @@
 ;; date: 2016-01-20
 ;; info: {"filename": "<testdata>/data/1234567/investment-transactions.csv", "line": 1, "type": "text/csv"}
 
-2016-01-20 balance Assets:HSA:HealthEquity:VIIIX                   1.745 VIIIX
+2016-01-20 balance Assets:HSA:HealthEquity:VIIIX                   1.763 VIIIX
 
 ;; date: 2016-02-01
 ;; info: {"filename": "<testdata>/data/1234567/cash-transactions-other.csv", "line": 2, "type": "text/csv"}
 
 2016-02-01 balance Assets:HSA:HealthEquity:Cash                    500.01 USD
 
-;; date: 2016-03-01
+;; date: 2016-02-13
 ;; info: {"filename": "<testdata>/data/1234567/cash-transactions-other.csv", "line": 3, "type": "text/csv"}
 
-2016-03-01 balance Assets:HSA:HealthEquity:Cash                    500.03 USD
+2016-02-13 balance Assets:HSA:HealthEquity:Cash                    836.74 USD
+
+;; date: 2016-02-13
+;; info: {"filename": "<testdata>/data/1234567/investment-transactions.csv", "line": 2, "type": "text/csv"}
+
+2016-02-13 balance Assets:HSA:HealthEquity:VIIIX                   0.000 VIIIX
+
+;; date: 2016-03-01
+;; info: {"filename": "<testdata>/data/1234567/cash-transactions-other.csv", "line": 4, "type": "text/csv"}
+
+2016-03-01 balance Assets:HSA:HealthEquity:Cash                    836.76 USD
 
 ;; date: 2016-03-12
-;; info: {"filename": "<testdata>/data/1234567/cash-transactions-other.csv", "line": 4, "type": "text/csv"}
+;; info: {"filename": "<testdata>/data/1234567/cash-transactions-other.csv", "line": 5, "type": "text/csv"}
 
 2016-03-12 balance Assets:HSA:HealthEquity:Cash                    500.00 USD
 
 ;; date: 2016-03-12
-;; info: {"filename": "<testdata>/data/1234567/investment-transactions.csv", "line": 2, "type": "text/csv"}
-
-2016-03-12 balance Assets:HSA:HealthEquity:VIIIX                   10.367 VIIIX
-
-;; date: 2016-03-17
 ;; info: {"filename": "<testdata>/data/1234567/investment-transactions.csv", "line": 3, "type": "text/csv"}
 
-2016-03-17 balance Assets:HSA:HealthEquity:VIIIX                   10.423 VIIIX
+2016-03-12 balance Assets:HSA:HealthEquity:VIIIX                   10.436 VIIIX
 
-;; date: 2016-06-17
+;; date: 2016-03-17
 ;; info: {"filename": "<testdata>/data/1234567/investment-transactions.csv", "line": 4, "type": "text/csv"}
 
-2016-06-17 balance Assets:HSA:HealthEquity:VIIIX                   10.474 VIIIX
+2016-03-17 balance Assets:HSA:HealthEquity:VIIIX                   10.492 VIIIX
+
+;; date: 2016-06-17
+;; info: {"filename": "<testdata>/data/1234567/investment-transactions.csv", "line": 5, "type": "text/csv"}
+
+2016-06-17 balance Assets:HSA:HealthEquity:VIIIX                   10.543 VIIIX
 
 ;; date: 2016-08-26
 ;; info: {"filename": "<testdata>/data/1234567/2016-08-26T152440-0700.balances.csv", "line": 1, "type": "text/csv"}
