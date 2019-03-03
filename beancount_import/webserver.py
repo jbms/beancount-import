@@ -264,7 +264,12 @@ class RetrainHandler(tornado.web.RequestHandler):
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self, *args):
         self.application.socket_clients.add(self)
-        self.set_nodelay(True)
+        try:
+            self.set_nodelay(True)
+        except:
+            # This results in an assertion error in Tornado 6.0.  Simply ignore
+            # it since the nodelay option isn't critical.
+            pass
         self.prev_state = dict()
         self.prev_state_generation = dict()
         self.watched_files = set()
