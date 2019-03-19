@@ -1,8 +1,7 @@
 """Google Purchases transaction source.
 
-This imports transactions from downloaded purchase history from
-https://myaccount.google.com/purchases, as obtained using the
-`finance_dl.google_purchases` module.
+This imports transactions from downloaded purchase history from Google Takeout,
+as obtained using the `finance_dl.google_purchases` module.
 
 The primary intended use of this data source is to associate the downloaded
 purchase details HTML page with a transaction also imported from a bank
@@ -11,14 +10,17 @@ statement.
 Data format
 ===========
 
-To use, first download data using the `finance_dl.google_purchases` module,
-using a directory structure like:
+To use, first download data manually with Google Takeout or automatically with
+the `finance_dl.google_purchases` module, using a directory structure like:
 
     financial/
       data/
         google_purchases/
-          XXXXXXXXXXXXXXXXXXXX.json
+          order_XXXXXXXXXXXXXXXXXXXX.json
           XXXXXXXXXXXXXXXXXXXX.html
+
+The `.html` files are optional (and won't be available if you download the data
+manually using Google Takeout).
 
 Specifying the source to beancount_import
 =========================================
@@ -62,7 +64,7 @@ statements.
 
 """
 
-from typing import Dict, List, Any, Optional
+from typing import List, Any, Optional
 import datetime
 import os
 import collections
@@ -70,18 +72,16 @@ import json
 
 import dateutil.tz
 from beancount.core.number import D, ZERO
-from beancount.core.data import Open, Transaction, Posting, Amount, Pad, Balance, Entries, Directive
-from . import ImportResult, SourceResults, Source, InvalidSourceReference, AssociatedData
+from beancount.core.data import Transaction, Posting, Amount
+from . import ImportResult, SourceResults, Source, AssociatedData
 from .link_based_source import LinkBasedSource
-from ..matching import FIXME_ACCOUNT
+from ..matching import FIXME_ACCOUNT, SimpleInventory
 
 date_format = '%Y-%m-%d'
 
-
-def make_import_result(purchase: Any, link_prefix: str,
-                       tz_info: Optional[datetime.tzinfo],
-                       html_path: str) -> ImportResult:
-    purchase_id = str(purchase['id'])
+def make_old_import_result(purchase: Any, purchase_id: str, link_prefix: str,
+                           tz_info: Optional[datetime.tzinfo],
+                           html_path: str) -> ImportResult:
     date = datetime.datetime.fromtimestamp(purchase['timestamp'] / 1000,
                                            tz_info).date()
     payment_processor = purchase['payment_processor']
@@ -137,6 +137,93 @@ def make_import_result(purchase: Any, link_prefix: str,
         ),
     )
 
+def parse_amount_from_priceline(x: Any):
+    return Amount(D(x['amountMicros']) / 1000000, x['currencyCode']['code'])
+
+
+def make_takeout_import_result(
+        purchase: Any, purchase_id: str, link_prefix: str,
+        tz_info: Optional[datetime.tzinfo], html_path: str) -> Optional[ImportResult]:
+    if ('creationTime' not in purchase or
+            'transactionMerchant' not in purchase):
+        # May be a reservation rather than a purchase
+        return None
+    date = datetime.datetime.fromtimestamp(
+        int(purchase['creationTime']['usecSinceEpochUtc']) / 1000000,
+        tz_info).date()
+    payment_processor = purchase['transactionMerchant']['name']
+    unique_merchants = set()
+    merchant = None  # type: Optional[str]
+    item_names = []
+    for line_item in purchase['lineItem']:
+        if 'provider' in line_item:
+            merchant = line_item['provider']['name']
+            unique_merchants.add(merchant)
+        if 'purchase' not in line_item:
+            continue
+        line_item_purchase = line_item['purchase']
+        if 'productInfo' in line_item_purchase:
+            product_info = line_item_purchase['productInfo']
+            text = product_info['name']
+            if 'description' in line_item:
+                text += '; '
+                text += product_info['description']
+            item_names.append(text)
+    if len(unique_merchants) != 1:
+        merchant = None
+    inventory = SimpleInventory()
+    for priceline in purchase.get('priceline', []):
+        inventory += parse_amount_from_priceline(priceline['amount'])
+    payee = ' - '.join(x for x in [payment_processor, merchant]
+                       if x is not None)  # type: Optional[str]
+    narration = '; '.join(x for x in item_names)  # type: Optional[str]
+    if not narration:
+        narration = payee
+        payee = None
+    postings = []
+    if len(inventory) == 0:
+        inventory['USD'] = ZERO
+    for currency, units in inventory.items():
+        pos_amount = Amount(round(units, 2), currency)
+        neg_amount = -pos_amount
+        postings.append(
+            Posting(
+                account=FIXME_ACCOUNT,
+                units=pos_amount,
+                cost=None,
+                meta=None,
+                price=None,
+                flag=None,
+            ))
+        postings.append(
+            Posting(
+                account=FIXME_ACCOUNT,
+                units=neg_amount,
+                cost=None,
+                meta=None,
+                price=None,
+                flag=None,
+            ))
+    return ImportResult(
+        date=date,
+        entries=[
+            Transaction(
+                meta=collections.OrderedDict(),
+                date=date,
+                flag='*',
+                payee=payee,
+                narration=narration,
+                links=frozenset([link_prefix + purchase_id]),
+                tags=frozenset(),
+                postings=postings,
+            ),
+        ],
+        info=dict(
+            type='text/html',
+            filename=os.path.realpath(html_path),
+        ),
+    )
+
 
 class GooglePurchasesSource(LinkBasedSource, Source):
     def __init__(self,
@@ -149,25 +236,47 @@ class GooglePurchasesSource(LinkBasedSource, Source):
 
     def prepare(self, journal, results: SourceResults):
         json_suffix = '.json'
-        receipt_ids = frozenset(x[:-len(json_suffix)]
-                                for x in os.listdir(self.directory)
-                                if x.endswith(json_suffix))
+        # Prefix for takeout JSON files
+        takeout_prefix = 'order_'
+        old_receipt_ids = frozenset(
+            x[:-len(json_suffix)] for x in os.listdir(self.directory)
+            if x.endswith(json_suffix) and not x.startswith(takeout_prefix))
+        takeout_receipt_ids = frozenset(
+            x[len(takeout_prefix):-len(json_suffix)] for x in os.listdir(self.directory)
+            if x.endswith(json_suffix) and x.startswith(takeout_prefix))
+        receipt_ids = old_receipt_ids.union(takeout_receipt_ids)
         receipts_seen_in_journal = self.get_entries_with_link(
             all_entries=journal.all_entries,
             valid_links=receipt_ids,
             results=results)
         for receipt_id in sorted(receipt_ids):
             if receipt_id in receipts_seen_in_journal: continue
-            path = os.path.join(self.directory, receipt_id + json_suffix)
+            # Prefer takeout-format data if available
+            if receipt_id in takeout_receipt_ids:
+                prefix = 'order_'
+            else:
+                prefix = ''
+            path = os.path.join(self.directory,
+                                prefix + receipt_id + json_suffix)
             self.log_status('google_purchases: processing %s' % (path, ))
             with open(path, 'r') as f:
                 receipt = json.load(f)
-            results.add_pending_entry(
-                make_import_result(
+            if receipt_id in takeout_receipt_ids:
+                import_result = make_takeout_import_result(
                     receipt,
+                    purchase_id=receipt_id,
                     tz_info=self.tz_info,
                     link_prefix=self.link_prefix,
-                    html_path=self._get_html_path(receipt_id)))
+                    html_path=self._get_html_path(receipt_id))
+            else:
+                import_result = make_old_import_result(
+                    receipt,
+                    purchase_id=receipt_id,
+                    tz_info=self.tz_info,
+                    link_prefix=self.link_prefix,
+                    html_path=self._get_html_path(receipt_id))
+            if import_result is None: continue
+            results.add_pending_entry(import_result)
 
     def _get_html_path(self, receipt_id: str):
         return os.path.join(self.directory, receipt_id + '.html')

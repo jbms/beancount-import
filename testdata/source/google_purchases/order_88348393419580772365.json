@@ -1,0 +1,49 @@
+{
+  "merchantOrderId": "1234567890",
+  "creationTime": {
+    "usecSinceEpochUtc": "1508099580000000",
+    "granularity": "MICROSECOND"
+  },
+  "transactionMerchant": {
+    "name": "AutoZone"
+  },
+  "lineItem": [{
+    "purchase": {
+      "status": "READY_FOR_PICKUP",
+      "quantity": 1,
+      "unitPrice": {
+        "amountMicros": "19990000",
+        "currencyCode": {
+          "code": "USD"
+        },
+        "displayString": "$ 19.99"
+      },
+      "returnsInfo": {
+        "isReturnable": true,
+        "daysToReturn": 90
+      },
+      "productInfo": {
+        "name": "Relay - Blower Motor",
+        "brand": "Duralast"
+      }
+    }
+  }],
+  "priceline": [{
+    "type": "SUBTOTAL",
+    "amount": {
+      "amountMicros": "19990000",
+      "currencyCode": {
+        "code": "USD"
+      }
+    }
+  }, {
+    "type": "TAX",
+    "amount": {
+      "amountMicros": "1850000",
+      "currencyCode": {
+        "code": "USD"
+      },
+      "displayString": "$ 1.85"
+    }
+  }]
+}
