@@ -145,7 +145,8 @@ def make_takeout_import_result(
         purchase: Any, purchase_id: str, link_prefix: str,
         tz_info: Optional[datetime.tzinfo], html_path: str) -> Optional[ImportResult]:
     if ('creationTime' not in purchase or
-            'transactionMerchant' not in purchase):
+            'transactionMerchant' not in purchase or
+            'usecSinceEpochUtc' not in purchase['creationTime']):
         # May be a reservation rather than a purchase
         return None
     date = datetime.datetime.fromtimestamp(
