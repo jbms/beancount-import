@@ -227,7 +227,22 @@ transaction_schema = {
                             },
                             "description": {
                                 "type": "string"
-                            }
+                            },
+                            "discounts": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "price": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["name", "price"]
+                                }
+                            },
                         },
                         "required": ["itemTotalPrice", "name"]
                     }
@@ -493,6 +508,12 @@ class PaypalSource(LinkBasedSource, Source):
                 if quantity is not None:
                     extra_meta.append((self.prefix + '_item_quantity', quantity))
                 add_counterparty_posting(amount=units, extra_meta=extra_meta)
+                if 'discounts' in item:
+                    for discount in item['discounts']:
+                        units = -parse_amount(discount['price'])
+                        add_counterparty_posting(amount=units, extra_meta=[
+                            (self.prefix + '_item_discount', discount['name']),
+                        ])
             for key in ('salesTax', 'shippingAmount'):
                 if key in data['itemDetails']:
                     units = parse_amount(data['itemDetails'][key])
