@@ -190,7 +190,7 @@ class WaveappsSource(LinkBasedSource, Source):
             path = os.path.join(self.receipt_directory,
                                 receipt_id + json_suffix)
             self.log_status('waveapps: processing %s' % (path, ))
-            with open(path, 'r') as f:
+            with open(path, 'r', newline='\n', encoding='utf-8') as f:
                 receipt = json.load(f)
             jsonschema.validate(receipt, schema)
             if receipt['status'] != 'Ready':

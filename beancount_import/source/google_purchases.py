@@ -260,7 +260,7 @@ class GooglePurchasesSource(LinkBasedSource, Source):
             path = os.path.join(self.directory,
                                 prefix + receipt_id + json_suffix)
             self.log_status('google_purchases: processing %s' % (path, ))
-            with open(path, 'r') as f:
+            with open(path, 'r', encoding='utf-8', newline='\n') as f:
                 receipt = json.load(f)
             if receipt_id in takeout_receipt_ids:
                 import_result = make_takeout_import_result(

@@ -70,8 +70,8 @@ def remove_tag(soup: bs4.BeautifulSoup, tag: str):
 
 def sanitize_invoice(input_path: str, output_path: str,
                      credit_card_digits: str):
-    with open(input_path, 'r') as f:
-        soup = bs4.BeautifulSoup(f.read(), 'lxml')
+    with open(input_path, 'rb') as fb:
+        soup = bs4.BeautifulSoup(fb.read(), 'lxml')
     comments = soup.find_all(text=lambda text: isinstance(text, bs4.Comment))
     remove_tag(soup, 'script')
     remove_tag(soup, 'style')
@@ -93,7 +93,7 @@ def sanitize_invoice(input_path: str, output_path: str,
         output_name, _ = sanitize_order_ids(
             os.path.basename(input_path), order_id_replacements)
         output_path = os.path.join(output_path, output_name)
-    with open(output_path, 'w') as f:
+    with open(output_path, 'w', encoding='utf-8', newline='\n') as f:
         f.write(new_output)
 
 

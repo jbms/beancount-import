@@ -333,7 +333,7 @@ def parse_invoice(path: str) -> Order:
 
 def parse_regular_order_invoice(path: str) -> Order:
     errors = []
-    with open(path, 'r') as f:
+    with open(path, 'rb') as f:
         soup = bs4.BeautifulSoup(f.read(), 'lxml')
     shipments = parse_shipments(soup)
     payment_table_header = soup.find(
@@ -462,7 +462,7 @@ def get_text_lines(parent_node):
 
 def parse_digital_order_invoice(path: str) -> Order:
     errors = []
-    with open(path, 'r') as f:
+    with open(path, 'rb') as f:
         soup = bs4.BeautifulSoup(f.read(), 'lxml')
 
     digital_order_pattern = 'Digital Order: (.*)'

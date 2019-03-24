@@ -211,7 +211,11 @@ class ReconcileGoldenTester:
         golden = os.path.join(self.golden_directory, snapshot_name)
         self._check_state(snapshot_name)
         for name in os.listdir(self.temp_dir):
-            with open(os.path.join(self.temp_dir, name), 'r') as f:
+            with open(
+                    os.path.join(self.temp_dir, name),
+                    'r',
+                    encoding='utf-8',
+                    newline='\n') as f:
                 contents = f.read()
             test_util.check_golden_contents(
                 path=os.path.join(golden, name),

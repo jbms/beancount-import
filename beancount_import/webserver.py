@@ -331,7 +331,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message_watch_file(self, filename):
         try:
-            with open(filename, 'r') as f:
+            with open(filename, 'r', encoding='utf-8', newline='\n') as f:
                 contents = f.read()
             self.send_file_update(filename, contents)
             if filename in self.watched_files:
@@ -353,7 +353,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message_get_file_contents(self, filename):
         try:
-            with open(filename, 'r') as f:
+            with open(filename, 'r', encoding='utf-8', newline='\n') as f:
                 contents = f.read()
             self.write_message(
                 json.dumps(
@@ -445,7 +445,8 @@ class Application(tornado.web.Application):
             watchers = self.watched_files.get(filename, None)
             if watchers:
                 try:
-                    with open(filename, 'r') as f:
+                    with open(
+                            filename, 'r', encoding='utf-8', newline='\n') as f:
                         contents = f.read()
                     for watcher in watchers:
                         watcher.send_file_update(filename, contents)

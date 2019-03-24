@@ -252,7 +252,7 @@ class JournalEditor(object):
         filename = os.path.realpath(filename)
         if filename in self.cached_lines:
             return (filename, self.cached_lines[filename])
-        with open(filename, 'r') as f:
+        with open(filename, 'r', encoding='utf-8', newline='\n') as f:
             lines = f.read().split('\n')
         self.cached_lines[filename] = lines
         return filename, lines
@@ -365,6 +365,8 @@ class JournalEditor(object):
                 dir=os.path.dirname(filename),
                 prefix='.' + os.path.basename(filename),
                 mode='w+',
+                encoding='utf-8',
+                newline='\n',
                 suffix='.tmp',
                 delete=False) as f:
             f.write(new_data)

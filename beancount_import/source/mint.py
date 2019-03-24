@@ -184,7 +184,7 @@ def load_transactions(filename: str, currency: str = 'USD') -> List[MintEntry]:
     try:
         entries = []
         filename = os.path.abspath(filename)
-        with open(filename, 'r', newline='') as csvfile:
+        with open(filename, 'r', encoding='utf-8', newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             if reader.fieldnames != expected_field_names:
                 raise RuntimeError(
@@ -232,7 +232,7 @@ def load_balances(filename: str) -> List[RawBalance]:
     ]
     balances = []
     filename = os.path.abspath(filename)
-    with open(filename, 'r', newline='') as csvfile:
+    with open(filename, 'r', encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         if reader.fieldnames != expected_field_names:
             raise RuntimeError(

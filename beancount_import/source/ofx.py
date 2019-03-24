@@ -1123,8 +1123,9 @@ class ParsedOfxFile(object):
         self.filename = filename
         parsed_statements = self.parsed_statements = []
 
-        with open(filename, 'r') as f:
+        with open(filename, 'rb') as f:
             contents = f.read()
+        # A byte string passed to BeautifulSoup is assumed to be UTF-8
         soup = bs4.BeautifulSoup(contents, 'html.parser')
 
         # Get the description of securities used in this file.

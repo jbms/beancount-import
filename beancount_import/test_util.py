@@ -56,9 +56,9 @@ def check_golden_contents(path: str,
         dir_name = os.path.dirname(path)
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
-        with open(path, 'w') as f:
+        with open(path, 'w', encoding='utf-8', newline='\n') as f:
             f.write(expected_contents)
     else:
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding='utf-8', newline='\n') as f:
             contents = f.read()
         assert contents == expected_contents

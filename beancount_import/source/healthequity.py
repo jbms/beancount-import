@@ -205,7 +205,7 @@ def load_cash_transactions(filename: str, account: str,
     expected_field_names = ['Date', 'Transaction', 'Amount', 'Cash Balance']
     transactions = []
     filename = os.path.abspath(filename)
-    with open(filename, 'r', newline='') as csvfile:
+    with open(filename, 'r', encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         if reader.fieldnames != expected_field_names:
             raise RuntimeError(
@@ -236,7 +236,7 @@ def load_fund_transactions(filename: str,
     ]
     transactions = []  # type: List[FundTransaction]
     filename = os.path.abspath(filename)
-    with open(filename, 'r', newline='') as csvfile:
+    with open(filename, 'r', encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         if reader.fieldnames != expected_field_names:
             raise RuntimeError(
@@ -268,7 +268,7 @@ def load_balances(filename: str, date: datetime.date,
     ]
     balances = []  # type: List[ImportedBalance]
     filename = os.path.abspath(filename)
-    with open(filename, 'r', newline='') as csvfile:
+    with open(filename, 'r', encoding='utf-8', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         if reader.fieldnames != expected_field_names:
             raise RuntimeError(

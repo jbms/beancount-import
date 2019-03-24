@@ -613,7 +613,7 @@ class PaypalSource(LinkBasedSource, Source):
             path = os.path.join(self.directory,
                                 txn_id + transaction_json_suffix)
             self.log_status('paypal: processing %s' % (path, ))
-            with open(path, 'r') as f:
+            with open(path, 'r', encoding='utf-8', newline='\n') as f:
                 txn = json.load(f)
             jsonschema.validate(txn, transaction_schema)
             results.add_pending_entry(

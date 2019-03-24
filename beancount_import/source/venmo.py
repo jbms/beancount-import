@@ -197,7 +197,7 @@ def get_info(raw: Union[RawTransaction, RawBalance]):
 
 def load_csv(path: str, field_names: List[str]) -> List[Dict[str, Union[str,int]]]:
     path = os.path.abspath(path)
-    with open(path, 'r', newline='') as f:
+    with open(path, 'r', newline='', encoding='utf-8') as f:
         csv_reader = csv.DictReader(f)
         assert csv_reader.fieldnames == field_names
         return [add_line_and_filename(x, path, line_i + 1) for line_i, x in enumerate(csv_reader)]
