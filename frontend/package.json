@@ -36,7 +36,7 @@
     "fuzzyjs": "^2.1.2",
     "html-webpack-inline-source-plugin": "0.0.10",
     "html-webpack-plugin": "^3.2.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
     "react": "^16.4.2",
     "react-autocomplete": "^1.8.1",
     "react-dom": "^16.4.2",
@@ -51,7 +51,6 @@
     "webpack-cli": "^3.1.0"
   },
   "devDependencies": {
-    "prettier": "1.14.2",
-    "webpack-dev-server": "^3.1.5"
+    "prettier": "1.14.2"
   }
 }
