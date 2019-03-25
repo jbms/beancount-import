@@ -1,0 +1,2 @@
+# Prevent line ending conversion on testdata files
+testdata/** -text

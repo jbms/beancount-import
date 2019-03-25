@@ -53,7 +53,7 @@ def create_journal(tmpdir: py.path.local,
                    contents: str,
                    name: str = 'journal.beancount'):
     path = tmpdir.join(name)
-    path.write(contents)
+    path.write_binary(contents.encode())
     return str(path)
 
 

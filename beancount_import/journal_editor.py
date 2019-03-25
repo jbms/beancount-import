@@ -20,14 +20,16 @@ included in the change set.
 """
 
 from typing import Union, Dict, Tuple, List, Optional, Set, NamedTuple, Sequence, FrozenSet
-import re
-import time
-import io
-import collections
-import os
-import tempfile
 import datetime
+import collections
+import contextlib
+import io
+import os
+import re
+import threading
+import time
 
+import atomicwrites
 from beancount.core.data import Open, Transaction, Balance, Commodity, Entries, Directive, Meta, Posting
 import beancount.core.data
 import beancount.loader
@@ -99,6 +101,30 @@ def get_accounts_and_commodities(
             commodities[entry.currency] = entry
     return accounts, commodities
 
+_intercept_parse_file_lock = threading.Lock()
+
+
+@contextlib.contextmanager
+def _intercepted_parse_file(file_modification_times: Dict[str, float]):
+    with _intercept_parse_file_lock:
+        orig_parse_file = beancount.parser.parser.parse_file
+
+        def intercept_parse_file(filename, **kw):
+            real_filename = os.path.realpath(filename)
+            try:
+                file_modification_times[real_filename] = os.stat(
+                    filename).st_mtime
+            except OSError:
+                pass
+            return orig_parse_file(filename, **kw)
+        beancount.parser.parser.parse_file = intercept_parse_file
+        try:
+            yield
+        finally:
+            beancount.parser.parser.parse_file = orig_parse_file
+
+_load_file_lock = threading.Lock()
+
 
 def load_file(filename: str, encoding: Optional[str] = None):
     """Loads the specified journal.
@@ -109,33 +135,40 @@ def load_file(filename: str, encoding: Optional[str] = None):
       options_map
       pre_booking_entries
       post_booking_entries
+      file_modification_times
     """
-    filename = os.path.realpath(filename)
 
-    orig_book_func = beancount.parser.booking.book
-    pre_booking_entries = None
-    post_booking_entries = None
+    # Since we are monkey patching beancount functions, ensure this function
+    # isn't called from multiple threads concurrently.
+    file_modification_times = dict()  # type: Dict[str, float]
+    with _load_file_lock, _intercepted_parse_file(file_modification_times):
+        filename = os.path.realpath(filename)
 
-    def intercept_book(entries, options_map):
-        nonlocal pre_booking_entries
-        nonlocal post_booking_entries
-        pre_booking_entries = entries
-        entries, balance_errors = orig_book_func(entries, options_map)
-        post_booking_entries = entries
-        return entries, balance_errors
+        orig_book_func = beancount.parser.booking.book
+        pre_booking_entries = None
+        post_booking_entries = None
 
-    beancount.parser.booking.book = intercept_book
-    try:
-        entries, errors, options_map = beancount.loader._load(
-            [(filename, True)],
-            log_timings=None,
-            extra_validations=None,
-            encoding=encoding)
-    finally:
-        beancount.parser.booking.book = orig_book_func
-    assert pre_booking_entries is not None
-    assert post_booking_entries is not None
-    return entries, errors, options_map, pre_booking_entries, post_booking_entries
+        def intercept_book(entries, options_map):
+            nonlocal pre_booking_entries
+            nonlocal post_booking_entries
+            pre_booking_entries = entries
+            entries, balance_errors = orig_book_func(entries, options_map)
+            post_booking_entries = entries
+            return entries, balance_errors
+
+        beancount.parser.booking.book = intercept_book
+        try:
+            entries, errors, options_map = beancount.loader._load(
+                [(filename, True)],
+                log_timings=None,
+                extra_validations=None,
+                encoding=encoding)
+        finally:
+            beancount.parser.booking.book = orig_book_func
+        assert pre_booking_entries is not None
+        assert post_booking_entries is not None
+        return (entries, errors, options_map, pre_booking_entries,
+                post_booking_entries, file_modification_times)
 
 
 def _partially_book_entry(orig_entry: Directive,
@@ -199,21 +232,38 @@ def get_partially_booked_entries(pre_booking_entries: Entries,
     return partially_booked_entries
 
 
+class _AtomicWriter(atomicwrites.AtomicWriter):
+    """Wrapper that calls `os.stat` after close but before the rename."""
+
+    def __init__(self, path, **kwargs):
+        super().__init__(path, **kwargs)
+        self.stat_result_after_close = None
+
+    def sync(self, f):
+        super().sync(f)
+        f.close()
+        self.stat_result_after_close = os.stat(f.name)
+
+
+def _get_journal_contents(filename: str):
+    with open(filename, 'r', encoding='utf-8') as f:
+        return f.read()
+
+
 class JournalEditor(object):
     def __init__(self, journal_path: str,
                  ignored_path: Optional[str] = None) -> None:
 
         self.default_journal_load_time = time.time()
-        self.journal_load_time = {}  # type: Dict[str, float]
         journal_path = os.path.realpath(journal_path)
         self.journal_path = journal_path
 
         (final_entries, self.errors, self.options_map, pre_booking_entries,
-         post_booking_entries) = load_file(journal_path)
+         post_booking_entries,
+         self.journal_load_time) = load_file(journal_path)
         del final_entries
         self.entries = get_partially_booked_entries(pre_booking_entries,
                                                     post_booking_entries)
-
         self.cached_lines = {}  # type: Dict[str, List[str]]
         self.accounts, self.commodities = get_accounts_and_commodities(
             self.entries)
@@ -222,9 +272,10 @@ class JournalEditor(object):
         if ignored_path is not None:
             ignored_path = os.path.realpath(ignored_path)
             self.ignored_path = ignored_path  # type: Optional[str]
-            (pre_booking_ignored_entries, ignored_errors,
-             self.ignored_options_map) = beancount.loader._parse_recursive(
-                 [(ignored_path, True)], log_timings=False)
+            with _intercepted_parse_file(self.journal_load_time):
+                (pre_booking_ignored_entries, ignored_errors,
+                 self.ignored_options_map) = beancount.loader._parse_recursive(
+                     [(ignored_path, True)], log_timings=False)
             self.ignored_entries, ignored_balance_errors = beancount.parser.booking.book(
                 pre_booking_ignored_entries, self.ignored_options_map)
             self.errors.extend(ignored_errors)
@@ -235,7 +286,6 @@ class JournalEditor(object):
             self.ignored_entries = []
             self.ignored_path = None
             self.ignored_options_map = {}
-
         self.journal_filenames = set(os.path.realpath(x) for x in journal_paths)
         self.ignored_journal_filenames = set(
             os.path.realpath(x) for x in ignored_journal_paths)
@@ -252,8 +302,7 @@ class JournalEditor(object):
         filename = os.path.realpath(filename)
         if filename in self.cached_lines:
             return (filename, self.cached_lines[filename])
-        with open(filename, 'r', encoding='utf-8', newline='\n') as f:
-            lines = f.read().split('\n')
+        lines = _get_journal_contents(filename).split('\n')
         self.cached_lines[filename] = lines
         return filename, lines
 
@@ -324,8 +373,8 @@ class JournalEditor(object):
 
             if append_only:
                 if line_range[0] < len(old_lines):
-                    if line_range[0] != len(
-                            old_lines) - 1 or old_lines[-1].strip():
+                    if line_range[0] != len(old_lines) - 1 or old_lines[
+                            -1].strip():
                         # If changes start either before the last line or on the non-empty last
                         # line, then they are not append-only.
                         append_only = False
@@ -352,7 +401,8 @@ class JournalEditor(object):
             append_only=append_only,
         )
 
-    def apply_file_changes_result(self, filename: str, result: ApplyFileChangesResult):
+    def apply_file_changes_result(self, filename: str,
+                                  result: ApplyFileChangesResult):
         new_lines = result.new_lines
         new_data = result.new_contents
         lineno_map = result.lineno_map
@@ -361,19 +411,21 @@ class JournalEditor(object):
             raise RuntimeError(
                 'Journal file modified concurrently: %r' % filename)
 
-        with tempfile.NamedTemporaryFile(
-                dir=os.path.dirname(filename),
-                prefix='.' + os.path.basename(filename),
-                mode='w+',
-                encoding='utf-8',
-                newline='\n',
-                suffix='.tmp',
-                delete=False) as f:
+        writer = _AtomicWriter(
+            filename, mode='w+', encoding='utf-8', newline='\n', overwrite=True)
+        with writer.open() as f:
             f.write(new_data)
-            f.flush()
-            self.journal_load_time[filename] = os.stat(f.name).st_mtime
-            os.rename(f.name, filename)
-
+        # On MS Windows, closing a file that has just been written causes the
+        # modification time to change.  Therefore, we must close the file before
+        # checking the modification time in order to get a modification time
+        # that we can later use for comparisons to see if the file has been
+        # modified since the last time we wrote to it.  However, we must check
+        # the modification time before performing the rename, as otherwise we
+        # may obtain a modification time that reflects additional modifications.
+        # The _AtomicWriter wrapper takes care of checking the modification time
+        # after closing the file but before renaming it.
+        mtime = writer.stat_result_after_close.st_mtime
+        self.journal_load_time[filename] = mtime
         self.cached_lines[filename] = new_lines
 
         realpaths = dict()  # type: Dict[str, str]
@@ -415,7 +467,8 @@ class JournalEditor(object):
             for x in change_sets
         }
 
-    def apply_file_change_results(self, results: Dict[str, ApplyFileChangesResult]):
+    def apply_file_change_results(self,
+                                  results: Dict[str, ApplyFileChangesResult]):
         for filename, result in results.items():
             self.apply_file_changes_result(filename, result)
 
@@ -439,9 +492,10 @@ class JournalEditor(object):
         booked_new_entries, balance_errors = beancount.parser.booking.book(
             new_entries, self.options_map)
         non_ignored_booked_new_entries = []  # type: Entries
-        ignored_booked_new_entries = [] # type: Entries
+        ignored_booked_new_entries = []  # type: Entries
         for entry in booked_new_entries:
-            if os.path.realpath(entry.meta.get('filename')) in self.ignored_journal_filenames:
+            if os.path.realpath(entry.meta.get(
+                    'filename')) in self.ignored_journal_filenames:
                 self.ignored_entries.append(entry)
                 ignored_booked_new_entries.append(entry)
             else:
@@ -457,8 +511,9 @@ class JournalEditor(object):
         self._all_entries = None
         return ApplyStagedChangesResult(
             old_entries=[
-                e for e in old_entries if os.path.realpath(
-                    e.meta.get('filename')) not in self.ignored_journal_filenames
+                e for e in old_entries
+                if os.path.realpath(e.meta.get('filename')) not in self.
+                ignored_journal_filenames
             ],
             new_entries=non_ignored_booked_new_entries,
             old_ignored_entries=[
@@ -678,8 +733,9 @@ class StagedChanges(object):
                     new_stage.add_entry(new_entry, output_filename)
                 elif new_entry is None:
                     new_stage.remove_entry(old_entry)
-                elif os.path.realpath(old_entry.meta[
-                        'filename']) == os.path.realpath(output_filename):
+                elif os.path.realpath(
+                        old_entry.meta['filename']) == os.path.realpath(
+                            output_filename):
                     new_stage.change_entry(old_entry, new_entry)
                 else:
                     new_stage.remove_entry(old_entry)
@@ -767,9 +823,8 @@ class StagedChanges(object):
         printer = beancount.parser.printer.EntryPrinter()
 
         for filename, changed_entries in self.changed_entries.items():
-            changed_entries.sort(
-                key=
-                lambda x: float('inf') if x[0] is None else x[0].meta['lineno'])
+            changed_entries.sort(key=lambda x: float('inf')
+                                 if x[0] is None else x[0].meta['lineno'])
             _, lines = self.journal_editor.get_journal_lines(filename)
             change_sets_builder = FileChangeSetsBuilder(
                 filename=filename, lines=lines)
@@ -888,7 +943,8 @@ class StagedChanges(object):
             out.write(filename + '\n')
             for _, line_changes in file_change_set:
                 for change_type, line in line_changes:
-                    out.write('%s%s\n' % (line_change_indicators[change_type], line))
+                    out.write(
+                        '%s%s\n' % (line_change_indicators[change_type], line))
         return out.getvalue()
 
     def get_modified_filenames(self) -> List[str]:

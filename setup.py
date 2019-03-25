@@ -34,7 +34,7 @@ setup(
         'scikit-learn',
         'nltk',
         'python-dateutil',
-        'atomicwrites',
+        'atomicwrites>=1.3.0',
         'jsonschema',
     ],
     test_requirements=[

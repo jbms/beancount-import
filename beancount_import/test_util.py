@@ -1,4 +1,6 @@
 from typing import List, Optional, Union, Tuple, Dict
+import json
+import re
 import os
 
 import pytest
@@ -46,12 +48,60 @@ def check_golden_contents(path: str,
                           expected_contents: str,
                           replacements: List[Tuple[str, str]] = [],
                           write: Optional[bool] = None) -> None:
+    """Check that the contents of the file at `path` matches `expected_contents`.
+
+    Before comparing the contents of the file, the replacements indicated by the
+    The `replacements` parameter specifies a sequence of `(old, new)` used to
+    normalize `expected_contents`.  Any line or quoted string or doubly-quoted
+    string that starts with one of the `old` values is assumed to indicate a
+    filename: the `old` prefix is replaced with `new`, and any backslashes in
+    the remainder of the filename are replaced with forward slashes.
+
+    If `write == True`, instead of matching the existing contents of `path`, the
+    value of `expected_contents` after applying `replacements` is written to
+    `path`.
+
+    """
     if write is None:
         write = os.getenv('BEANCOUNT_IMPORT_GENERATE_GOLDEN_TESTDATA',
                           None) == '1'
 
     for old, new in replacements:
-        expected_contents = expected_contents.replace(old, new)
+        # Replace filenames specified as doubly-quoted strings.
+        doubly_quoted_pattern = ('\\\\"' + re.escape(
+            json.dumps(json.dumps(old)[1:-1])[1:-1]) + '[^"]*\\\\"')
+
+        def get_doubly_quoted_replacement(m) -> str:
+            suffix = json.loads(json.loads('"' + m.group(0) + '"'))[len(old):]
+            return json.dumps(json.dumps(new + suffix.replace('\\', '/')))[1:-1]
+
+        expected_contents = re.sub(doubly_quoted_pattern,
+                                   get_doubly_quoted_replacement,
+                                   expected_contents)
+
+        # Replace filenames specified as quoted strings.
+        quoted_pattern = '"' + re.escape(json.dumps(old)[1:-1]) + '[^"]*"'
+
+        def get_quoted_replacement(m) -> str:
+            suffix = json.loads(m.group(0))[len(old):]
+            return json.dumps(new + suffix.replace('\\', '/'))
+
+        expected_contents = re.sub(quoted_pattern, get_quoted_replacement,
+                                   expected_contents)
+
+        # Rpelace filenames specified as single lines.
+        unquoted_pattern = '^' + re.escape(old) + '(.*)$'
+
+        def get_unquoted_replacement(m) -> str:
+            suffix = m.group(1)
+            return new + suffix.replace('\\', '/')
+
+        expected_contents = re.sub(
+            unquoted_pattern,
+            get_unquoted_replacement,
+            expected_contents,
+            flags=re.MULTILINE)
+
     if write:
         dir_name = os.path.dirname(path)
         if not os.path.exists(dir_name):
