@@ -279,9 +279,9 @@ relatively quick process to do this even for a large number of transactions.
 # Development
 
 For development of this package, make sure to install Beancount-import using the
-`python3 setup.py develop` command rather than `python3 setup.py install`.  If
-you previously ran the `install` command, you can simply re-run `setup.py` with
-the `develop` command.
+`pip install -e .` command rather than the `pip install .` command.  If you
+previously ran the `pip install` command without the `-e` option, you can simply
+re-run the `pip install -e .` command.
 
 ## Testing
 
