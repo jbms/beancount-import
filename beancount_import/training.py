@@ -30,10 +30,11 @@ PredictionInput = NamedTuple('PredictionInput',
 def get_features(example: PredictionInput) -> Dict[str, bool]:
     features = collections.defaultdict(lambda: False)  # type: Dict[str, bool]
     features['account:%s' % example.source_account] = True
-
-    # For now, skip amount and date.
+    features['amount:%s' % example.amount.currency] = example.amount.number
+    # For now, skip date.
 
     for key, values in example.key_value_pairs.items():
+        features[key] = True
         if isinstance(values, str):
             values = (values, )
         for value in values:
