@@ -325,7 +325,7 @@ def parse_credit_card_transactions(soup) -> List[CreditCardTransaction]:
     return transactions
 
 
-def parse_invoice(path: str) -> Order:
+def parse_invoice(path: str) -> Optional[Order]:
     if os.path.basename(path).startswith('D'):
         return parse_digital_order_invoice(path)
     return parse_regular_order_invoice(path)
@@ -460,10 +460,16 @@ def get_text_lines(parent_node):
     return text_lines
 
 
-def parse_digital_order_invoice(path: str) -> Order:
+def parse_digital_order_invoice(path: str) -> Optional[Order]:
     errors = []
     with open(path, 'rb') as f:
         soup = bs4.BeautifulSoup(f.read(), 'lxml')
+
+    def is_cancelled_order(node):
+      return node.text.strip() == 'Order Canceled'
+
+    if soup.find(is_cancelled_order):
+      return None
 
     digital_order_pattern = 'Digital Order: (.*)'
 
