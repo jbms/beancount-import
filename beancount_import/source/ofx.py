@@ -822,6 +822,8 @@ class ParsedOfxStatement(object):
 
         cash_securities_map = prepare_state.cash_securities_map
 
+        payee_format = account.meta.get('ofx_payee_format', None)
+
         def get_security(unique_id: str) -> Optional[str]:
             commodity = commodities_by_cusip.get(unique_id)
             if commodity is not None:
@@ -903,10 +905,20 @@ class ParsedOfxStatement(object):
                 # Remove redundant memo field
                 memo = None
 
-            narration = ' - '.join(
-                filter(None,
-                       (raw.trantype, raw.incometype, raw.inv401ksource, name,
-                        memo)))
+            if payee_format is not None:
+                narration = ''
+                payee = payee_format.format(
+                    trantype = raw.trantype,
+                    incometype = raw.incometype,
+                    inv401ksource = raw.inv401ksource,
+                    name = name if name is not None else "",
+                    memo = memo if memo is not None else "")
+            else:
+                payee = None
+                narration = ' - '.join(
+                    filter(None,
+                           (raw.trantype, raw.incometype, raw.inv401ksource,
+                            name, memo)))
 
             if ignore_re and re.match(ignore_re, narration):
                 continue
@@ -914,7 +926,7 @@ class ParsedOfxStatement(object):
                 meta=None,
                 date=raw.date,
                 flag=FLAG_OKAY,
-                payee=None,
+                payee=payee,
                 narration=narration,
                 tags=EMPTY_SET,
                 links=EMPTY_SET,
