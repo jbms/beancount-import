@@ -307,7 +307,8 @@ def make_amazon_transaction(
             else:
                 if item.condition:
                     meta[ITEM_CONDITION_KEY] = item.condition
-                meta[SHIPPED_DATE_KEY] = shipment.shipped_date
+                if shipment.shipped_date is not None:
+                    meta[SHIPPED_DATE_KEY] = shipment.shipped_date
                 meta[ITEM_QUANTITY_KEY] = item.quantity
                 quantity = item.quantity
             txn.postings.append(
