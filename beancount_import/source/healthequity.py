@@ -457,9 +457,12 @@ def make_import_result(csv_entry: RawTransaction, accounts: Dict[str, Open],
 
 
 class Source(description_based_source.DescriptionBasedSource):
-    def __init__(self, directory: str, **kwargs) -> None:
+    def __init__(self, directory: str,
+                 ignore_before: Optional[datetime.date] = None,
+                 **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
+        self.ignore_before = ignore_before
         self.raw_transactions = [
         ]  # type: List[Union[CashTransaction, FundTransaction]]
         self.raw_balances = []  # type: List[ImportedBalance]
@@ -493,9 +496,15 @@ class Source(description_based_source.DescriptionBasedSource):
             account_to_id[full_account] = account_id
             return entry._replace(account=full_account)
 
-        balances = [convert_account(entry) for entry in self.raw_balances]
+        balances = [
+            convert_account(entry)
+            for entry in self.raw_balances
+            if self.ignore_before is None or self.ignore_before <= entry.date
+        ]
         transactions = [
-            convert_account(entry) for entry in self.raw_transactions
+            convert_account(entry)
+            for entry in self.raw_transactions
+            if self.ignore_before is None or self.ignore_before <= entry.date
         ]
 
         description_based_source.get_pending_and_invalid_entries(
