@@ -431,7 +431,7 @@ export class ServerConnection {
 
   constructor() {
     const ws = (this.ws = new WebSocket(
-      "ws://" + window.location.host + "/" + secretKey + "/websocket"
+      (window.location.protocol == "https:" ? "wss:" : "ws:") + "//" + window.location.host + "/" + secretKey + "/websocket"
     ));
     this.state["message"] = "Connecting to server";
     ws.onopen = () => {
