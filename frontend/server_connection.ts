@@ -253,7 +253,7 @@ export function fetchServerData(
   endIndex: number
 ) {
   return fetch(
-    `${window.location.pathname}/${secretKey}/${dataType}/${generation}/${startIndex}-${endIndex}`
+    `${window.location.pathname}${secretKey}/${dataType}/${generation}/${startIndex}-${endIndex}`
   );
 }
 
@@ -431,7 +431,7 @@ export class ServerConnection {
 
   constructor() {
     const ws = (this.ws = new WebSocket(
-      (window.location.protocol == "https:" ? "wss:" : "ws:") + "//" + window.location.host + window.location.pathname + "/" + secretKey + "/websocket"
+      (window.location.protocol == "https:" ? "wss:" : "ws:") + "//" + window.location.host + window.location.pathname + secretKey + "/websocket"
     ));
     this.state["message"] = "Connecting to server";
     ws.onopen = () => {
@@ -518,7 +518,7 @@ export class ServerConnection {
 }
 
 export function executeServerCommand(command: string, msg: any): Promise<any> {
-  return fetch(`${window.location.pathname}/${secretKey}/${command}`, {
+  return fetch(`${window.location.pathname}${secretKey}/${command}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json; charset=utf-8"
@@ -528,7 +528,7 @@ export function executeServerCommand(command: string, msg: any): Promise<any> {
 }
 
 export function getServerFileUrl(path: string, contentType: string): string {
-  return `${window.location.pathname}/${secretKey}/get_file?path=${encodeURIComponent(
+  return `${window.location.pathname}${secretKey}/get_file?path=${encodeURIComponent(
     path
   )}&content_type=${encodeURIComponent(contentType)}`;
 }
