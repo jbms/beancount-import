@@ -26,6 +26,9 @@ from beancount.core.data import Transaction, Posting
 from beancount.core.number import MISSING, Decimal
 import beancount.parser.printer
 
+import watchdog.events
+import watchdog.observers
+
 from . import reconcile
 
 from . import training
@@ -393,6 +396,15 @@ class GetFileHandler(tornado.web.RequestHandler):
             self.finish('File not found')
 
 
+class JournalModificationHandler(watchdog.events.FileSystemEventHandler):
+    def __init__(self, application):
+        super(JournalModificationHandler, self).__init__()
+        self.application = application
+
+    def on_any_event(self, event):
+        self.application.ioloop.add_callback(self.application.check_modification)
+
+
 class Application(tornado.web.Application):
     def __init__(self, args, ioloop, **kwargs):
 
@@ -431,8 +443,10 @@ class Application(tornado.web.Application):
             options=vars(args))
         self.reset()
 
-        self.check_modification_timer = tornado.ioloop.PeriodicCallback(
-            self._check_modification, 100)
+        self.check_modification_timer = watchdog.observers.Observer()
+        self.check_modification_timer.schedule(
+            JournalModificationHandler(self),
+            os.path.dirname(os.path.realpath(args.journal_input)))
         self.check_modification_timer.start()
 
     def next_generation(self):
@@ -453,7 +467,7 @@ class Application(tornado.web.Application):
                 except:
                     traceback.print_exc()
 
-    def _check_modification(self):
+    def check_modification(self):
         if self.reconciler.loaded_future.done():
             loaded_reconciler = self.reconciler.loaded_future.result()
             modified_filenames = loaded_reconciler.editor.check_any_journal_modification(
@@ -699,7 +713,7 @@ def main(argv, **kwargs):
     logging.basicConfig(**logging_args)
 
     ioloop = tornado.ioloop.IOLoop.instance()
-    app = Application(args=args, ioloop=ioloop, debug=True)
+    app = Application(args=args, ioloop=ioloop, debug=(args.loglevel == logging.DEBUG))
 
     http_server = tornado.httpserver.HTTPServer(app)
     sockets = tornado.netutil.bind_sockets(
