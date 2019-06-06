@@ -436,18 +436,13 @@ class Application(tornado.web.Application):
 
         self.log_status('Initializing')
 
+        self.check_modification_observer = None
         self.reconciler = reconcile.Reconciler(
             journal_path=args.journal_input,
             ignore_path=args.ignored_journal,
             log_status=self.log_status,
             options=vars(args))
         self.reset()
-
-        self.check_modification_timer = watchdog.observers.Observer()
-        self.check_modification_timer.schedule(
-            JournalModificationHandler(self),
-            os.path.dirname(os.path.realpath(args.journal_input)))
-        self.check_modification_timer.start()
 
     def next_generation(self):
         generation = self.generation
@@ -510,10 +505,25 @@ class Application(tornado.web.Application):
                     list(loaded_reconciler.editor.journal_filenames)))
             self.current_errors = loaded_reconciler.errors
             self.current_invalid = loaded_reconciler.invalid_references
+            self.start_check_modification_observer(loaded_reconciler)
             self.get_next_candidates(new_pending=True)
         except:
             traceback.print_exc()
             pdb.post_mortem()
+
+    def start_check_modification_observer(self, loaded_reconciler):
+        if self.check_modification_observer is not None:
+            self.check_modification_observer.unschedule_all()
+
+        self.check_modification_observer = watchdog.observers.Observer()
+        handler = JournalModificationHandler(self)
+        journal_paths = set(
+            os.path.dirname(filename) for filename in loaded_reconciler.editor.journal_filenames)
+
+        for path in journal_paths:
+            self.check_modification_observer.schedule(handler, path)
+
+        self.check_modification_observer.start()
 
     def get_next_candidates(self, new_pending):
         loaded_reconciler = self.reconciler.loaded_future.result()
