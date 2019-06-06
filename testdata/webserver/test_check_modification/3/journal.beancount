@@ -1,0 +1,4 @@
+1900-01-01 open Assets:Checking  USD
+
+include "transactions.beancount"
+include "additional/transactions.beancount"

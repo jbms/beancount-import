@@ -634,7 +634,7 @@ class Application(tornado.web.Application):
         self.retrain()
 
 
-def main(argv, **kwargs):
+def parse_arguments(argv, **kwargs):
     argparser = argparse.ArgumentParser(
         parents=[reconcile.get_entry_file_selector_argparser(kwargs)])
     argparser.add_argument(
@@ -716,7 +716,11 @@ def main(argv, **kwargs):
         'Cache file for automatic account prediction classifier.  This speeds up loading.'
     )
     argparser.set_defaults(**kwargs)
-    args = argparser.parse_args(argv)
+    return argparser.parse_args(argv)
+
+
+def main(argv, **kwargs):
+    args = parse_arguments(argv, **kwargs)
     logging_args = dict(level=args.loglevel)
     if args.log_output is not None:
         logging_args['filename'] = args.log_output
