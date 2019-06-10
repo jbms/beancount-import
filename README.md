@@ -260,6 +260,30 @@ have several options:
    However, if you manually delete them from the "ignored" journal file, they
    will return as pending entries.
 
+## Usage with a reverse proxy
+
+If you want to run Beancount-import with features like TLS or authentication,
+then you can run it behind a reverse proxy that provides this functionality.
+For instance, an NGINX location configuration like the following can route
+traffic to a local instance of Beancount-import:
+
+```
+location /some/url/prefix/ {
+    proxy_pass_header Server;
+    proxy_set_header Host $http_host;
+    proxy_redirect off;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Scheme $scheme;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "Upgrade";
+    proxy_pass http://localhost:8101/;
+}
+```
+
+Replace `/some/url/prefix/` with your desired URL path (retaining the trailing
+slash), or even just `/` to make Beancount-import available at the URL root.
+
 # Use with an existing Beancount journal
 
 If you start using Beancount-import with an existing beancount journal
