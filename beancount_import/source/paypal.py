@@ -368,6 +368,7 @@ class PaypalSource(LinkBasedSource, Source):
 
     def _make_import_result(self, txn_id: str, data: Dict[str, Any],
                             json_path: str):
+        if data.get('status') == 'PENDING': return None
         date = dateutil.parser.parse(data['date']).date()
         payee = data['counterparty']['name']
         narration = data['transactionType']
@@ -616,9 +617,10 @@ class PaypalSource(LinkBasedSource, Source):
             with open(path, 'r', encoding='utf-8', newline='\n') as f:
                 txn = json.load(f)
             jsonschema.validate(txn, transaction_schema)
-            results.add_pending_entry(
-                self._make_import_result(
-                    txn_id=txn_id, data=txn, json_path=path))
+            import_result = self._make_import_result(
+                    txn_id=txn_id, data=txn, json_path=path)
+            if import_result is not None:
+                results.add_pending_entry(import_result)
         results.add_account(self.assets_account)
 
     def is_posting_cleared(self, posting: Posting):
