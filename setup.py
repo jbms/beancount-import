@@ -36,6 +36,7 @@ setup(
         'python-dateutil',
         'atomicwrites>=1.3.0',
         'jsonschema',
+        'watchdog',
     ],
     test_requirements=[
         'pytest',

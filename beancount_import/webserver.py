@@ -26,6 +26,9 @@ from beancount.core.data import Transaction, Posting
 from beancount.core.number import MISSING, Decimal
 import beancount.parser.printer
 
+import watchdog.events
+import watchdog.observers
+
 from . import reconcile
 
 from . import training
@@ -393,6 +396,15 @@ class GetFileHandler(tornado.web.RequestHandler):
             self.finish('File not found')
 
 
+class JournalModificationHandler(watchdog.events.FileSystemEventHandler):
+    def __init__(self, application):
+        super(JournalModificationHandler, self).__init__()
+        self.application = application
+
+    def on_any_event(self, event):
+        self.application.ioloop.add_callback(self.application.check_modification)
+
+
 class Application(tornado.web.Application):
     def __init__(self, args, ioloop, **kwargs):
 
@@ -424,16 +436,13 @@ class Application(tornado.web.Application):
 
         self.log_status('Initializing')
 
+        self.check_modification_observer = None
         self.reconciler = reconcile.Reconciler(
             journal_path=args.journal_input,
             ignore_path=args.ignored_journal,
             log_status=self.log_status,
             options=vars(args))
         self.reset()
-
-        self.check_modification_timer = tornado.ioloop.PeriodicCallback(
-            self._check_modification, 100)
-        self.check_modification_timer.start()
 
     def next_generation(self):
         generation = self.generation
@@ -453,7 +462,7 @@ class Application(tornado.web.Application):
                 except:
                     traceback.print_exc()
 
-    def _check_modification(self):
+    def check_modification(self):
         if self.reconciler.loaded_future.done():
             loaded_reconciler = self.reconciler.loaded_future.result()
             modified_filenames = loaded_reconciler.editor.check_any_journal_modification(
@@ -496,10 +505,25 @@ class Application(tornado.web.Application):
                     list(loaded_reconciler.editor.journal_filenames)))
             self.current_errors = loaded_reconciler.errors
             self.current_invalid = loaded_reconciler.invalid_references
+            self.start_check_modification_observer(loaded_reconciler)
             self.get_next_candidates(new_pending=True)
         except:
             traceback.print_exc()
             pdb.post_mortem()
+
+    def start_check_modification_observer(self, loaded_reconciler):
+        if self.check_modification_observer is not None:
+            self.check_modification_observer.unschedule_all()
+
+        self.check_modification_observer = watchdog.observers.Observer()
+        handler = JournalModificationHandler(self)
+        journal_paths = set(
+            os.path.dirname(filename) for filename in loaded_reconciler.editor.journal_filenames)
+
+        for path in journal_paths:
+            self.check_modification_observer.schedule(handler, path)
+
+        self.check_modification_observer.start()
 
     def get_next_candidates(self, new_pending):
         loaded_reconciler = self.reconciler.loaded_future.result()
@@ -610,7 +634,7 @@ class Application(tornado.web.Application):
         self.retrain()
 
 
-def main(argv, **kwargs):
+def parse_arguments(argv, **kwargs):
     argparser = argparse.ArgumentParser(
         parents=[reconcile.get_entry_file_selector_argparser(kwargs)])
     argparser.add_argument(
@@ -692,14 +716,18 @@ def main(argv, **kwargs):
         'Cache file for automatic account prediction classifier.  This speeds up loading.'
     )
     argparser.set_defaults(**kwargs)
-    args = argparser.parse_args(argv)
+    return argparser.parse_args(argv)
+
+
+def main(argv, **kwargs):
+    args = parse_arguments(argv, **kwargs)
     logging_args = dict(level=args.loglevel)
     if args.log_output is not None:
         logging_args['filename'] = args.log_output
     logging.basicConfig(**logging_args)
 
     ioloop = tornado.ioloop.IOLoop.instance()
-    app = Application(args=args, ioloop=ioloop, debug=True)
+    app = Application(args=args, ioloop=ioloop, debug=(args.loglevel == logging.DEBUG))
 
     http_server = tornado.httpserver.HTTPServer(app)
     sockets = tornado.netutil.bind_sockets(

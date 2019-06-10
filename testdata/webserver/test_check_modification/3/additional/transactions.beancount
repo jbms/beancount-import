@@ -1,0 +1,11 @@
+2013-12-04 * "NATIONAL FEDERAL DES:TRNSFR" #additional
+  Assets:Checking  -11.22 USD
+    date: 2013-12-04
+    source_desc: "NATIONAL FEDERAL DES:TRNSFR"
+  Expenses:FIXME    11.22 USD
+
+2013-12-04 * "NATIONAL FEDERAL DES:TRNSFR" #additional
+  Assets:Checking  -5.10 USD
+    date: 2013-12-04
+    source_desc: "NATIONAL FEDERAL DES:TRNSFR"
+  Expenses:FIXME    5.10 USD
