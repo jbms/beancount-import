@@ -31,6 +31,7 @@ expression like the following to specify the Google Purchases source:
     dict(module='beancount_import.source.google_purchases',
          directory=os.path.join(journal_dir, 'data/google_purchases'),
          link_prefix='google_purchases.',
+         ignored_transaction_merchants_pattern=r'Amazon\.com',
     )
 
 The `directory` specifies the directory containing the `.json` and `.html`
@@ -38,6 +39,11 @@ files.  The `link_prefix` should be unique over all of your sources, and should
 end with a `.` or other delimiter.  It is concatenated with the purchase `id` to
 form a unique `link` to apply to the generated transaction that associates it
 with the purchase data.
+
+The optional `ignored_transaction_merchants_pattern` member specifies a regular
+expression that is matched against the full transaction merchant; if it matches,
+the transaction is ignored.  This is useful, for example, for transactions that
+are already covered by another data source.
 
 You may also optionally specify a `time_zone` property to specify the time zone
 to use to convert the timestamps to dates.  The value of `time_zone` should be a
@@ -67,6 +73,7 @@ statements.
 from typing import List, Any, Optional
 import datetime
 import os
+import re
 import collections
 import json
 
@@ -79,12 +86,17 @@ from ..matching import FIXME_ACCOUNT, SimpleInventory
 
 date_format = '%Y-%m-%d'
 
+
 def make_old_import_result(purchase: Any, purchase_id: str, link_prefix: str,
+                           ignored_transaction_merchants_pattern: str,
                            tz_info: Optional[datetime.tzinfo],
                            html_path: str) -> ImportResult:
     date = datetime.datetime.fromtimestamp(purchase['timestamp'] / 1000,
                                            tz_info).date()
     payment_processor = purchase['payment_processor']
+    if (payment_processor is not None and re.fullmatch(
+            ignored_transaction_merchants_pattern, payment_processor)):
+        return None
     merchant = purchase['merchant']
     items = purchase['items']
     payee = ' - '.join(x for x in [payment_processor, merchant]
@@ -137,15 +149,19 @@ def make_old_import_result(purchase: Any, purchase_id: str, link_prefix: str,
         ),
     )
 
+
 def parse_amount_from_priceline(x: Any):
     return Amount(D(x['amountMicros']) / 1000000, x['currencyCode']['code'])
 
 
-def make_takeout_import_result(
-        purchase: Any, purchase_id: str, link_prefix: str,
-        tz_info: Optional[datetime.tzinfo], html_path: str) -> Optional[ImportResult]:
+def make_takeout_import_result(purchase: Any, purchase_id: str,
+                               link_prefix: str,
+                               ignored_transaction_merchants_pattern: str,
+                               tz_info: Optional[datetime.tzinfo],
+                               html_path: str) -> Optional[ImportResult]:
     if ('creationTime' not in purchase or
             'transactionMerchant' not in purchase or
+            'name' not in purchase['transactionMerchant'] or
             'usecSinceEpochUtc' not in purchase['creationTime']):
         # May be a reservation rather than a purchase
         return None
@@ -153,6 +169,9 @@ def make_takeout_import_result(
         int(purchase['creationTime']['usecSinceEpochUtc']) / 1000000,
         tz_info).date()
     payment_processor = purchase['transactionMerchant']['name']
+    if (payment_processor is not None and re.fullmatch(
+            ignored_transaction_merchants_pattern, payment_processor)):
+        return None
     unique_merchants = set()
     merchant = None  # type: Optional[str]
     item_names = []
@@ -230,10 +249,12 @@ class GooglePurchasesSource(LinkBasedSource, Source):
     def __init__(self,
                  directory: str,
                  time_zone: Optional[str] = None,
+                 ignored_transaction_merchants_pattern: str = '',
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
         self.tz_info = dateutil.tz.gettz(time_zone)
+        self.ignored_transaction_merchants_pattern = ignored_transaction_merchants_pattern
 
     def prepare(self, journal, results: SourceResults):
         json_suffix = '.json'
@@ -243,7 +264,8 @@ class GooglePurchasesSource(LinkBasedSource, Source):
             x[:-len(json_suffix)] for x in os.listdir(self.directory)
             if x.endswith(json_suffix) and not x.startswith(takeout_prefix))
         takeout_receipt_ids = frozenset(
-            x[len(takeout_prefix):-len(json_suffix)] for x in os.listdir(self.directory)
+            x[len(takeout_prefix):-len(json_suffix)]
+            for x in os.listdir(self.directory)
             if x.endswith(json_suffix) and x.startswith(takeout_prefix))
         receipt_ids = old_receipt_ids.union(takeout_receipt_ids)
         receipts_seen_in_journal = self.get_entries_with_link(
@@ -266,6 +288,8 @@ class GooglePurchasesSource(LinkBasedSource, Source):
                 import_result = make_takeout_import_result(
                     receipt,
                     purchase_id=receipt_id,
+                    ignored_transaction_merchants_pattern=self.
+                    ignored_transaction_merchants_pattern,
                     tz_info=self.tz_info,
                     link_prefix=self.link_prefix,
                     html_path=self._get_html_path(receipt_id))
@@ -273,6 +297,8 @@ class GooglePurchasesSource(LinkBasedSource, Source):
                 import_result = make_old_import_result(
                     receipt,
                     purchase_id=receipt_id,
+                    ignored_transaction_merchants_pattern=self.
+                    ignored_transaction_merchants_pattern,
                     tz_info=self.tz_info,
                     link_prefix=self.link_prefix,
                     html_path=self._get_html_path(receipt_id))
