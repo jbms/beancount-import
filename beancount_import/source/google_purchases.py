@@ -90,7 +90,7 @@ date_format = '%Y-%m-%d'
 def make_old_import_result(purchase: Any, purchase_id: str, link_prefix: str,
                            ignored_transaction_merchants_pattern: str,
                            tz_info: Optional[datetime.tzinfo],
-                           html_path: str) -> ImportResult:
+                           html_path: str) -> Optional[ImportResult]:
     date = datetime.datetime.fromtimestamp(purchase['timestamp'] / 1000,
                                            tz_info).date()
     payment_processor = purchase['payment_processor']
