@@ -138,7 +138,7 @@ VENMO_DESCRIPTION_KEY = 'venmo_description'
 VENMO_PAYEE_KEY = 'venmo_payee'
 VENMO_PAYER_KEY = 'venmo_payer'
 
-CSV_ID_KEY = " ID"
+CSV_ID_KEY = "ID"
 CSV_DATETIME_KEY = "Datetime"
 CSV_TYPE_KEY = 'Type'
 CSV_STATUS_KEY = 'Status'
@@ -185,8 +185,10 @@ def parse_balance_date(x: str):
     return datetime.datetime.strptime(x, '%Y-%m-%d').date()
 
 def add_line_and_filename(x: dict, filename: str, line: int) -> Dict[str, Union[str,int]]:
+    x = {k.strip(): v for k, v in x.items()}
     x.update(filename=filename, line=line)
     return x
+
 
 def get_info(raw: Union[RawTransaction, RawBalance]):
     return dict(
@@ -199,7 +201,7 @@ def load_csv(path: str, field_names: List[str]) -> List[Dict[str, Union[str,int]
     path = os.path.abspath(path)
     with open(path, 'r', newline='', encoding='utf-8') as f:
         csv_reader = csv.DictReader(f)
-        assert csv_reader.fieldnames == field_names
+        assert set(field_names).issubset(set(x.strip() for x in csv_reader.fieldnames))
         return [add_line_and_filename(x, path, line_i + 1) for line_i, x in enumerate(csv_reader)]
 
 def load_transactions(path: str):
@@ -258,7 +260,7 @@ class VenmoSource(Source):
         )  # type: Dict[str, List[Tuple[Transaction,Posting]]]
         matched_payment_postings = dict(
         )  # type: Dict[str, List[Tuple[Transaction,Posting]]]
-        
+
         for entry in journal.all_entries:
             if not isinstance(entry, Transaction):
                 continue
