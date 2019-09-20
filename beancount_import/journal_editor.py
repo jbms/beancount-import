@@ -19,7 +19,7 @@ journal, and modifies only the lines occupied by the directives explicitly
 included in the change set.
 """
 
-from typing import Union, Dict, Tuple, List, Optional, Set, NamedTuple, Sequence, FrozenSet
+from typing import Union, Dict, Tuple, List, Optional, Set, NamedTuple, Sequence, FrozenSet, Iterable
 import datetime
 import collections
 import contextlib
@@ -763,7 +763,7 @@ class StagedChanges(object):
         )  # type: Dict[str, Tuple[datetime.date, Set[str]]]
         open_accounts = set()
 
-        def add_account(account, date, currencies):
+        def add_account(account: str, date: datetime.date, currencies: Optional[Iterable[str]]):
             if currencies is None:
                 currencies = set()
             existing_date, existing_currencies = accounts.setdefault(
@@ -783,7 +783,7 @@ class StagedChanges(object):
                     map_account(entry.account), entry.date,
                     [entry.amount.currency])
             elif isinstance(entry, Transaction):
-                other_currencies = set()
+                other_currencies = set()  # type: Set[str]
                 for posting in entry.postings:
                     if posting.price is not None and posting.price is not MISSING:
                         other_currencies.add(posting.price.currency)
@@ -795,7 +795,7 @@ class StagedChanges(object):
                 for posting in entry.postings:
                     if posting.units is None or posting.units is MISSING:
                         if len(other_currencies) == 1:
-                            currencies = other_currencies
+                            currencies = other_currencies  # type: Iterable[str]
                         else:
                             currencies = []
                     else:
