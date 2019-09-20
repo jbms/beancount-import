@@ -21,6 +21,7 @@ examples = [
     ('test_fidelity_savings', 'fidelity-savings.ofx'),
     ('test_suncorp', 'suncorp.ofx'),
     ('test_checking', 'checking.ofx'),
+    ('test_checking_emptyledgerbal', 'checking-emptyledgerbal.ofx'),
     ('test_td_ameritrade', 'td_ameritrade.ofx'),
     ('test_anzcc', 'anzcc.ofx'),
     ('test_multiple_accounts', 'multiple_accounts.ofx'),

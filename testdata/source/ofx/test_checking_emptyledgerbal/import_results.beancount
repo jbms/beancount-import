@@ -1,0 +1,69 @@
+;; date: 2011-03-31
+;; info: {"filename": "<testdata>/checking-emptyledgerbal.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "0.01 USD",
+;               "date": "2011-03-31",
+;               "key_value_pairs": {
+;                 "desc": "DIVIDEND EARNED FOR PERIOD OF 03/01/2011 THROUGH 03/31/2011 ANNUAL PERCENTAGE YIELD EARNED IS 0.05%",
+;                 "ofx_memo": "DIVIDEND EARNED FOR PERIOD OF 03/01/2011 THROUGH 03/31/2011 ANNUAL PERCENTAGE YIELD EARNED IS 0.05%",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Assets:Checking"
+;             }
+;           ]
+2011-03-31 * "STMTTRN - DIVIDEND EARNED FOR PERIOD OF 03/01/2011 THROUGH 03/31/2011 ANNUAL PERCENTAGE YIELD EARNED IS 0.05%"
+  Assets:Checking   0.01 USD
+    date: 2011-03-31
+    ofx_fitid: "0000486"
+    ofx_memo: "DIVIDEND EARNED FOR PERIOD OF 03/01/2011 THROUGH 03/31/2011 ANNUAL PERCENTAGE YIELD EARNED IS 0.05%"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME   -0.01 USD
+
+;; date: 2011-04-05
+;; info: {"filename": "<testdata>/checking-emptyledgerbal.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-34.51 USD",
+;               "date": "2011-04-05",
+;               "key_value_pairs": {
+;                 "desc": "AUTOMATIC WITHDRAWAL, ELECTRIC BILL WEB(S )",
+;                 "ofx_memo": "AUTOMATIC WITHDRAWAL, ELECTRIC BILL WEB(S )",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Assets:Checking"
+;             }
+;           ]
+2011-04-05 * "STMTTRN - AUTOMATIC WITHDRAWAL, ELECTRIC BILL WEB(S )"
+  Assets:Checking  -34.51 USD
+    date: 2011-04-05
+    ofx_fitid: "0000487"
+    ofx_memo: "AUTOMATIC WITHDRAWAL, ELECTRIC BILL WEB(S )"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME    34.51 USD
+
+;; date: 2011-04-07
+;; info: {"filename": "<testdata>/checking-emptyledgerbal.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-25.00 USD",
+;               "date": "2011-04-07",
+;               "key_value_pairs": {
+;                 "desc": "RETURNED CHECK FEE, CHECK # 319 FOR $45.33 ON 04/07/11",
+;                 "ofx_memo": "RETURNED CHECK FEE, CHECK # 319 FOR $45.33 ON 04/07/11",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Assets:Checking"
+;             }
+;           ]
+2011-04-07 * "STMTTRN - RETURNED CHECK FEE, CHECK # 319 FOR $45.33 ON 04/07/11"
+  Assets:Checking  -25.00 USD
+    check: 319
+    date: 2011-04-07
+    ofx_fitid: "0000488"
+    ofx_memo: "RETURNED CHECK FEE, CHECK # 319 FOR $45.33 ON 04/07/11"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME    25.00 USD

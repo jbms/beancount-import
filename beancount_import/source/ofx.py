@@ -431,13 +431,39 @@ from beancount.core.number import Decimal
 from beancount.core.amount import Amount
 from beancount.core.position import CostSpec
 from beancount.core.number import MISSING
-from beancount.ingest.importers.ofx import parse_ofx_time, find_child
+from beancount.ingest.importers.ofx import parse_ofx_time
 
 from ..posting_date import get_posting_date, POSTING_DATE_KEY
 from . import ImportResult, Source, SourceResults, InvalidSourceReference
 from ..journal_editor import JournalEditor
 from ..matching import FIXME_ACCOUNT, CHECK_KEY
 from ..training import ExampleKeyValuePairs
+
+
+# find_child function was derived from implementation in beancount/ingest/importers/ofx.pytest
+# Copyright (C) 2016  Martin Blais
+# GNU GPLv2
+def find_child(node, name, conversion=None):
+    """Find a child under the given node and return its value.
+
+    Args:
+      node: A <STMTTRN> bs4.element.Tag.
+      name: A string, the name of the child node.
+      conversion: A callable object used to convert the value to a new data type.
+    Returns:
+      A string, or None.
+    """
+    child = node.find(name)
+    if not child:
+        return None
+    if not child.contents:
+        value = ''
+    else:
+        value = child.contents[0].strip()
+    if conversion:
+        value = conversion(value)
+    return value
+
 
 RawBalanceEntry = NamedTuple('RawBalanceEntry', [
     ('filename', str),
@@ -647,8 +673,10 @@ class ParsedOfxStatement(object):
             self.availcash = availcash
 
         for bal in stmtrs.find_all('ledgerbal'):
+            bal_amount_str = find_child(bal, 'balamt')
+            if not bal_amount_str.strip(): continue
+            bal_amount = D(bal_amount_str)
             date = find_child(bal, 'dtasof', parse_ofx_time).date()
-            bal_amount = find_child(bal, 'balamt', D)
             raw_cash_balance_entries.append(
                 RawCashBalanceEntry(
                     date=date, number=bal_amount, filename=filename))

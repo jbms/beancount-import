@@ -1,0 +1,5 @@
+1900-01-01 open Assets:Checking
+  ofx_org: "FAKE"
+  ofx_broker_id: ""
+  account_id: "1452687~7"
+  ofx_account_type: "cash_only"
