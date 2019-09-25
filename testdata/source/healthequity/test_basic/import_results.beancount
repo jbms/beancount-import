@@ -221,11 +221,6 @@
   Assets:HSA:HealthEquity:Cash   -1936.76 USD
 
 ;; date: 2016-03-12
-;; info: {"filename": "<testdata>/data/1234567/cash-transactions-other.csv", "line": 5, "type": "text/csv"}
-
-2016-03-12 balance Assets:HSA:HealthEquity:Cash                    500.00 USD
-
-;; date: 2016-03-12
 ;; info: {"filename": "<testdata>/data/1234567/investment-transactions.csv", "line": 3, "type": "text/csv"}
 
 2016-03-12 balance Assets:HSA:HealthEquity:VIIIX                   10.436 VIIIX

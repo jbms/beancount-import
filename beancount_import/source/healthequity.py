@@ -519,26 +519,36 @@ class Source(description_based_source.DescriptionBasedSource):
             results=results)
 
         balance_entries = collections.OrderedDict(
-        )  # type: Dict[Tuple[datetime.date, str, str], ImportResult]
+        )  # type: Dict[Tuple[datetime.date, str, str], Optional[ImportResult]]
 
         for entry in transactions:
             date = entry.date + datetime.timedelta(days=1)
-            balance_entries[(date, entry.account,
-                             entry.balance.currency)] = ImportResult(
-                                 date=date,
-                                 entries=[
-                                     Balance(
-                                         date=date,
-                                         meta=None,
-                                         account=entry.account,
-                                         amount=entry.balance,
-                                         tolerance=None,
-                                         diff_amount=None)
-                                 ],
-                                 info=get_info(entry))
+            key = (date, entry.account, entry.balance.currency)
+
+            # When multiple transactions happen on the same day, we can't trust
+            # the reported balance because we don't know which order to apply
+            # them in. Just skip it, and put a tombstone in place of the one
+            # that was already there.
+            if key in balance_entries:
+                balance_entries[key] = None
+                continue
+
+            balance_entries[key] = ImportResult(
+                date=date,
+                entries=[
+                    Balance(
+                        date=date,
+                        meta=None,
+                        account=entry.account,
+                        amount=entry.balance,
+                        tolerance=None,
+                        diff_amount=None)
+                ],
+                info=get_info(entry))
 
         for entry in balance_entries.values():
-            results.add_pending_entry(entry)
+            if entry != None:
+              results.add_pending_entry(entry)
 
         for balance in balances:
             # Skip outputting recent balances --- just output prices.
