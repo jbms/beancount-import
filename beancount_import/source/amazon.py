@@ -336,6 +336,45 @@ def make_amazon_transaction(
                         (INVOICE_DESCRIPTION, adjustment.description),
                     ]),
                 ))
+    # New Amazon invoices do not have shipment-level tax and pretax-adjustment
+    # info, so we have to add these at invoice level. (We detect this situation
+    # by the absence of even a subtotal for any shipment, since lack of
+    # adjustments or tax might otherwise be normal.)
+    if all([s.items_subtotal is None for s in invoice.shipments]):
+        # If there's only one shipment, we can automatically attribute tax and
+        # pretax adjustments to that one. Otherwise we need to use an ungrouped
+        # unknown account.
+        unknown_account_name = FIXME_ACCOUNT
+        if len(invoice.shipments) == 1:
+          unknown_account_name += ':A'
+
+        for adjustment in invoice.pretax_adjustments:
+            amount = adjustment.amount
+            if amount.number == ZERO:
+                continue
+            txn.postings.append(
+                Posting(
+                    account=unknown_account_name,
+                    units=adjustment.amount,
+                    cost=None,
+                    price=None,
+                    flag=None,
+                    meta=collections.OrderedDict([
+                        (INVOICE_DESCRIPTION, adjustment.description),
+                    ]),
+                ))
+        if invoice.tax is not None and invoice.tax.number != ZERO:
+            txn.postings.append(
+                Posting(
+                    account=unknown_account_name,
+                    units=invoice.tax,
+                    cost=None,
+                    price=None,
+                    flag=None,
+                    meta=collections.OrderedDict([
+                        (INVOICE_DESCRIPTION, 'Sales Tax')
+                    ]),
+                ))
     for adjustment in invoice.posttax_adjustments:
         amount = adjustment.amount
         if amount.number == ZERO:
