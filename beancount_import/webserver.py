@@ -23,7 +23,7 @@ import tornado.netutil
 import tornado.websocket
 
 from beancount.core.data import Transaction, Posting
-from beancount.core.number import MISSING, Decimal
+from beancount.core.number import MISSING, Decimal, D
 import beancount.parser.printer
 
 import watchdog.events
@@ -708,6 +708,13 @@ def parse_arguments(argv, **kwargs):
         default=5,
         help=
         'Maximum number of days by which the dates of two matching entries may differ.'
+    )
+    argparser.add_argument(
+        '--fuzzy_match_amount',
+        type=Decimal,
+        default=D('0.01'),
+        help=
+        'Maximum amount by which the weights of two matching entries may differ.'
     )
     argparser.add_argument(
         '--classifier_cache',
