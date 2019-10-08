@@ -241,6 +241,7 @@ interface, to try to debug it.
 import collections
 from typing import Dict, List, Tuple, Optional
 import os
+import sys
 
 from beancount.core.data import Transaction, Posting, Balance, Commodity, Price, EMPTY_SET, Directive
 from beancount.core.amount import Amount
@@ -442,11 +443,8 @@ class AmazonSource(Source):
         if invoice_filename in self._cached_invoices:
             return self._cached_invoices.get(invoice_filename)
         path = os.path.realpath(os.path.join(self.directory, invoice_filename))
-        try:
-            self.log_status('amazon: processing %s' % (path, ))
-            invoice = parse_invoice(path)  # type: Optional[Order]
-        except:
-            invoice = None
+        self.log_status('amazon: processing %s' % (path, ))
+        invoice = parse_invoice(path)  # type: Optional[Order]
         self._cached_invoices[invoice_filename] = invoice, path
         return invoice, path
 
@@ -462,10 +460,14 @@ class AmazonSource(Source):
 
         for order_id, invoice_filename in self.invoice_filenames:
             if order_id in order_ids_seen: continue
-            invoice, path = self._get_invoice(invoice_filename)
-            if invoice is None:
-                results.add_error('Failed to parse invoice: %s' % (path, ))
+            try:
+              invoice, path = self._get_invoice(invoice_filename)
+            except:
+                results.add_error('Failed to parse invoice %s: %s' % (
+                    invoice_filename, sys.exc_info()))
                 continue
+            if invoice is None:
+              continue
             transaction = make_amazon_transaction(
                 invoice=invoice,
                 posttax_adjustment_accounts=self.posttax_adjustment_accounts,
