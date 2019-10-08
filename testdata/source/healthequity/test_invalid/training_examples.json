@@ -13,7 +13,7 @@
   ],
   [
     {
-      "amount": "1.745 VIIIX",
+      "amount": "1.763 VIIIX",
       "date": "2016-01-19",
       "key_value_pairs": {
         "desc": "Buy"
@@ -24,7 +24,30 @@
   ],
   [
     {
-      "amount": "-1600.03 USD",
+      "amount": "336.73 USD",
+      "date": "2016-02-12",
+      "key_value_pairs": {
+        "desc": "Investment: VIIIX",
+        "healthequity_transaction_type": "Other"
+      },
+      "source_account": "Assets:HSA:HealthEquity:Cash"
+    },
+    "Assets:HSA:HealthEquity:VIIIX"
+  ],
+  [
+    {
+      "amount": "-1.763 VIIIX",
+      "date": "2016-02-12",
+      "key_value_pairs": {
+        "desc": "Sell"
+      },
+      "source_account": "Assets:HSA:HealthEquity:VIIIX"
+    },
+    "Assets:HSA:HealthEquity:Cash"
+  ],
+  [
+    {
+      "amount": "-1936.76 USD",
       "date": "2016-03-11",
       "key_value_pairs": {
         "desc": "Investment: VIIIX",
@@ -36,7 +59,7 @@
   ],
   [
     {
-      "amount": "8.622 VIIIX",
+      "amount": "10.436 VIIIX",
       "date": "2016-03-11",
       "key_value_pairs": {
         "desc": "Buy"
