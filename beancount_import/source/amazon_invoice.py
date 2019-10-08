@@ -68,17 +68,19 @@ Order = NamedTuple('Order', [
 pretax_adjustment_fields_pattern = ('(?:' + '|'.join([
     'Shipping & Handling',
     'Free Shipping',
-    'Promotion Applied',
+    'Promotion(?:s| Applied)',
+    'Lightning Deal',
     'Your Coupon Savings',
     '[0-9]+% off savings',
     'Subscribe & Save',
     '[0-9]+ Audible Credit Applied',
     '.*[0-9]+% Off.*',
     'Courtesy Credit',
+    'Extra Savings',
     '(?:.*) Discount',
     'Gift[ -]Wrap',
 ]) + ') *:')
-posttax_adjustment_fields_pattern = 'Gift Card Amount:|Rewards Points:'
+posttax_adjustment_fields_pattern = r'Gift Card Amount:|Rewards Points:|Recycle Fee \$X'
 
 
 def to_json(obj):
