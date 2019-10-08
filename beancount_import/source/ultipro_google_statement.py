@@ -110,6 +110,12 @@ def parse(text: str) -> ParseResult:
                      ('Current', parse_currency),
                      ('YTD', parse_currency)),
                     #(r'^(Total Hours) (' + decimal_re + r')$', ('hours', D)),
+                    (r'^(' + field_name_re + r')[ \n](?:[0-5] [a-zA-Z ]+)?(' +
+                     decimal_re + r')' + 2 *
+                     (r' (' + currency_amount_re + r')') + r'$',
+                     ('Hours', D),
+                     ('Pay Rate', parse_currency),
+                     ('Current', parse_currency)),
                 ]),
             (
                 r'^(Earnings)\nPay Type Hours\nPay\nRate\nPiece\nUnits\nPiece\nRate Current YTD$',
@@ -145,7 +151,7 @@ def parse(text: str) -> ParseResult:
             (r'^(Deductions)\nEmployee Employer\nDeduction\sBased\sOn\sPre-\s?Tax Current YTD Current YTD$',
              [
                  (r'^(' + field_name_re + r')' +
-                  (r' (' + currency_amount_re + r')') +
+                  (r'\s(' + currency_amount_re + r')') +
                   (r' (' + yesno_re + r')') + 4 *
                   (r' (' + currency_amount_re + r')') + r'$',
                   ('Based On', parse_currency),
