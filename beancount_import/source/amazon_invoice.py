@@ -38,7 +38,7 @@ DigitalItem = NamedTuple('DigitalItem', [
 ])
 
 Shipment = NamedTuple('Shipment', [
-    ('shipped_date', datetime.date),
+    ('shipped_date', Optional[datetime.date]),
     ('items', Sequence[Union[Item, DigitalItem]]),
     ('items_subtotal', Amount),
     ('pretax_adjustments', Sequence[Adjustment]),
@@ -147,13 +147,18 @@ def reduce_adjustments(adjustments: List[Adjustment]) -> List[Adjustment]:
 def parse_shipments(soup) -> List[Shipment]:
 
     shipped_pattern = '^Shipped on ([^\\n]+)$'
+    nonshipped_headers = {
+        'Service completed',
+        'Preparing for Shipment',
+        'Not Yet Shipped',
+    }
 
     def is_shipment_header_table(node):
         if node.name != 'table':
             return False
         text = node.text.strip()
         m = re.match(shipped_pattern, text)
-        return m is not None
+        return m is not None or text in nonshipped_headers
 
     header_tables = soup.find_all(is_shipment_header_table)
 
@@ -162,9 +167,11 @@ def parse_shipments(soup) -> List[Shipment]:
 
     for header_table in header_tables:
         text = header_table.text.strip()
-        m = re.match(shipped_pattern, text)
-        assert m is not None
-        shipped_date = dateutil.parser.parse(m.group(1)).date()
+        shipped_date = None
+        if text not in nonshipped_headers:
+            m = re.match(shipped_pattern, text)
+            assert m is not None
+            shipped_date = dateutil.parser.parse(m.group(1)).date()
 
         items = []
 
@@ -189,7 +196,7 @@ def parse_shipments(soup) -> List[Shipment]:
             price_node = tds[1]
             price = price_node.text.strip()
 
-            pattern_without_condition = r'^\s*(?P<quantity>[0-9]+)\s+of:(?P<description>.*)\n\s*Sold by: (?P<sold_by>[^\n]+)'
+            pattern_without_condition = r'^\s*(?P<quantity>[0-9]+)\s+of:(?P<description>.*)\n\s*(?:Sold|Provided) by:? (?P<sold_by>[^\n]+)'
             pattern_with_condition = pattern_without_condition + r'\n.*\n\s*Condition: (?P<condition>[^\n]+)'
 
             m = re.match(pattern_with_condition, description_node.text,
