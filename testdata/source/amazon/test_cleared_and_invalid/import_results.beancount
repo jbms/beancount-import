@@ -58,3 +58,93 @@
   Liabilities:Credit-Card  -14.99 USD
     amazon_credit_card_description: "VISA ending in 1234"
     transaction_date: 2016-06-30
+
+;; date: 2019-09-12
+;; info: {"filename": "<testdata>/381-3642728-6932366.html", "type": "text/html"}
+
+; features: [
+;             {
+;               "amount": "8.44 USD",
+;               "date": "2019-09-12",
+;               "key_value_pairs": {
+;                 "amazon_item_description": [
+;                   "Citizen CTO Silver Dial Leather Strap Men's Watch BM2873-93A"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2019-09-12 * "Amazon.com" "Order"
+  amazon_account: "name@domain.com"
+  amazon_order_id: "381-3642728-6932366"
+  associated_data0: "{\"description\": \"Amazon order invoice\", \"meta\": [\"amazon_order_id\", \"381-3642728-6932366\"], \"path\": \"<testdata>/381-3642728-6932366.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A           91.25 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Citizen CTO Silver Dial Leather Strap Men's Watch BM2873-93A"
+    amazon_item_quantity: 1
+    amazon_seller: "Princeton Watches"
+    shipped_date: 2019-09-13
+  Expenses:FIXME:A            8.44 USD
+    amazon_invoice_description: "Sales Tax"
+  Assets:Gift-Cards:Amazon  -36.37 USD
+    amazon_posttax_adjustment: "Gift Card Amount"
+  Liabilities:Credit-Card   -63.32 USD
+    amazon_credit_card_description: "Visa ending in 1234"
+    transaction_date: 2019-09-13
+
+;; date: 2019-09-18
+;; info: {"filename": "<testdata>/511-1525861-4349605.html", "type": "text/html"}
+
+; features: [
+;             {
+;               "amount": "26.99 USD",
+;               "date": "2019-09-18",
+;               "key_value_pairs": {
+;                 "amazon_item_description": [
+;                   "DLGJPA Men's Quick Drying Water Shoes for Beach or Water Sports Lightweight Slip On Walking Shoes"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "12.89 USD",
+;               "date": "2019-09-18",
+;               "key_value_pairs": {
+;                 "amazon_item_description": [
+;                   "Aeromax Jr. Astronaut Backpack, White, with NASA patches",
+;                   "2 Pairs Alien Glasses Silver Glasses with Rainbow Color Lens and 2 Pieces Martian Antenna Headband Boppers for Halloween Adults and Kids Party Favors"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             null
+;           ]
+2019-09-18 * "Amazon.com" "Order"
+  amazon_account: "name@domain.com"
+  amazon_order_id: "511-1525861-4349605"
+  associated_data0: "{\"description\": \"Amazon order invoice\", \"meta\": [\"amazon_order_id\", \"511-1525861-4349605\"], \"path\": \"<testdata>/511-1525861-4349605.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A           26.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "DLGJPA Men's Quick Drying Water Shoes for Beach or Water Sports Lightweight Slip On Walking Shoes"
+    amazon_item_quantity: 1
+    amazon_seller: "Bo Bao"
+    shipped_date: 2019-09-18
+  Expenses:FIXME:B           26.85 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Aeromax Jr. Astronaut Backpack, White, with NASA patches"
+    amazon_item_quantity: 1
+    amazon_seller: "Amazon.com Services, Inc"
+    shipped_date: 2019-09-19
+  Expenses:FIXME:B           12.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "2 Pairs Alien Glasses Silver Glasses with Rainbow Color Lens and 2 Pieces Martian Antenna Headband Boppers for Halloween Adults and Kids Party Favors"
+    amazon_item_quantity: 1
+    amazon_seller: "Wrestler Case"
+    shipped_date: 2019-09-19
+  Expenses:FIXME              2.48 USD
+    amazon_invoice_description: "Sales Tax"
+  Assets:Gift-Cards:Amazon  -69.21 USD
+    amazon_posttax_adjustment: "Gift Card Amount"
+  Liabilities:Credit-Card     0.00 USD
+    amazon_credit_card_description: "Amazon.com Visa Signature ending in 1234"
+    transaction_date: 2019-09-18

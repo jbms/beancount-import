@@ -229,7 +229,8 @@ def parse_shipments(soup) -> List[Shipment]:
             get_field_in_table(shipment_table, r'Item\(s\) Subtotal:'))
         expected_items_subtotal = reduce_amounts(
             beancount.core.amount.mul(x.price, D(x.quantity)) for x in items)
-        if expected_items_subtotal != items_subtotal:
+        if (items_subtotal is not None and
+            expected_items_subtotal != items_subtotal):
             errors.append(
                 'expected items subtotal is %r, but parsed value is %r' %
                 (expected_items_subtotal, items_subtotal))
@@ -239,13 +240,15 @@ def parse_shipments(soup) -> List[Shipment]:
             shipment_table, pretax_adjustment_fields_pattern)
         output_fields['posttax_adjustments'] = get_adjustments_in_table(
             shipment_table, posttax_adjustment_fields_pattern)
-        pretax_parts = [items_subtotal] + [
+        pretax_parts = [items_subtotal or expected_items_subtotal] + [
             a.amount for a in output_fields['pretax_adjustments']
         ]
         total_before_tax = parse_amount(
             get_field_in_table(shipment_table, 'Total before tax:'))
         expected_total_before_tax = reduce_amounts(pretax_parts)
-        if expected_total_before_tax != total_before_tax:
+        if total_before_tax is None:
+            total_before_tax = expected_total_before_tax
+        elif expected_total_before_tax != total_before_tax:
             errors.append(
                 'expected total before tax is %s, but parsed value is %s' %
                 (expected_total_before_tax, total_before_tax))
@@ -258,7 +261,9 @@ def parse_shipments(soup) -> List[Shipment]:
         total = parse_amount(
             get_field_in_table(shipment_table, 'Total for This Shipment:'))
         expected_total = reduce_amounts(posttax_parts)
-        if expected_total != total:
+        if total is None:
+            total = expected_total
+        elif expected_total != total:
             errors.append('expected total is %s, but parsed value is %s' %
                           (expected_total, total))
 
@@ -353,20 +358,24 @@ def parse_regular_order_invoice(path: str) -> Order:
     output_fields = dict()
     output_fields['pretax_adjustments'] = get_adjustments_in_table(
         payment_table, pretax_adjustment_fields_pattern)
-    expected_amount = reduce_amounts(
-        a.amount for shipment in shipments for a in shipment.pretax_adjustments)
     amount = reduce_amounts(
         a.amount for a in output_fields['pretax_adjustments'])
-    if expected_amount != amount:
-        errors.append(
-            'expected total pretax adjustment to be %s, but parsed total is %s'
-            % (expected_amount, amount))
+    payment_adjustments = collections.OrderedDict()  # type: Dict[str, Amount]
+    if any(s.pretax_adjustments for s in shipments):
+        expected_amount = reduce_amounts(
+            a.amount
+            for shipment in shipments
+            for a in shipment.pretax_adjustments)
+        if expected_amount != amount:
+            errors.append(
+                'expected total pretax adjustment to be %s, but parsed total is %s'
+                % (expected_amount, amount))
 
     payments_total_adjustments = []
     shipments_total_adjustments = []
 
     def resolve_posttax_adjustments():
-        payment_adjustments = collections.OrderedDict(
+        payment_adjustments.update(
             reduce_adjustments(
                 get_adjustments_in_table(payment_table,
                                          posttax_adjustment_fields_pattern)))
@@ -384,7 +393,7 @@ def parse_regular_order_invoice(path: str) -> Order:
             if payment_amount is None and shipments_amount is not None:
                 # Amazon sometimes doesn't include adjustments in the Payments table
                 amount = shipments_amount
-                payments_total_adjustments.append(expected_amount)
+                payments_total_adjustments.append(amount)
             elif payment_amount is not None and shipments_amount is None:
                 # Amazon sometimes doesn't include these adjustments in the Shipment table
                 shipments_total_adjustments.append(amount)
@@ -402,7 +411,9 @@ def parse_regular_order_invoice(path: str) -> Order:
 
     expected_tax = reduce_amounts(
         a.amount for shipment in shipments for a in shipment.tax)
-    if expected_tax != tax:
+    if expected_tax is None:
+        shipments_total_adjustments.append(tax)
+    elif expected_tax != tax:
         errors.append(
             'expected tax is %s, but parsed value is %s' % (expected_tax, tax))
 
