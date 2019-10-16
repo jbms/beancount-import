@@ -115,6 +115,7 @@ class ReconcileGoldenTester:
         self.temp_dir = temp_dir
         self.replacements = [
             (os.path.realpath(temp_dir), '<journal-dir>'),
+            (testdata_root, '<testdata>'),
             *replacements,
         ]
         self.write = write
@@ -198,7 +199,7 @@ class ReconcileGoldenTester:
             write=self.write,
         )
         for filename, expected_contents in _add_invalid_reference_and_uncleared_metadata(
-                loaded_reconciler):
+                loaded_reconciler).items():
             test_util.check_golden_contents(
                 path=filename,
                 expected_contents=expected_contents,
@@ -230,9 +231,6 @@ def test_basic(tmpdir: py.path.local):
     tester = ReconcileGoldenTester(
         golden_directory=os.path.join(testdata_root, 'reconcile', 'test_basic'),
         temp_dir=str(tmpdir),
-        replacements=[
-            (testdata_root, '<testdata>'),
-        ],
         options=dict(
             data_sources=[
                 {
@@ -255,9 +253,6 @@ def test_ignore(tmpdir: py.path.local):
         golden_directory=os.path.join(testdata_root, 'reconcile',
                                       'test_ignore'),
         temp_dir=str(tmpdir),
-        replacements=[
-            (testdata_root, '<testdata>'),
-        ],
         options=dict(
             data_sources=[
                 {
@@ -280,9 +275,6 @@ def test_ofx_basic(tmpdir: py.path.local):
         golden_directory=os.path.join(testdata_root, 'reconcile',
                                       'test_ofx_basic'),
         temp_dir=str(tmpdir),
-        replacements=[
-            (testdata_root, '<testdata>'),
-        ],
         options=dict(
             data_sources=[
                 {
@@ -302,9 +294,26 @@ def test_ofx_matching(tmpdir: py.path.local):
         golden_directory=os.path.join(testdata_root, 'reconcile',
                                       'test_ofx_matching'),
         temp_dir=str(tmpdir),
-        replacements=[
-            (testdata_root, '<testdata>'),
-        ],
+        options=dict(
+            data_sources=[
+                {
+                    'module':
+                    'beancount_import.source.ofx',
+                    'ofx_filenames': [
+                        os.path.join(testdata_root, 'source', 'ofx',
+                                     'vanguard_roth_ira.ofx')
+                    ],
+                },
+            ],
+        ),
+    )
+
+
+def test_ofx_cleared(tmpdir: py.path.local):
+    tester = ReconcileGoldenTester(
+        golden_directory=os.path.join(testdata_root, 'reconcile',
+                                      'test_ofx_cleared'),
+        temp_dir=str(tmpdir),
         options=dict(
             data_sources=[
                 {

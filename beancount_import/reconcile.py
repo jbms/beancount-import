@@ -617,7 +617,7 @@ class LoadedReconciler(object):
             parts = account_name.split(':')
             cleared_before = datetime.date.min
             cleared_after = datetime.date.max
-            for part_i in range(1, len(parts) - 1):
+            for part_i in range(1, len(parts)):
                 ancestor_account_name = ':'.join(parts[:part_i])
                 ancestor_cleared_dates = cleared_dates.get(ancestor_account_name)
                 if ancestor_cleared_dates is None: continue
