@@ -16,6 +16,7 @@ import os
 import tempfile
 import webbrowser
 
+import atomicwrites
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
@@ -370,14 +371,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         try:
             filename = msg['filename']
             contents = msg['contents']
-            with tempfile.NamedTemporaryFile(
-                    mode='w',
-                    dir=os.path.dirname(filename),
-                    prefix=os.path.basename(filename) + '.tmp',
-                    delete=False) as f:
+            with atomicwrites.atomic_write(filename, overwrite=True) as f:
                 f.write(contents)
-                f.flush()
-                os.rename(f.name, filename)
         except:
             traceback.print_exc()
 
