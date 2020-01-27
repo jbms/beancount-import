@@ -37,6 +37,15 @@ from . import matching
 from .source import Source, InvalidSourceReference
 
 
+def init_tornado_asyncio():
+    '''
+    Python 3.8+ on Windows requires this patch for Tornado loop to work, confirmed they won't fix this internally
+    '''
+    if sys.platform == 'win32':
+        import asyncio
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
 def json_encode_beancount_entry(x):
     if x is None:
         return None
@@ -727,6 +736,8 @@ def main(argv, **kwargs):
     if args.log_output is not None:
         logging_args['filename'] = args.log_output
     logging.basicConfig(**logging_args)
+    
+    init_tornado_asyncio()
 
     ioloop = tornado.ioloop.IOLoop.instance()
     app = Application(args=args, ioloop=ioloop, debug=(args.loglevel == logging.DEBUG))
