@@ -1,0 +1,28 @@
+[
+  [
+    {
+      "amount": "-0.035 SPY",
+      "date": "2012-08-01",
+      "key_value_pairs": {
+        "desc": "IN LIEU OF FRX SHARE",
+        "ofx_memo": "IN LIEU OF FRX SHARE",
+        "ofx_type": "SELLSTOCK"
+      },
+      "source_account": "Assets:Investment:Fidelity:SPY"
+    },
+    "Assets:Investment:Fidelity:Cash"
+  ],
+  [
+    {
+      "amount": "0.911 INTC",
+      "date": "2012-09-01",
+      "key_value_pairs": {
+        "desc": "REINVESTMENT",
+        "ofx_memo": "REINVESTMENT",
+        "ofx_type": "BUYSTOCK"
+      },
+      "source_account": "Assets:Investment:Fidelity:INTC"
+    },
+    "Assets:Investment:Fidelity:Cash"
+  ]
+]

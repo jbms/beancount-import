@@ -1,0 +1,9 @@
+Assets:Investment:Fidelity
+Assets:Investment:Fidelity:CLCT
+Assets:Investment:Fidelity:Cash
+Assets:Investment:Fidelity:HI
+Assets:Investment:Fidelity:INTC
+Assets:Investment:Fidelity:RHT
+Assets:Investment:Fidelity:SDRL
+Assets:Investment:Fidelity:SPY
+Assets:Investment:Fidelity:XIN
