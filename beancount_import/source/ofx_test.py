@@ -33,6 +33,7 @@ examples = [
     ('test_checking2', 'checking2.ofx'),
     ('test_checking2_matching', 'checking2.ofx'),
     ('test_amex', 'amex.ofx'),
+    ('test_fidelity', 'fidelity.ofx'),
 ]
 
 
