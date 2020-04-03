@@ -671,6 +671,12 @@ class ParsedOfxStatement(object):
         for inv_bal in stmtrs.find_all('invbal'):
             availcash = find_child(inv_bal, 'availcash', D)
             self.availcash = availcash
+            date = find_child(inv_bal, 'dtasof', parse_ofx_time)
+            if date is not None:
+                date = date.date()
+                raw_cash_balance_entries.append(
+                    RawCashBalanceEntry(
+                        date=date, number=availcash, filename=filename))
 
         for bal in stmtrs.find_all('ledgerbal'):
             bal_amount_str = find_child(bal, 'balamt')
