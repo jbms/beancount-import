@@ -901,7 +901,13 @@ class ParsedOfxStatement(object):
                 units = normalize_fraction(raw.units)
                 if quantity_round_digits is not None:
                     units = round(units, quantity_round_digits)
-                unitprice = normalize_fraction(raw.unitprice)
+                
+                if raw.unitprice==ZERO:
+                    # Assume Zero unitprice is a bug, recalculate.
+                    unitprice = abs(raw.total/raw.units)
+                else:
+                    unitprice = raw.unitprice
+                unitprice = normalize_fraction(unitprice)
 
                 cost_spec = None
                 price = None
