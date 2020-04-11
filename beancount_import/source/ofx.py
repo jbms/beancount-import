@@ -902,8 +902,8 @@ class ParsedOfxStatement(object):
                 if quantity_round_digits is not None:
                     units = round(units, quantity_round_digits)
                 
-                if raw.unitprice==ZERO:
-                    # Assume Zero unitprice is a bug, recalculate.
+                if raw.unitprice==ZERO or raw.unitprice is None:
+                    # Assume Zero or missing unitprice is a bug, recalculate.
                     unitprice = abs(raw.total/raw.units)
                 else:
                     unitprice = raw.unitprice
