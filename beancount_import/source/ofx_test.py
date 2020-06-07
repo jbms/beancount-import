@@ -35,13 +35,15 @@ examples = [
     ('test_amex', 'amex.ofx'),
 ]
 
-
 @pytest.mark.parametrize('name,ofx_filename', examples)
 def test_source(name: str, ofx_filename: str):
+    tests = ['test_amex','test_bank_medium','test_checking_emptyledgerbal','test_suncorp']
     check_source_example(
         example_dir=os.path.join(testdata_dir, name),
         source_spec={
             'module': 'beancount_import.source.ofx',
             'ofx_filenames': [os.path.join(testdata_dir, ofx_filename)],
+            'checknum_numeric': lambda oxf_filename: name not in tests,
+            'check_balance': lambda oxf_filename: name in tests
         },
         replacements=[(testdata_dir, '<testdata>')])

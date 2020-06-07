@@ -31,6 +31,20 @@ Duplicate transactions, as determined by the FITID field, are automatically
 excluded.  Therefore, if downloading manually, you should just ensure that there
 are no gaps in the date ranges selected; overlap will not cause any problems.
 
+Converting to OFX file
+======================
+
+Thanks to the ofxstatement project on GitHub there are several converters to
+OFX.  The module beancount_import.source.ofx contains a function convert2ofx
+to convert files to OFX.  Its parameters are: input_file_type, filenames and
+force. The input files are converted to a hidden file (hence prefixed by a
+dot) and suffixed with .ofx. So x.pdf becomes .x.pdf.ofx. There is no need to
+store these converted OFX files in your repository.
+
+To use the function:
+
+    from beancount_import.source.ofx import convert2ofx
+
 Specifying the source to beancount_import
 =========================================
 
@@ -41,8 +55,11 @@ expression like the following to specify the ofx source:
          ofx_filenames=(
              glob.glob(os.path.join(journal_dir, 'data/institution1/*/*.ofx'))
              + glob.glob(os.path.join(journal_dir, 'data/institution2/*/*.ofx'))
+             + convert2ofx('mt940', glob.glob(os.path.join(journal_dir, 'data/institution3/*/*.mt940')))
          ),
          cache_filename=os.path.join(journal_dir, 'data/ofx_cache.pickle'),
+         checknum_numeric=lambda ofx_filename: False,
+         check_balance=lambda ofx_filename: False,
     )
 
 where `journal_dir` refers to the financial/ directory.
@@ -50,7 +67,44 @@ where `journal_dir` refers to the financial/ directory.
 The `cache_filename` key is optional, but is recommended to speed up parsing if
 you have a large amount of OFX data.  When using the `cache_filename` option,
 adding and deleting OFX files is fine, but if you modify existing OFX files, you
-must delete the cahe file manually.
+must delete the cache file manually.
+
+The `checknum_numeric` key is optional but can be used to handle numeric
+conversion for the CHECKNUM tag in the OFX file. The OFX standard says that
+CHECKNUM is just an alphanumeric string but the default behaviour of
+beancount-import was to try to convert it to a number. The `check_num` key is
+a callable function based on the filename being proessed.
+
+Emit balance yes or no?
+-----------------------
+The `check_balance` key is optional but can be used to emit balances only if
+they are known to be correct. The value False does not do any checks (old
+behaviour) and just emits any balance seen. The value True will use the
+following algorithm to determine the balance.
+
+We will use OFX tags BALAMT, DTASOF and DTEND to discuss the way how the
+balance is determined. BALAMT is the balance amount on date/time
+DTASOF. DTASOF is by definition the current date/time (date as of now), not
+the date/time of the closing balance of all transactions listed!  DTEND should
+be (according to OFX) the EXCLUSIVE end date/time for the list of transactions
+retrieved. But some banks use it as an INCLUSIVE date (without a time
+component) though.
+Please note that some financial systems may include the time and some may not.
+Anyway, these are the relevant cases:
+1) DTEND is less than DTASOF.
+So there may be financial transactions on day DTASOF between DTEND and DTASOF
+but they will not be listed in the file, so we just do not know if BALAMT is
+the same on another time for example at the start of the day of DTASOF. Hence,
+we can not determine the balance at the start of day DTASOF reliably so we
+just do NOT emit it.
+2) DTEND equals DTASOF.
+We know can calculate the balance at the beginning of day DTASOF by just
+deducting the transactions on day DTEND. We can NOT calculate the balance the
+day after DTASOF since there may be transactions later on day DTASOF. But that
+is not important: one balance is okay.
+3) DTEND missing or DTEND is greater than DTASOF.
+Like case 2 but just to be sure we also deduct transactions greater than
+DTASOF.
 
 Specifying individual accounts
 ==============================
@@ -415,11 +469,13 @@ of the manually created postings, as shown below:
 
 import pickle
 import re
-from typing import Set, Tuple, Any, Dict, Union, List, Optional, NamedTuple
+from typing import Set, Tuple, Any, Dict, Union, List, Optional, NamedTuple, Callable
 import os
 import collections
 import datetime
 import tempfile
+import sys
+from subprocess import check_call, STDOUT
 
 import bs4
 from atomicwrites import atomic_write
@@ -596,12 +652,19 @@ RELATED_ACCOUNT_KEYS = ['aftertax_account', 'pretax_account', 'match_account']
 # Tolerance allowed in transaction balancing.  In units of base currency used, e.g. USD.
 TOLERANCE = 0.05
 
+CHECKNUM_NUMERIC = True   # True is old behavior, not conform OFX
+
+CHECK_BALANCE = False     # False is old behavior
+
+
 class ParsedOfxStatement(object):
-    def __init__(self, seen_fitids, filename, securities_map, org, stmtrs):
+    def __init__(self, seen_fitids, filename, securities_map, org, stmtrs,
+                 checknum_numeric=CHECKNUM_NUMERIC, check_balance=CHECK_BALANCE):
         filename = os.path.abspath(filename)
         self.filename = filename
         self.securities_map = securities_map
         self.org = org
+        self.checknum_numeric = checknum_numeric
         account_id = self.account_id = find_child(stmtrs, 'acctid')
         self.broker_id = find_child(stmtrs, 'brokerid') or ''
 
@@ -619,6 +682,24 @@ class ParsedOfxStatement(object):
         cash_activity_dates = self.cash_activity_dates = set()
 
         self.ofx_id = account_ofx_id = (org, self.broker_id, account_id)
+        
+        if check_balance:
+            dtend = stmtrs.find(re.compile('banktranlist'))
+            if dtend:
+                # Use find_child and not dtend.find().get_text()
+                dtend = find_child(dtend, 'dtend')
+                if dtend:
+                    # The dtend text should be a date/time starting with %Y%m%d but some OFX files
+                    # do not conform to a time but the date part is correct.
+                    # Please note that just the date component is enough.
+                    try:
+                        dtend = parse_ofx_time(dtend[:8] + "000000").date()
+                        assert dtend is not None, "dtend should not be None"
+                    except ValueError as e:
+                        sys.stderr.write("The DTEND tag (%s) can not be converted to a date\n" % (dtend))
+                        dtend = None
+        else:
+            pass
 
         for invtranlist in stmtrs.find_all(re.compile('invtranlist|banktranlist')):
             for tran in invtranlist.find_all(
@@ -676,10 +757,21 @@ class ParsedOfxStatement(object):
             bal_amount_str = find_child(bal, 'balamt')
             if not bal_amount_str.strip(): continue
             bal_amount = D(bal_amount_str)
-            date = find_child(bal, 'dtasof', parse_ofx_time).date()
+            dtasof = find_child(bal, 'dtasof', parse_ofx_time).date()
+            if check_balance:
+                # See above (Emit balance yes or no?)
+                # Case 1
+                if dtend is not None and dtend < dtasof:
+                    continue
+                # Cases 2 and 3
+                for raw in raw_transactions:
+                    if raw.date >= dtasof:  # include > dtasof for case 3
+                        bal_amount -= raw.total
+            else:
+                pass            
             raw_cash_balance_entries.append(
                 RawCashBalanceEntry(
-                    date=date, number=bal_amount, filename=filename))
+                    date=dtasof, number=bal_amount, filename=filename))
 
 
         for invposlist in stmtrs.find_all('invposlist'):
@@ -838,9 +930,14 @@ class ParsedOfxStatement(object):
                 posting_meta[OFX_NAME_KEY] = name
 
             if raw.checknum:
-                stripped_checknum = raw.checknum.lstrip('0')
-                if stripped_checknum:
-                    posting_meta[CHECK_KEY] = D(stripped_checknum)
+                # GJP 2020-01-18
+                # The CHECKNUM field is not numeric as described in the OFX 2.2 specification
+                if self.checknum_numeric:
+                    stripped_checknum = raw.checknum.lstrip('0')
+                    if stripped_checknum:
+                        posting_meta[CHECK_KEY] = D(stripped_checknum)
+                else:
+                    posting_meta[CHECK_KEY] = raw.checknum
 
             cash_transfer_transaction_amount = None
             if raw.trantype == 'INCOME' or raw.trantype == 'INVBANKTRAN' or raw.trantype == 'STMTTRN':
@@ -1147,7 +1244,8 @@ class ParsedOfxStatement(object):
 
 
 class ParsedOfxFile(object):
-    def __init__(self, seen_fitids, filename):
+    def __init__(self, seen_fitids, filename,
+                 checknum_numeric=CHECKNUM_NUMERIC, check_balance=CHECK_BALANCE):
         self.filename = filename
         parsed_statements = self.parsed_statements = []
 
@@ -1169,7 +1267,9 @@ class ParsedOfxFile(object):
                     filename=filename,
                     securities_map=securities_map,
                     org=org,
-                    stmtrs=stmtrs))
+                    stmtrs=stmtrs,
+                    checknum_numeric=checknum_numeric,
+                    check_balance=check_balance))
 
 
 def get_account_map(accounts):
@@ -1324,6 +1424,8 @@ class OfxSource(Source):
     def __init__(self,
                  ofx_filenames: List[str],
                  cache_filename: Optional[str] = None,
+                 checknum_numeric: Callable[[str], bool] = lambda ofx_filename: CHECKNUM_NUMERIC,
+                 check_balance: Callable[[str], bool] = lambda ofx_filename: CHECK_BALANCE,
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.ofx_filenames = [os.path.realpath(x) for x in ofx_filenames]
@@ -1355,7 +1457,10 @@ class OfxSource(Source):
                 continue
             self.log_status('ofx: loading %s' % filename)
             self.parsed_files.append(
-                ParsedOfxFile(self.source_fitids, filename))
+                ParsedOfxFile(self.source_fitids,
+                              filename,
+                              checknum_numeric(filename),
+                              check_balance(filename)))
 
         if cache_filename is not None:
             cache_data = {
@@ -1401,6 +1506,28 @@ class OfxSource(Source):
 def load(spec, log_status):
     return OfxSource(log_status=log_status, **spec)
 
+def convert2ofx(input_file_type: str,
+                filenames: List[str],
+                force: Optional[bool] = False):
+    ofx_filenames = []
+    for file in [os.path.realpath(x) for x in filenames]:
+        head, tail = os.path.split(file)
+        ofx_file = os.path.join(head, '.' + tail + '.ofx')
+        ofx_file_newer = False
+        try:
+            if not(force):
+                if os.stat(ofx_file).st_mtime > os.stat(file).st_mtime:
+                    ofx_file_newer = True
+        except:
+            pass
+
+        if not(ofx_file_newer):
+            # Create a process for ofxstatement
+            ofxstatement = ["ofxstatement", "convert", "-t", input_file_type]
+            ofxstatement.extend([file, ofx_file])
+            check_call(ofxstatement, stderr=STDOUT)
+        ofx_filenames.append(ofx_file)
+    return ofx_filenames
 
 if __name__ == '__main__':
     import argparse

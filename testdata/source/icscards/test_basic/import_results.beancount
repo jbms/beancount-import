@@ -1,0 +1,51 @@
+;; date: 2019-10-12
+;; info: {"filename": "<testdata>/.icscards.txt.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-2.45 EUR",
+;               "date": "2019-10-12",
+;               "key_value_pairs": {
+;                 "ofx_memo": "STARBUCKS STORE (US)",
+;                 "ofx_name": "Starbucks",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Liabilities:Credit-Card"
+;             }
+;           ]
+2019-10-12 * "STMTTRN - Starbucks - STARBUCKS STORE (US)"
+  Liabilities:Credit-Card  -2.45 EUR
+    date: 2019-10-12
+    ofx_fitid: "3ee5570c9af1564e09f065d28abc6a21d336043c"
+    ofx_memo: "STARBUCKS STORE (US)"
+    ofx_name: "Starbucks"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME            2.45 EUR
+
+;; date: 2019-11-28
+;; info: {"filename": "<testdata>/.icscards.txt.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "66.88 EUR",
+;               "date": "2019-11-28",
+;               "key_value_pairs": {
+;                 "desc": "IDEAL BETALING, DANK U",
+;                 "ofx_memo": "IDEAL BETALING, DANK U",
+;                 "ofx_type": "STMTTRN"
+;               },
+;               "source_account": "Liabilities:Credit-Card"
+;             }
+;           ]
+2019-11-28 * "STMTTRN - IDEAL BETALING, DANK U"
+  Liabilities:Credit-Card   66.88 EUR
+    date: 2019-11-28
+    ofx_fitid: "f703faaced5dd50cda4df6df56012a0eb2e4196a"
+    ofx_memo: "IDEAL BETALING, DANK U"
+    ofx_type: "STMTTRN"
+  Expenses:FIXME           -66.88 EUR
+
+;; date: 2019-12-17
+;; info: {"filename": "<testdata>/.icscards.txt.ofx", "type": "application/x-ofx"}
+
+2019-12-17 balance Liabilities:Credit-Card                         -1737.12 EUR
