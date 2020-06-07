@@ -8,3 +8,4 @@ beancount_import/frontend_dist
 .coverage
 htmlcov/
 .*.ofx
+*~

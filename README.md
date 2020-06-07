@@ -12,6 +12,15 @@ each other and with existing transactions.
 - Pluggable data source architecture, including existing support for OFX (cash,
   investment, and retirement accounts), Mint.com, Amazon.com, and Venmo.
 
+- Due to the existing OFX support and the tool
+  [ofxstatement](https://github.com/kedder/ofxstatement) it is very easy to
+  import any financial source provided there is an ofxstatement plugin for
+  it. Currently the plugin ofxstatement-dutch is part of the setup allowing
+  you to convert ICSCards PDF files (or PDF converted to TEXT) to an OFX
+  file. Please note that you need to have the pdftotext utility to convert PDF
+  to TEXT, please follow the instructions of the [ofxstatement-dutch
+  README](https://github.com/gpaulissen/ofxstatement-dutch).
+
 - Robustly associates imported transactions with the source data, to
   automatically avoid duplicates.
 
@@ -124,6 +133,8 @@ The currently supported set of data sources is:
   [Morgan Stanley StockPlan Connect](https://stockplanconnect.com).
 - [beancount_import.source.ultipro_google](beancount_import/source/ultipro_google.py):
   imports Google employee Ultipro payroll statements.
+- [beancount_import.source.icscards](beancount_import/source/icscards.py):
+  imports ICSCards PDF files (after converting them to an OFX file).
 
 Refer to the individual data source documentation for details on configuration.
 
@@ -131,8 +142,9 @@ Refer to the individual data source documentation for details on configuration.
 
 To run Beancount-import, create a Python script that invokes the
 `beancount_import.webserver.main` function.  Refer to the examples
-[fresh](examples/fresh/run.py) and
-[manually_entered](examples/manually_entered/run.py).
+[fresh](examples/fresh/run.py),
+[manually_entered](examples/manually_entered/run.py) and
+[convert2ofx](examples/convert2ofx/run.py).
 
 ## Errors
 
