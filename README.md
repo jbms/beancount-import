@@ -15,11 +15,11 @@ each other and with existing transactions.
 - Due to the existing OFX support and the tool
   [ofxstatement](https://github.com/kedder/ofxstatement) it is very easy to
   import any financial source provided there is an ofxstatement plugin for
-  it. Currently the plugin ofxstatement-dutch is part of the setup allowing
-  you to convert ICSCards PDF files (or PDF converted to TEXT) to an OFX
-  file. Please note that you need to have the pdftotext utility to convert PDF
-  to TEXT, please follow the instructions of the [ofxstatement-dutch
-  README](https://github.com/gpaulissen/ofxstatement-dutch).
+  it. Currently the plugin ofxstatement-dutch (needing ofxstatement >= 0.6.5)
+  is part of the setup allowing you to convert ICSCards PDF files (or PDF
+  converted to TEXT) to an OFX file. Please note that you need to have the
+  pdftotext utility for converting PDF to TEXT, please follow the instructions
+	of the [ofxstatement-dutch README](https://github.com/gpaulissen/ofxstatement-dutch).
 
 - Robustly associates imported transactions with the source data, to
   automatically avoid duplicates.
