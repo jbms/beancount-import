@@ -15,11 +15,8 @@ each other and with existing transactions.
 - Due to the existing OFX support and the tool
   [ofxstatement](https://github.com/kedder/ofxstatement) it is very easy to
   import any financial source provided there is an ofxstatement plugin for
-  it. Currently the plugin ofxstatement-dutch (needing ofxstatement >= 0.6.5)
-  is part of the setup allowing you to convert ICSCards PDF files (or PDF
-  converted to TEXT) to an OFX file. Please note that you need to have the
-  pdftotext utility for converting PDF to TEXT, please follow the instructions
-	of the [ofxstatement-dutch README](https://github.com/gpaulissen/ofxstatement-dutch).
+  it. A lot of european financial institutes are available via plugins besides
+  a plugin for the generic Swift MT940 format.
 
 - Robustly associates imported transactions with the source data, to
   automatically avoid duplicates.
@@ -145,6 +142,10 @@ To run Beancount-import, create a Python script that invokes the
 [fresh](examples/fresh/run.py),
 [manually_entered](examples/manually_entered/run.py) and
 [convert2ofx](examples/convert2ofx/run.py).
+
+The convert2ofx example needs you to have the plugin ofxstatement-dutch
+installed, please follow the instructions of the
+[ofxstatement-dutch README](https://github.com/gpaulissen/ofxstatement-dutch).
 
 ## Errors
 

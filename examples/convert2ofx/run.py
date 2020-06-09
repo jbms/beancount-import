@@ -11,7 +11,7 @@ def run_reconcile(extra_args):
     import beancount_import.webserver
 
     journal_dir = os.path.dirname(__file__)
-    data_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'testdata', 'source', 'icscards')
+    data_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'icscards')
     force = False
 
     data_sources = [
