@@ -860,7 +860,7 @@ class LoadedReconciler(object):
 
     def get_next_candidates(self, skip_ids: Optional[Dict[str, int]] = None):
         if self.pending_data:
-            if skip_ids is None:
+            if skip_ids is None:  # pragma: no cover
                 skip_ids = collections.Counter()
             new_skip_ids = collections.Counter()  # type: Dict[str, int]
             for i, pending in enumerate(self.pending_data):

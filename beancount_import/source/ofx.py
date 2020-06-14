@@ -685,17 +685,17 @@ class ParsedOfxStatement(object):
         
         if check_balance:
             dtend = stmtrs.find(re.compile('banktranlist'))
-            if dtend:
+            if dtend:  # pragma: no cover
                 # Use find_child and not dtend.find().get_text()
                 dtend = find_child(dtend, 'dtend')
-                if dtend:
+                if dtend:  # pragma: no cover
                     # The dtend text should be a date/time starting with %Y%m%d but some OFX files
                     # do not conform to a time but the date part is correct.
                     # Please note that just the date component is enough.
                     try:
                         dtend = parse_ofx_time(dtend[:8] + "000000").date()
                         assert dtend is not None, "dtend should not be None"
-                    except ValueError as e:
+                    except ValueError as e:  # pragma: no cover
                         sys.stderr.write("The DTEND tag (%s) can not be converted to a date\n" % (dtend))
                         dtend = None
         else:
@@ -761,7 +761,7 @@ class ParsedOfxStatement(object):
             if check_balance:
                 # See above (Emit balance yes or no?)
                 # Case 1
-                if dtend is not None and dtend < dtasof:
+                if dtend is not None and dtend < dtasof:  # pragma: no cover
                     continue
                 # Cases 2 and 3
                 for raw in raw_transactions:
@@ -1508,7 +1508,7 @@ def load(spec, log_status):
 
 def convert2ofx(input_file_type: str,
                 filenames: List[str],
-                force: Optional[bool] = False):
+                force: Optional[bool] = False):  # pragma: no cover
     ofx_filenames = []
     for file in [os.path.realpath(x) for x in filenames]:
         head, tail = os.path.split(file)
