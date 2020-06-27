@@ -1430,7 +1430,8 @@ class PrepareState(object):
                     matched.setdefault(full_fitid, []).append((entry, posting))
             elif isinstance(entry, Commodity):
                 if CUSIP_KEY in entry.meta:
-                    commodities_by_cusip[entry.meta[CUSIP_KEY]] = entry.currency
+                    for cusip in entry.meta[CUSIP_KEY].split(','):
+                        commodities_by_cusip[cusip] = entry.currency
                 if EQUIVALENT_CURRENCY in entry.meta:
                     self.cash_securities_map[entry.currency] = entry.meta[EQUIVALENT_CURRENCY]
 
