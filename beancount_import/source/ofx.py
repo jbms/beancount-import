@@ -1211,17 +1211,18 @@ class ParsedOfxStatement(object):
                         info=get_info(raw)))
 
         for raw in self.raw_cash_balance_entries:
-            entry = Balance(
-                date=raw.date,
-                meta=None,
-                account=get_subaccount_cash(),
-                amount=Amount(number=raw.number, currency=self.currency),
-                tolerance=None,
-                diff_amount=None,
-            )
-            results.add_pending_entry(
-                ImportResult(
-                    date=raw.date, entries=[entry], info=get_info(raw)))
+            if raw.date not in cash_activity_dates:
+                entry = Balance(
+                    date=raw.date,
+                    meta=None,
+                    account=get_subaccount_cash(),
+                    amount=Amount(number=raw.number, currency=self.currency),
+                    tolerance=None,
+                    diff_amount=None,
+                )
+                results.add_pending_entry(
+                    ImportResult(
+                        date=raw.date, entries=[entry], info=get_info(raw)))
 
         for raw in self.raw_balance_entries:
             security = get_security(raw.uniqueid)
