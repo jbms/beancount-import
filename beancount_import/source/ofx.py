@@ -1077,7 +1077,7 @@ class ParsedOfxStatement(object):
                         merge=False)
 
                 if raw.tferaction == 'OUT':
-                    assert units < ZERO
+                    assert Decimal(1).copy_sign(units) < ZERO
 
                 security_account_name = get_subaccount(raw.inv401ksource,
                                                        security)
