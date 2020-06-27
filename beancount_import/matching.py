@@ -1783,8 +1783,9 @@ def get_extended_transactions(
                 excluded_transaction_ids=cast(FrozenSet[int],
                                               used_transaction_ids),
                 debug_level=level):
-            maybe_extend_candidate(new_transaction, matching_transaction,
-                                   level + 1)
+            if level <= 6:
+                maybe_extend_candidate(new_transaction, matching_transaction,
+                                       level + 1)
 
     maybe_extend_candidate(initial_transaction, initial_transaction, level=0)
 
