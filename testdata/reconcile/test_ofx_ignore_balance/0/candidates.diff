@@ -1,0 +1,12 @@
+<journal-dir>/journal.beancount
++
++2018-06-21 * "REINVEST - DIV"
++  Assets:Retirement:Vanguard:Roth-IRA:TYCDT  31.704 TYCDT {2.94 USD}
++    date: 2018-06-21
++    ofx_fitid: "7c9254b784a.a9bd.edcfa27b.b"
++    ofx_type: "REINVEST"
++  Income:Vanguard:Dividends:TYCDT            -93.21 USD
++
++2018-06-21 open Assets:Retirement:Vanguard:Roth-IRA:TYCDT       TYCDT
++
++2018-06-21 open Income:Vanguard:Dividends:TYCDT                 USD

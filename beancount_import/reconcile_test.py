@@ -6,6 +6,7 @@ import json
 import shutil
 
 import py
+import pytest
 from beancount.core.data import Directive, Posting, Transaction
 
 from . import reconcile
@@ -270,10 +271,11 @@ def test_ignore(tmpdir: py.path.local):
     tester.accept_candidate(0, ignore=True)
     tester.snapshot()
 
-def test_ofx_basic(tmpdir: py.path.local):
+@pytest.mark.parametrize('testdata_subdir', ['test_ofx_basic', 'test_ofx_ignore_balance', 'test_ofx_ignore_price'])
+def test_ofx_basic(tmpdir: py.path.local, testdata_subdir: str):
     tester = ReconcileGoldenTester(
         golden_directory=os.path.join(testdata_root, 'reconcile',
-                                      'test_ofx_basic'),
+                                      testdata_subdir),
         temp_dir=str(tmpdir),
         options=dict(
             data_sources=[

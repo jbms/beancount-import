@@ -440,7 +440,8 @@ class LoadedReconciler(object):
         for entry in self.editor.entries:
             if isinstance(entry, Transaction):
                 posting_db.add_transaction(entry)
-            elif isinstance(entry, Price):
+        for entry in self.editor.all_entries:
+            if isinstance(entry, Price):
                 self.price_values.add((entry.date, entry.currency,
                                        entry.amount))
             elif isinstance(entry, Balance):
