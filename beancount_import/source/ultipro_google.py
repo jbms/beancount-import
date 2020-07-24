@@ -109,7 +109,7 @@ from . import ultipro_google_statement
 date_format = '%m/%d/%Y'
 journal_date_format = '%Y-%m-%d'
 
-Rules = Dict[str, str]
+Rules = Dict[str, List[Tuple[str, str]]]
 
 ACCOUNT_ID_KEY = 'account_id'
 
