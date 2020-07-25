@@ -842,6 +842,21 @@ class ParsedOfxStatement(object):
                 if stripped_checknum:
                     posting_meta[CHECK_KEY] = D(stripped_checknum)
 
+            fee_total = ZERO
+            for fee_key in ['fees', 'commission']:
+                amount = getattr(raw, fee_key, None)
+                if amount is not None and amount != ZERO:
+                    fee_total += amount
+                    entry.postings.append(
+                        Posting(
+                            account=get_account_by_key(account,
+                                                       fee_key + '_account'),
+                            units=Amount(number=amount, currency=self.currency),
+                            cost=None,
+                            price=None,
+                            flag=None,
+                            meta=None))
+
             cash_transfer_transaction_amount = None
             if raw.trantype == 'INCOME' or raw.trantype == 'INVBANKTRAN' or raw.trantype == 'STMTTRN':
                 # Cash-only transaction
@@ -929,9 +944,15 @@ class ParsedOfxStatement(object):
                         date=None,
                         label='FIXME',
                         merge=False)
+                elif raw.trantype == 'TRANSFER' and units == ZERO:
+                    # Internal transfer, i.e. from after-tax to roth
+                    continue
                 else:
+                    number_per_fix = unitprice
+                    if abs(total + fee_total + (units * unitprice)) >= TOLERANCE:
+                    	number_per_fix = normalize_fraction((abs(total)-abs(fee_total))/units)
                     cost_spec = CostSpec(
-                        number_per=unitprice,
+                        number_per=number_per_fix,
                         number_total=None,
                         currency=self.currency,
                         date=None,
@@ -1021,26 +1042,6 @@ class ParsedOfxStatement(object):
                     price=None,
                     flag=None,
                     meta=external_meta))
-
-            fee_total = ZERO
-            for fee_key in ['fees', 'commission']:
-                amount = getattr(raw, fee_key, None)
-                if amount is not None and amount != ZERO:
-                    fee_total += amount
-                    entry.postings.append(
-                        Posting(
-                            account=get_account_by_key(account,
-                                                       fee_key + '_account'),
-                            units=Amount(number=amount, currency=self.currency),
-                            cost=None,
-                            price=None,
-                            flag=None,
-                            meta=None))
-
-            if raw.trantype in STOCK_BUY_SELL_TYPES:
-                assert abs(total + fee_total +
-                           (units * unitprice)) < TOLERANCE, abs(
-                               total + fee_total + (units * unitprice))
 
             if not security_transaction_exists and not cash_transaction_exists:
                 results.add_pending_entry(
