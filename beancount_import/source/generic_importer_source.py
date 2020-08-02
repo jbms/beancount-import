@@ -12,6 +12,7 @@ Author: Sufiyan Adhikari(github.com/dumbPy)
 import os
 import hashlib
 from glob import glob
+from typing import List, Tuple
 
 from beancount.core.data import Transaction, Posting,  Directive
 from beancount.core.amount import Amount
@@ -78,11 +79,14 @@ class ImporterSource(Source):
         )
 
     def _is_existing(self, journal: 'JournalEditor', entry: Directive) -> bool:
-        """Check if the entry exists in journal"""
-        comp_result = find_similar_entries([entry], journal.entries, self.comparator, 0)
-        if comp_result: return True
+        """Check if the entry exists in journal and is cleared"""
+        matches:List[Tuple[Transaction, Transaction]] = \
+            find_similar_entries([entry], journal.entries, self.comparator, 0)
+        if not matches: return False
+        for posting in matches[0][1].postings:
+            if self.is_posting_cleared(posting):
+                return True
         return False
-
 
     def _add_description(self, entry: Transaction):
         if not isinstance(entry, Transaction): return None
@@ -131,11 +135,13 @@ class ImporterSource(Source):
         return if that posting is cleared.
         This is an added layer of filter on what postings are used for training classifiers.
         Each Individual Importer can either implement it if required or else
-        all postings from this importer are considered cleared by default
+        all postings which have `source_desc` meta key are considered cleared
         """
         if getattr(self.importer, 'is_posting_cleared', None):
             return self.importer.is_posting_cleared(posting)
-        return True
+        if isinstance(posting.meta, dict) and "source_desc" in posting.meta:
+            return True
+        return False
 
 
 def load(spec, log_status):
