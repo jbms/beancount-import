@@ -4,7 +4,10 @@ The importers are considered athoritative of the account they represent.
 
 The Transaction.narration set by each importer is copied to Posting.meta[source_desc]
 This helps in predicting postings for similar transaction while allowing the
-user to change the Transaction description and payee from UI (see readme.md for more on source_desc)
+user to change the Transaction description and payee from UI
+(see readme.md for more on source_desc)
+This `source_desc` meta is also used for check cleared postings and should not be
+changed manually
 
 Author: Sufiyan Adhikari(github.com/dumbPy)
 """
@@ -12,9 +15,13 @@ Author: Sufiyan Adhikari(github.com/dumbPy)
 import os
 import hashlib
 from glob import glob
-from typing import List, Tuple
+from typing import List
+from collections import defaultdict
+import itertools
+import datetime
 
 from beancount.core.data import Transaction, Posting,  Directive
+from beancount.core import data
 from beancount.core.amount import Amount
 from beancount.ingest.importer import ImporterProtocol
 from beancount.core.compare import hash_entry
@@ -29,7 +36,7 @@ from ..journal_editor import JournalEditor
 class ImporterSource(Source):
     def __init__(self,
                  directory: str,
-                 account: str ,
+                 account: str,
                  importer: ImporterProtocol,
                  account_name:str = None,
                  **kwargs) -> None:
@@ -39,7 +46,7 @@ class ImporterSource(Source):
         self.account = account
         self.account_name = account_name if account_name else self.name
 
-        self.comparator = SimilarityComparator()
+        self._comparator = SimilarityComparator()
 
         # get _FileMemo object for each file
         files = [get_file(f) for f in
@@ -54,39 +61,47 @@ class ImporterSource(Source):
 
     def prepare(self, journal: 'JournalEditor', results: SourceResults) -> None:
         results.add_account(self.account)
-        entries = {}
+        entries = defaultdict(list)
         for f in self.files:
             f_entries = self.importer.extract(f)
-            # deduplicate across statements
-            hashed_entries = {}
+            # collect  all entries in current statement, grouped by hash
+            hashed_entries = defaultdict(list)
             for entry in f_entries:
                 hash_ = self._hash_entry(entry, frozenset(['filename','lineno']))
-                # skip the existing entries from other statements
-                if hash_ in entries: continue
-                # If the entry exists in the journal, skip
-                if self._is_existing(journal, entry): continue
+                hashed_entries[hash_].append(entry)
+            # deduplicate across statements
+            for hash_ in hashed_entries:
+                # skip the existing entries from other statements. add remaining
+                n = len(entries[hash_])
+                entries[hash_].extend(hashed_entries[hash_][n:])
+
+        uncleared_entries = defaultdict(list)
+        for hash_ in entries:
+            # number of matching cleared entries in journal
+            n = len(similar_entries_in_journal(entries[hash_][0],
+                                               journal.entries,
+                                               self.comparator))
+            # If journal has n cleared entries for this hash, pick remaining
+            for entry in entries[hash_][n:]:
                 # add importer name as sorce description to source postings
                 self._add_description(entry)
                 # balance amount
                 self.balance_amounts(entry)
-                hashed_entries[hash_] = entry
-            entries = {**entries, **hashed_entries}
+                uncleared_entries[hash_].append(entry)
 
         results.add_pending_entries(
             [ImportResult(entry.date, [entry], None)
-                for entry in entries.values()
+                for entry in itertools.chain.from_iterable(uncleared_entries.values())
             ]
         )
 
-    def _is_existing(self, journal: 'JournalEditor', entry: Directive) -> bool:
-        """Check if the entry exists in journal and is cleared"""
-        matches:List[Tuple[Transaction, Transaction]] = \
-            find_similar_entries([entry], journal.entries, self.comparator, 0)
-        if not matches: return False
-        for posting in matches[0][1].postings:
-            if self.is_posting_cleared(posting):
-                return True
-        return False
+    def comparator(self, entry1, entry2):
+        """Returns if the two entries are similar and 2nd entry is cleared.
+        The first entry is from new_entries and 2nd is from journal
+        """
+        return self._comparator(entry1, entry2) \
+               and self.is_entry_cleared(entry2) \
+               and entry1.narration == entry2.postings[0].meta['source_desc']
 
     def _add_description(self, entry: Transaction):
         if not isinstance(entry, Transaction): return None
@@ -130,10 +145,15 @@ class ImporterSource(Source):
             h.update(str(entry.meta[key]).encode())
         return h.hexdigest()
 
+    def is_entry_cleared(self, entry: Transaction) -> bool:
+        """If an entry has a cleared posting, it is considered cleared"""
+        for posting in entry.postings:
+            if self.is_posting_cleared(posting): return True
+        return False
+
     def is_posting_cleared(self, posting: Posting) -> bool:
-        """Given than this source is athoritative of the accoutn of a particular posting,
+        """Given than this source is athoritative of the account of a particular posting,
         return if that posting is cleared.
-        This is an added layer of filter on what postings are used for training classifiers.
         Each Individual Importer can either implement it if required or else
         all postings which have `source_desc` meta key are considered cleared
         """
@@ -143,6 +163,27 @@ class ImporterSource(Source):
             return True
         return False
 
+def similar_entries_in_journal(entry:Transaction, source_entries:List[Directive],
+                               comparator=None, window_days=2) -> List[Transaction]:
+    """Given a hashed entry, find the similar entries in the journal
+    This is a rewrite of beancount.ingest.similar.find_similar_entries
+    to get all possible matches for a single new entry
+    """
+    window_head = datetime.timedelta(days=window_days)
+    window_tail = datetime.timedelta(days=window_days + 1)
+
+    if comparator is None:
+        comparator = SimilarityComparator()
+
+    # Look at existing entries at a nearby date.
+    duplicates = []
+    for source_entry in data.filter_txns(
+            data.iter_entry_dates(source_entries,
+                                  entry.date - window_head,
+                                  entry.date + window_tail)):
+        if comparator(entry, source_entry):
+            duplicates.append(source_entry)
+    return duplicates
 
 def load(spec, log_status):
     return ImporterSource(log_status=log_status, **spec)
