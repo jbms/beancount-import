@@ -157,6 +157,7 @@ class ImporterSource(Source):
         Each Individual Importer can either implement it if required or else
         all postings which have `source_desc` meta key are considered cleared
         """
+        if posting.account != self.account: return False
         if getattr(self.importer, 'is_posting_cleared', None):
             return self.importer.is_posting_cleared(posting)
         if isinstance(posting.meta, dict) and "source_desc" in posting.meta:
