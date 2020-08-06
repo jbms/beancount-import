@@ -31,9 +31,10 @@ from beancount.ingest.similar import find_similar_entries, SimilarityComparator
 from ..matching import FIXME_ACCOUNT, SimpleInventory
 from . import ImportResult, Source, SourceResults, InvalidSourceReference, AssociatedData
 from ..journal_editor import JournalEditor
+from .description_based_source import DescriptionBasedSource
 
 
-class ImporterSource(Source):
+class ImporterSource(DescriptionBasedSource):
     def __init__(self,
                  directory: str,
                  account: str,
@@ -157,9 +158,7 @@ class ImporterSource(Source):
         All postings which have `source_desc` meta key are considered cleared
         """
         if posting.account != self.account: return False
-        if isinstance(posting.meta, dict) and "source_desc" in posting.meta:
-            return True
-        return False
+        return super().is_posting_cleared(posting)
 
 def similar_entries_in_journal(entry:Transaction, source_entries:List[Directive],
                                comparator=None, window_days=2) -> List[Transaction]:
