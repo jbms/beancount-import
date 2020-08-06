@@ -120,6 +120,7 @@ set.  The resulting sum must equal 0 within a small tolerance.
 
 """
 
+import os
 import datetime
 import collections
 import itertools
@@ -347,7 +348,8 @@ class PostingDatabase(object):
         }
 
 def is_entry_from_journal(entry: Transaction):
-    return entry.meta and 'filename' in entry.meta
+    return entry.meta and 'filename' in entry.meta \
+        and 'bean' in os.path.basename(entry.meta['filename'])
 
 
 def combine_optional_frozensets(a: Optional[frozenset], b: Optional[frozenset]):
