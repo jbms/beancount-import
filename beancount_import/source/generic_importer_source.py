@@ -154,12 +154,9 @@ class ImporterSource(Source):
     def is_posting_cleared(self, posting: Posting) -> bool:
         """Given than this source is athoritative of the account of a particular posting,
         return if that posting is cleared.
-        Each Individual Importer can either implement it if required or else
-        all postings which have `source_desc` meta key are considered cleared
+        All postings which have `source_desc` meta key are considered cleared
         """
         if posting.account != self.account: return False
-        if getattr(self.importer, 'is_posting_cleared', None):
-            return self.importer.is_posting_cleared(posting)
         if isinstance(posting.meta, dict) and "source_desc" in posting.meta:
             return True
         return False
