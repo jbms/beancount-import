@@ -1,0 +1,68 @@
+[
+  [
+    {
+      "amount": "-1 USD",
+      "date": "2020-01-01",
+      "key_value_pairs": {
+        "desc": "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+      },
+      "source_account": "Assets:Bank"
+    },
+    "Expenses:Misc"
+  ],
+  [
+    {
+      "amount": "-1 USD",
+      "date": "2020-01-01",
+      "key_value_pairs": {
+        "desc": "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
+      },
+      "source_account": "Assets:Bank"
+    },
+    "Expenses:Misc"
+  ],
+  [
+    {
+      "amount": "1 USD",
+      "date": "2020-01-02",
+      "key_value_pairs": {
+        "desc": "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+      },
+      "source_account": "Assets:Bank"
+    },
+    "Expenses:Misc"
+  ],
+  [
+    {
+      "amount": "1 USD",
+      "date": "2020-01-02",
+      "key_value_pairs": {
+        "desc": "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+      },
+      "source_account": "Assets:Bank"
+    },
+    "Expenses:Misc"
+  ],
+  [
+    {
+      "amount": "500 USD",
+      "date": "2020-01-02",
+      "key_value_pairs": {
+        "desc": "ATM-WD Some Random ATM Machine"
+      },
+      "source_account": "Assets:Bank"
+    },
+    "Assets:Cash"
+  ],
+  [
+    {
+      "amount": "300 USD",
+      "date": "2020-01-05",
+      "key_value_pairs": {
+        "desc": "Transfer to 1234567890123"
+      },
+      "source_account": "Assets:Bank"
+    },
+    "Liabilities:JohnDoe"
+  ]
+]

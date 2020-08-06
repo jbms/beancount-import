@@ -39,19 +39,19 @@ class ImporterSource(DescriptionBasedSource):
                  directory: str,
                  account: str,
                  importer: ImporterProtocol,
-                 account_name:str = None,
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = os.path.expanduser(directory)
         self.importer = importer
         self.account = account
-        self.account_name = account_name if account_name else self.name
 
         self._comparator = SimilarityComparator()
 
         # get _FileMemo object for each file
         files = [get_file(f) for f in
+                    filter(os.path.isfile,
                  glob(os.path.join(directory, '**', '*'), recursive=True)
+                           )
         ]
         # filter the valid files for this importer
         self.files = [f for f in files if self.importer.identify(f)]
@@ -64,7 +64,7 @@ class ImporterSource(DescriptionBasedSource):
         results.add_account(self.account)
         entries = defaultdict(list)
         for f in self.files:
-            f_entries = self.importer.extract(f)
+            f_entries = self.importer.extract(f, existing_entries=journal.entries)
             # collect  all entries in current statement, grouped by hash
             hashed_entries = defaultdict(list)
             for entry in f_entries:
@@ -109,6 +109,7 @@ class ImporterSource(DescriptionBasedSource):
         postings = entry.postings #type: ignore
         to_mutate = []
         for i, posting in enumerate(postings):
+            if posting.account != self.account: continue
             if isinstance(posting.meta, dict): posting.meta["source_desc"] = entry.narration
             else: to_mutate.append(i)
         for i in to_mutate:
@@ -181,6 +182,7 @@ def similar_entries_in_journal(entry:Transaction, source_entries:List[Directive]
         if comparator(entry, source_entry):
             duplicates.append(source_entry)
     return duplicates
+
 
 def load(spec, log_status):
     return ImporterSource(log_status=log_status, **spec)

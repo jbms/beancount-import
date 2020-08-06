@@ -1,0 +1,41 @@
+1900-01-01 open Assets:Bank
+1900-01-01 open Assets:Cash
+1900-01-01 open Expenses:Misc
+1900-01-01 open Liabilities:JohnDoe
+
+
+2020-01-01 * "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+  Assets:Bank     -1 USD
+    source_desc: "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+    cleared: TRUE
+  Expenses:Misc   1 USD
+
+2020-01-01 * "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
+  Assets:Bank     -1 USD
+    source_desc: "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
+    cleared: TRUE
+  Expenses:Misc   1 USD
+
+2020-01-02 * "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+  Assets:Bank      1 USD
+    source_desc: "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+    cleared: TRUE
+  Expenses:Misc  -1 USD
+
+2020-01-02 * "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+  Assets:Bank      1 USD
+    source_desc: "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+    cleared: TRUE
+  Expenses:Misc  -1 USD
+
+2020-01-02 * "ATM-WD Some Random ATM Machine"
+  Assets:Bank      500 USD
+    source_desc: "ATM-WD Some Random ATM Machine"
+    cleared: TRUE
+  Assets:Cash  -500 USD
+
+2020-01-05 * "Transfer to 1234567890123"
+  Assets:Bank      300 USD
+    source_desc: "Transfer to 1234567890123"
+    cleared: TRUE
+  Liabilities:JohnDoe  -300 USD

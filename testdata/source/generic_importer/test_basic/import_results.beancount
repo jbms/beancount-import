@@ -1,0 +1,107 @@
+;; date: 2020-01-01
+;; info: null
+
+; features: [
+;             {
+;               "amount": "-1 USD",
+;               "date": "2020-01-01",
+;               "key_value_pairs": {
+;                 "desc": "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+;               },
+;               "source_account": "Assets:Bank"
+;             }
+;           ]
+2020-01-01 * "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+  Assets:Bank     -1 USD
+    source_desc: "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+  Expenses:FIXME   1 USD
+
+;; date: 2020-01-01
+;; info: null
+
+; features: [
+;             {
+;               "amount": "-1 USD",
+;               "date": "2020-01-01",
+;               "key_value_pairs": {
+;                 "desc": "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
+;               },
+;               "source_account": "Assets:Bank"
+;             }
+;           ]
+2020-01-01 * "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
+  Assets:Bank     -1 USD
+    source_desc: "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
+  Expenses:FIXME   1 USD
+
+;; date: 2020-01-02
+;; info: null
+
+; features: [
+;             {
+;               "amount": "1 USD",
+;               "date": "2020-01-02",
+;               "key_value_pairs": {
+;                 "desc": "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+;               },
+;               "source_account": "Assets:Bank"
+;             }
+;           ]
+2020-01-02 * "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+  Assets:Bank      1 USD
+    source_desc: "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+  Expenses:FIXME  -1 USD
+
+;; date: 2020-01-02
+;; info: null
+
+; features: [
+;             {
+;               "amount": "1 USD",
+;               "date": "2020-01-02",
+;               "key_value_pairs": {
+;                 "desc": "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+;               },
+;               "source_account": "Assets:Bank"
+;             }
+;           ]
+2020-01-02 * "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+  Assets:Bank      1 USD
+    source_desc: "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+  Expenses:FIXME  -1 USD
+
+;; date: 2020-01-02
+;; info: null
+
+; features: [
+;             {
+;               "amount": "500 USD",
+;               "date": "2020-01-02",
+;               "key_value_pairs": {
+;                 "desc": "ATM-WD Some Random ATM Machine"
+;               },
+;               "source_account": "Assets:Bank"
+;             }
+;           ]
+2020-01-02 * "ATM-WD Some Random ATM Machine"
+  Assets:Bank      500 USD
+    source_desc: "ATM-WD Some Random ATM Machine"
+  Expenses:FIXME  -500 USD
+
+;; date: 2020-01-05
+;; info: null
+
+; features: [
+;             {
+;               "amount": "300 USD",
+;               "date": "2020-01-05",
+;               "key_value_pairs": {
+;                 "desc": "Transfer to 1234567890123"
+;               },
+;               "source_account": "Assets:Bank"
+;             }
+;           ]
+2020-01-05 * "Transfer to 1234567890123"
+  Assets:Bank      300 USD
+    source_desc: "Transfer to 1234567890123"
+  Expenses:FIXME  -300 USD
