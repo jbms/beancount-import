@@ -21,17 +21,16 @@ import itertools
 import datetime
 
 from beancount.core.data import Transaction, Posting,  Directive
-from beancount.core import data
 from beancount.core.amount import Amount
 from beancount.ingest.importer import ImporterProtocol
 from beancount.core.compare import hash_entry
 from beancount.ingest.cache import get_file
-from beancount.ingest.similar import find_similar_entries, SimilarityComparator
 
 from ..matching import FIXME_ACCOUNT, SimpleInventory
-from . import ImportResult, Source, SourceResults, InvalidSourceReference, AssociatedData
+from . import ImportResult, SourceResults
 from ..journal_editor import JournalEditor
-from .description_based_source import DescriptionBasedSource
+from .description_based_source import DescriptionBasedSource, get_pending_and_invalid_entries
+from .mint import _get_key_from_posting
 
 
 class ImporterSource(DescriptionBasedSource):
@@ -44,8 +43,6 @@ class ImporterSource(DescriptionBasedSource):
         self.directory = os.path.expanduser(directory)
         self.importer = importer
         self.account = account
-
-        self._comparator = SimilarityComparator()
 
         # get _FileMemo object for each file
         files = [get_file(f) for f in
@@ -68,41 +65,23 @@ class ImporterSource(DescriptionBasedSource):
             # collect  all entries in current statement, grouped by hash
             hashed_entries = defaultdict(list)
             for entry in f_entries:
-                hash_ = self._hash_entry(entry, frozenset(['filename','lineno']))
-                hashed_entries[hash_].append(entry)
-            # deduplicate across statements
-            for hash_ in hashed_entries:
-                # skip the existing entries from other statements. add remaining
-                n = len(entries[hash_])
-                entries[hash_].extend(hashed_entries[hash_][n:])
-
-        uncleared_entries = defaultdict(list)
-        for hash_ in entries:
-            # number of matching cleared entries in journal
-            n = len(similar_entries_in_journal(entries[hash_][0],
-                                               journal.entries,
-                                               self.comparator))
-            # If journal has n cleared entries for this hash, pick remaining
-            for entry in entries[hash_][n:]:
-                # add importer name as sorce description to source postings
+                key_ = self._get_key_from_imported_entry(entry)
                 self._add_description(entry)
-                # balance amount
-                self.balance_amounts(entry)
-                uncleared_entries[hash_].append(entry)
+                hashed_entries[key_].append(entry)
+            # deduplicate across statements
+            for key_ in hashed_entries:
+                # skip the existing entries from other statements. add remaining
+                n = len(entries[key_])
+                entries[key_].extend(hashed_entries[key_][n:])
 
-        results.add_pending_entries(
-            [ImportResult(entry.date, [entry], None)
-                for entry in itertools.chain.from_iterable(uncleared_entries.values())
-            ]
-        )
-
-    def comparator(self, entry1, entry2):
-        """Returns if the two entries are similar and 2nd entry is cleared.
-        The first entry is from new_entries and 2nd is from journal
-        """
-        return self._comparator(entry1, entry2) \
-               and self.is_entry_cleared(entry2) \
-               and entry1.narration == entry2.postings[0].meta['source_desc']
+        get_pending_and_invalid_entries(
+            raw_entries=list(itertools.chain.from_iterable(entries.values())),
+            journal_entries=journal.all_entries,
+            account_set=set([self.account]),
+            get_key_from_posting=_get_key_from_posting,
+            get_key_from_raw_entry=self._get_key_from_imported_entry,
+            make_import_result=self._make_import_result,
+            results=results)
 
     def _add_description(self, entry: Transaction):
         if not isinstance(entry, Transaction): return None
@@ -110,48 +89,22 @@ class ImporterSource(DescriptionBasedSource):
         to_mutate = []
         for i, posting in enumerate(postings):
             if posting.account != self.account: continue
-            if isinstance(posting.meta, dict): posting.meta["source_desc"] = entry.narration
-            else: to_mutate.append(i)
+            if isinstance(posting.meta, dict):
+                posting.meta["source_desc"] = entry.narration
+                posting.meta["date"] = entry.date
+                break
+            else:
+                to_mutate.append(i)
+                break
         for i in to_mutate:
             p = postings.pop(i)
-            p = Posting(p.account, p.units, p.cost, p.price, p.flag, {"source_desc":entry.narration})
+            p = Posting(p.account, p.units, p.cost, p.price, p.flag,
+                        {"source_desc":entry.narration, "date": entry.date})
             postings.insert(i, p)
 
-    @staticmethod
-    def balance_amounts(txn:Transaction)-> None:
-        """Add FIXME account for the remaing amount to balance accounts"""
-        inventory = SimpleInventory()
-        for posting in txn.postings:
-            inventory += posting.units
-        for currency in inventory:
-            txn.postings.append(
-                Posting(
-                    account=FIXME_ACCOUNT,
-                    units=Amount(currency=currency, number=-inventory[currency]),
-                    cost=None,
-                    price=None,
-                    flag=None,
-                    meta={},
-                ))
-
-    @staticmethod
-    def _hash_entry(entry:Directive, exclude_meta_keys=frozenset()) -> str:
-        """Similar to beancount.core.compare.hash_entry but can skip selective meta fields
-        the meta fields to be used for hashing should be in Transaction's meta, not Posting's meta
-        """
-        if not isinstance(entry, Transaction): return hash_entry(entry)
-        h = hashlib.md5()
-        h.update(hash_entry(entry, exclude_meta=True).encode())
-        for key in entry.meta:
-            if key in exclude_meta_keys: continue
-            h.update(str(entry.meta[key]).encode())
-        return h.hexdigest()
-
-    def is_entry_cleared(self, entry: Transaction) -> bool:
-        """If an entry has a cleared posting, it is considered cleared"""
+    def _get_source_posting(self, entry:Transaction):
         for posting in entry.postings:
-            if self.is_posting_cleared(posting): return True
-        return False
+            if posting.account == self.account: return posting
 
     def is_posting_cleared(self, posting: Posting) -> bool:
         """Given than this source is athoritative of the account of a particular posting,
@@ -161,27 +114,50 @@ class ImporterSource(DescriptionBasedSource):
         if posting.account != self.account: return False
         return super().is_posting_cleared(posting)
 
-def similar_entries_in_journal(entry:Transaction, source_entries:List[Directive],
-                               comparator=None, window_days=2) -> List[Transaction]:
-    """Given a hashed entry, find the similar entries in the journal
-    This is a rewrite of beancount.ingest.similar.find_similar_entries
-    to get all possible matches for a single new entry
-    """
-    window_head = datetime.timedelta(days=window_days)
-    window_tail = datetime.timedelta(days=window_days + 1)
+    def _get_key_from_imported_entry(self, entry:Transaction):
+        return (self.account,
+                entry.date,
+                self._get_source_posting(entry).units,
+                entry.narration)
 
-    if comparator is None:
-        comparator = SimilarityComparator()
+    def _make_import_result(self, imported_entry:Directive):
+        if isinstance(imported_entry, Transaction): balance_amounts(imported_entry)
+        result = ImportResult(
+            date=imported_entry.date, info=get_info(imported_entry), entries=[imported_entry])
+        # delete filename since it is used by beancount-import to determine if the
+        # entry is from journal.
+        imported_entry.meta.pop('filename')
+        return result
 
-    # Look at existing entries at a nearby date.
-    duplicates = []
-    for source_entry in data.filter_txns(
-            data.iter_entry_dates(source_entries,
-                                  entry.date - window_head,
-                                  entry.date + window_tail)):
-        if comparator(entry, source_entry):
-            duplicates.append(source_entry)
-    return duplicates
+def _get_key_from_posting(entry: Transaction, posting: Posting,
+                          source_postings: List[Posting], source_desc: str,
+                          posting_date: datetime.date):
+    del entry
+    del source_postings
+    return (posting.account, posting_date, posting.units, source_desc)
+
+def get_info(raw_entry: Directive) -> dict:
+    return dict(
+        type=get_file(raw_entry.meta['filename']).mimetype(),
+        filename=raw_entry.meta['filename'],
+        line=raw_entry.meta['lineno'],
+    )
+
+def balance_amounts(txn:Transaction)-> None:
+    """Add FIXME account for the remaing amount to balance accounts"""
+    inventory = SimpleInventory()
+    for posting in txn.postings:
+        inventory += posting.units
+    for currency in inventory:
+        txn.postings.append(
+            Posting(
+                account=FIXME_ACCOUNT,
+                units=Amount(currency=currency, number=-inventory[currency]),
+                cost=None,
+                price=None,
+                flag=None,
+                meta={},
+            ))
 
 
 def load(spec, log_status):

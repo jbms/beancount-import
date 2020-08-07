@@ -7,13 +7,25 @@
 2020-01-01 * "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
   Assets:Bank     -1 USD
     source_desc: "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+    count: 1
     date: 2020-01-01
     cleared: TRUE
+    invalid0: "1 extra"
+  Expenses:Misc   1 USD
+
+2020-01-01 * "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+  Assets:Bank     -1 USD
+    source_desc: "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+    count: 2
+    date: 2020-01-01
+    cleared: TRUE
+    invalid0: "1 extra"
   Expenses:Misc   1 USD
 
 2020-01-01 * "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
   Assets:Bank     -1 USD
     source_desc: "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
+    count: 3
     date: 2020-01-01
     cleared: TRUE
   Expenses:Misc   1 USD
@@ -45,3 +57,12 @@
     date: 2020-01-05
     cleared: TRUE
   Liabilities:JohnDoe  -300 USD
+
+2020-01-06 * "Transfer to 1234567890321"
+    info: "doesn't exist in statement hence invalid"
+  Assets:Bank      111.11 USD
+    source_desc: "Transfer to 1234567890123"
+    date: 2020-01-05
+    cleared: TRUE
+    invalid1: "1 extra"
+  Liabilities:JohnDoe  -111.11 USD

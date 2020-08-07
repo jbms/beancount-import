@@ -1,5 +1,5 @@
 ;; date: 2020-01-01
-;; info: null
+;; info: {"filename": "<testdata>/generic_statement.csv", "line": 1, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -13,11 +13,12 @@
 ;           ]
 2020-01-01 * "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
   Assets:Bank     -1 USD
+    date: 2020-01-01
     source_desc: "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
   Expenses:FIXME   1 USD
 
 ;; date: 2020-01-01
-;; info: null
+;; info: {"filename": "<testdata>/generic_statement.csv", "line": 2, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -31,11 +32,12 @@
 ;           ]
 2020-01-01 * "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
   Assets:Bank     -1 USD
+    date: 2020-01-01
     source_desc: "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
   Expenses:FIXME   1 USD
 
 ;; date: 2020-01-02
-;; info: null
+;; info: {"filename": "<testdata>/generic_statement.csv", "line": 3, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -49,11 +51,12 @@
 ;           ]
 2020-01-02 * "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
   Assets:Bank      1 USD
+    date: 2020-01-02
     source_desc: "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
   Expenses:FIXME  -1 USD
 
 ;; date: 2020-01-02
-;; info: null
+;; info: {"filename": "<testdata>/generic_statement.csv", "line": 5, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -67,11 +70,12 @@
 ;           ]
 2020-01-02 * "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
   Assets:Bank      1 USD
+    date: 2020-01-02
     source_desc: "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
   Expenses:FIXME  -1 USD
 
 ;; date: 2020-01-02
-;; info: null
+;; info: {"filename": "<testdata>/generic_statement.csv", "line": 4, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -85,11 +89,12 @@
 ;           ]
 2020-01-02 * "ATM-WD Some Random ATM Machine"
   Assets:Bank      500 USD
+    date: 2020-01-02
     source_desc: "ATM-WD Some Random ATM Machine"
   Expenses:FIXME  -500 USD
 
 ;; date: 2020-01-05
-;; info: null
+;; info: {"filename": "<testdata>/generic_statement.csv", "line": 6, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -103,5 +108,6 @@
 ;           ]
 2020-01-05 * "Transfer to 1234567890123"
   Assets:Bank      300 USD
+    date: 2020-01-05
     source_desc: "Transfer to 1234567890123"
   Expenses:FIXME  -300 USD
