@@ -1,0 +1,68 @@
+1900-01-01 open Assets:Bank
+1900-01-01 open Assets:Cash
+1900-01-01 open Expenses:Misc
+1900-01-01 open Liabilities:JohnDoe
+
+
+2020-01-01 * "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+  Assets:Bank     -1 USD
+    source_desc: "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+    count: 1
+    date: 2020-01-01
+    cleared: TRUE
+    invalid0: "1 extra"
+  Expenses:Misc   1 USD
+
+2020-01-01 * "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+  Assets:Bank     -1 USD
+    source_desc: "by debit card-OTHPG 063441 GOOGLE CLOUD INDIA PVTTHANE-"
+    count: 2
+    date: 2020-01-01
+    cleared: TRUE
+    invalid0: "1 extra"
+  Expenses:Misc   1 USD
+
+2020-01-01 * "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
+  Assets:Bank     -1 USD
+    source_desc: "by debit card-OTHPG 063444 GOOGLE CLOUD INDIA PVTTHANE-"
+    count: 3
+    date: 2020-01-01
+    cleared: TRUE
+  Expenses:Misc   1 USD
+
+2020-01-02 * "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+  Assets:Bank      1 USD
+    source_desc: "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+    date: 2020-01-02
+    cleared: TRUE
+  Expenses:Misc  -1 USD
+
+2020-01-02 * "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+  Assets:Bank      1 USD
+    source_desc: "BULK POSTING- 00000008237 250120 GOOGLE CLOUD INDIA PVT-"
+    date: 2020-01-02
+    cleared: TRUE
+  Expenses:Misc  -1 USD
+
+2020-01-02 * "ATM-WD Some Random ATM Machine"
+  Assets:Bank      500 USD
+    source_desc: "ATM-WD Some Random ATM Machine"
+    date: 2020-01-02
+    cleared: TRUE
+  Assets:Cash  -500 USD
+
+2020-01-05 * "Transfer to 1234567890123"
+  Assets:Bank      300 USD
+    source_desc: "Transfer to 1234567890123"
+    date: 2020-01-05
+    cleared: TRUE
+  Liabilities:JohnDoe  -300 USD
+
+2020-01-06 * "Transfer to 1234567890321"
+    info: "doesn't exist in statement hence invalid"
+  Assets:Bank      111.11 USD
+    source_desc: "Transfer to 1234567890123"
+    date: 2020-01-05
+    cleared: TRUE
+    invalid1: "1 extra"
+  Liabilities:JohnDoe  -111.11 USD
