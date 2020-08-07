@@ -104,6 +104,7 @@ class ImporterSource(DescriptionBasedSource):
         for posting in entry.postings:
             if posting.account == self.account:
                 return posting
+        return None
 
     def _get_key_from_imported_entry(self, entry:Transaction) -> Hashable:
         source_posting = self._get_source_posting(entry)
