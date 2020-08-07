@@ -57,7 +57,7 @@ class ImporterSource(DescriptionBasedSource):
     def prepare(self, journal: 'JournalEditor', results: SourceResults) -> None:
         results.add_account(self.account)
         
-        entries:Dict[Hashable,List[Directive]] = defaultdict(list)
+        entries = defaultdict(list) #type: Dict[Hashable,List[Directive]]
         for f in self.files:
             f_entries = self.importer.extract(f, existing_entries=journal.entries)
             # collect  all entries in current statement, grouped by hash
@@ -83,7 +83,7 @@ class ImporterSource(DescriptionBasedSource):
 
     def _add_description(self, entry: Transaction):
         if not isinstance(entry, Transaction): return None
-        postings: List[Posting] = entry.postings
+        postings = entry.postings #type: List[Posting]
         to_mutate = []
         for i, posting in enumerate(postings):
             if posting.account != self.account: continue
