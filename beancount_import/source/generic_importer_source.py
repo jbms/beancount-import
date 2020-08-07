@@ -109,7 +109,7 @@ class ImporterSource(DescriptionBasedSource):
     def _get_key_from_imported_entry(self, entry:Transaction) -> Hashable:
         source_posting = self._get_source_posting(entry)
         if source_posting is None:
-            raise ValueError(f"entry has no postings for {self.account}")
+            raise ValueError("entry has no postings for account: {}".format(self.account))
         return (self.account,
                 entry.date,
                 source_posting.units,
