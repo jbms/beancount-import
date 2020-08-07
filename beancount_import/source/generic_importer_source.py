@@ -14,7 +14,7 @@ Author: Sufiyan Adhikari(github.com/dumbPy)
 
 import os
 from glob import glob
-from collections import defaultdict
+from collections import OrderedDict
 import itertools
 from typing import Hashable, List, Dict, Optional
 
@@ -57,20 +57,23 @@ class ImporterSource(DescriptionBasedSource):
     def prepare(self, journal: 'JournalEditor', results: SourceResults) -> None:
         results.add_account(self.account)
         
-        entries = defaultdict(list) #type: Dict[Hashable,List[Directive]]
+        entries = OrderedDict() #type: Dict[Hashable, List[Directive]]
         for f in self.files:
             f_entries = self.importer.extract(f, existing_entries=journal.entries)
             # collect  all entries in current statement, grouped by hash
-            hashed_entries = defaultdict(list)
+            hashed_entries = OrderedDict() #type: Dict[Hashable, Directive]
             for entry in f_entries:
                 key_ = self._get_key_from_imported_entry(entry)
                 self._add_description(entry)
-                hashed_entries[key_].append(entry)
+                hashed_entries.setdefault(key_, []).append(entry)
             # deduplicate across statements
             for key_ in hashed_entries:
                 # skip the existing entries from other statements. add remaining
-                n = len(entries[key_])
-                entries[key_].extend(hashed_entries[key_][n:])
+                if not key_ in entries:
+                    n = 0
+                else:
+                    n = len(entries[key_])
+                entries.setdefault(key_, []).extend(hashed_entries[key_][n:])
 
         get_pending_and_invalid_entries(
             raw_entries=list(itertools.chain.from_iterable(entries.values())),
