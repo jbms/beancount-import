@@ -106,14 +106,6 @@ class ImporterSource(DescriptionBasedSource):
         for posting in entry.postings:
             if posting.account == self.account: return posting
 
-    def is_posting_cleared(self, posting: Posting) -> bool:
-        """Given than this source is athoritative of the account of a particular posting,
-        return if that posting is cleared.
-        All postings which have `source_desc` meta key are considered cleared
-        """
-        if posting.account != self.account: return False
-        return super().is_posting_cleared(posting)
-
     def _get_key_from_imported_entry(self, entry:Transaction):
         return (self.account,
                 entry.date,
