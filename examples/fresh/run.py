@@ -5,6 +5,7 @@ import os
 import json
 import sys
 
+from _config import my_foobar_bank_importer, my_amex_cc_importer
 
 def run_reconcile(extra_args):
     import beancount_import.webserver
@@ -31,6 +32,18 @@ def run_reconcile(extra_args):
                 gift_card='Assets:Gift-Cards:Amazon',
                 rewards_points='Income:Amazon:Cashback',
             ),
+        ),
+        dict(
+            module='beancount_import.source.generic_importer_source',
+            importer=my_foobar_bank_importer,
+            account='Assets:FooBarBank',
+            directory=os.path.join(data_dir, 'importers')
+        ),
+        dict(
+            module='beancount_import.source.generic_importer_source',
+            importer=my_amex_cc_importer,
+            account='Liabilities:Amex-Credit-Card',
+            directory=os.path.join(data_dir, 'importers')
         ),
     ]
 
