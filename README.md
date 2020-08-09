@@ -12,6 +12,9 @@ each other and with existing transactions.
 - Pluggable data source architecture, including existing support for OFX (cash,
   investment, and retirement accounts), Mint.com, Amazon.com, and Venmo.
 
+- Supports [beancount importers](https://beancount.github.io/docs/importing_external_data.html) so it's easier to write your own,
+  and existing beancount and fava users can hop right on with no hustle.
+
 - Robustly associates imported transactions with the source data, to
   automatically avoid duplicates.
 
