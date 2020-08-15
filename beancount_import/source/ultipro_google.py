@@ -109,11 +109,7 @@ from . import ultipro_google_statement
 date_format = '%m/%d/%Y'
 journal_date_format = '%Y-%m-%d'
 
-# GJP 2020-06-14
-# 1) Initially the Rules definition was Dict[str, str]
-# 2) The description above hints to Dict[str, List[Tuple[str]]]
-# 3) The code (line 197) points to this definition which is accepted by mypy
-Rules = Dict[str, List[Dict[str, str]]]
+Rules = Dict[str, List[Tuple[str, str]]]
 
 ACCOUNT_ID_KEY = 'account_id'
 

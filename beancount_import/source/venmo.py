@@ -201,7 +201,7 @@ def load_csv(path: str, field_names: List[str]) -> List[Dict[str, Union[str,int]
     path = os.path.abspath(path)
     with open(path, 'r', newline='', encoding='utf-8') as f:
         csv_reader = csv.DictReader(f)
-        assert csv_reader is not None and csv_reader.fieldnames is not None
+        assert csv_reader.fieldnames is not None
         assert set(field_names).issubset(set(x.strip() for x in csv_reader.fieldnames))
         return [add_line_and_filename(x, path, line_i + 1) for line_i, x in enumerate(csv_reader)]
 
