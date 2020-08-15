@@ -125,14 +125,14 @@
 
 ; features: []
 2018-08-01 * "BUYSTOCK"
+  Expenses:Investment:MyBank:Fees         63.4869 USD
+  Expenses:Investment:MyBank:Commission   23.0233 USD
   Assets:Investment:MyBank:SDVMV         60.01318 SDVMV {67.141053527 USD}
     date: 2018-08-01
     ofx_fitid: "aedf1852aa39a54-623ee.4d104.5"
     ofx_type: "BUYSTOCK"
   Assets:Investment:MyBank:Cash          -4115.86 USD
     ofx_fitid: "aedf1852aa39a54-623ee.4d104.5"
-  Expenses:Investment:MyBank:Fees         63.4869 USD
-  Expenses:Investment:MyBank:Commission   23.0233 USD
 
 ;; date: 2018-08-01
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -150,6 +150,8 @@
 
 ; features: []
 2018-08-01 * "SELLSTOCK"
+  Expenses:Investment:MyBank:Fees          31.9944 USD
+  Expenses:Investment:MyBank:Commission    57.7239 USD
   Assets:Investment:MyBank:EEBHF         -41.50416 EEBHF {} @ 83.661853593 USD
     date: 2018-08-01
     ofx_fitid: "4a5141ead2c672e8a559.65-80e.b"
@@ -157,8 +159,6 @@
   Income:MyBank:Capital-Gains:EEBHF
   Assets:Investment:MyBank:Cash            3382.60 USD
     ofx_fitid: "4a5141ead2c672e8a559.65-80e.b"
-  Expenses:Investment:MyBank:Fees          31.9944 USD
-  Expenses:Investment:MyBank:Commission    57.7239 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}

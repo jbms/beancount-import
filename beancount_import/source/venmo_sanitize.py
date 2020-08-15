@@ -56,6 +56,8 @@ def sanitize_transactions_data(contents: str) -> str:
     reader = csv.DictReader(io.StringIO(contents))
     entry_santizer = EntrySanitizer()
 
+    assert reader.fieldnames is not None
+
     output = io.StringIO()
     assert reader is not None and reader.fieldnames is not None
     writer = csv.DictWriter(output, reader.fieldnames, dialect='unix', quoting=csv.QUOTE_ALL)
