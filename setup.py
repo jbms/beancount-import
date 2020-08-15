@@ -53,7 +53,7 @@ setup(
         'jsonschema',
         'watchdog',
     ],
-    test_requirements=[
+    test_requires=[
         'pytest',
         'coverage',
     ],
