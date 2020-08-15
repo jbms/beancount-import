@@ -130,10 +130,15 @@ The currently supported set of data sources is:
   [Morgan Stanley StockPlan Connect](https://stockplanconnect.com).
 - [beancount_import.source.ultipro_google](beancount_import/source/ultipro_google.py):
   imports Google employee Ultipro payroll statements.
-- [beancount_import.source.icscards](beancount_import/source/icscards.py):
-  imports ICSCards PDF files (after converting them to an OFX file).
+
+Since the OFX support is the most versatile, a function convert2ofx() has been
+created to convert an input file to an OFX file provided an ofxstatement
+plugin is available. See the OFX source file and Usage below.  This function
+allows you to use the beancount importer without creating a new data source.
 
 Refer to the individual data source documentation for details on configuration.
+
+
 
 # Usage
 
