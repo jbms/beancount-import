@@ -245,6 +245,18 @@ module/file format to cache the results of parsing the individual HTML files.
 These cached results are loaded as long as their mtime is more recent than
 the HTML file to load. If you want to enable this funcionality, pass a path
 to the `pickle_dir` parameter when initializing this class.
+
+Skipping Older Invoices
+=======================
+
+In the event you want to only process invoices that happened after a certain
+date you can pass the earliest date you want to process as a configuration 
+parameter `earliest_date` when initializing the this class.
+
+This requires parsing the HTML file in order to determine the date of the
+invoice, so it is recommended to use the caching/pickling mechanism described
+above if you choose to have a large number of invoices in your data folder that
+are not accounted for in your journal.
 """
 
 import collections
@@ -265,6 +277,8 @@ from ..matching import FIXME_ACCOUNT, SimpleInventory
 from ..posting_date import POSTING_DATE_KEY, POSTING_TRANSACTION_DATE_KEY
 from . import ImportResult, Source, SourceResults, InvalidSourceReference, AssociatedData
 from ..journal_editor import JournalEditor
+
+import datetime
 
 ITEM_DESCRIPTION_KEY = 'amazon_item_description'
 ITEM_URL_KEY = 'amazon_item_url'
@@ -524,6 +538,7 @@ class AmazonSource(Source):
                  amazon_account: str,
                  posttax_adjustment_accounts: Dict[str, str] = {},
                  pickle_dir: str = None,
+                 earliest_date: datetime.date = None,
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
@@ -534,6 +549,8 @@ class AmazonSource(Source):
         self.example_posting_key_extractors[POSTTAX_DESCRIPTION_KEY] = None
         self.example_transaction_key_extractors[AMAZON_ACCOUNT_KEY] = None
         self.pickler = AmazonPickler(pickle_dir)
+
+        self.earliest_date = earliest_date
 
         self.invoice_filenames = []  # type: List[Tuple[str, str]]
         for filename in os.listdir(self.directory):
@@ -579,6 +596,11 @@ class AmazonSource(Source):
                 continue
             if invoice is None:
               continue
+
+            if self.earliest_date is not None and invoice.order_date < self.earliest_date:
+                self.log_status("Skipping order with date [%s] before [%s]" % ( str(invoice.order_date), self.earliest_date ) )
+                continue
+
             transaction = make_amazon_transaction(
                 invoice=invoice,
                 posttax_adjustment_accounts=self.posttax_adjustment_accounts,
