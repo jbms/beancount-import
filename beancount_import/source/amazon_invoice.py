@@ -80,7 +80,7 @@ pretax_adjustment_fields_pattern = ('(?:' + '|'.join([
     '(?:.*) Discount',
     'Gift[ -]Wrap',
 ]) + ') *:')
-posttax_adjustment_fields_pattern = r'Gift Card Amount:|Rewards Points:|Recycle Fee \$X'
+posttax_adjustment_fields_pattern = r'Gift Card Amount:|Rewards Points:|Tip [(]optional[)]:|Recycle Fee \$X'
 
 
 def to_json(obj):
@@ -127,12 +127,13 @@ def get_field_in_table(table, pattern, allow_multiple=False,
     return results
 
 
-def get_adjustments_in_table(table, pattern):
+def get_adjustments_in_table(table, pattern, assumed_currency=None):
     adjustments = []
     for label, amount_str in get_field_in_table(
             table, pattern, allow_multiple=True, return_label=True):
         adjustments.append(
-            Adjustment(amount=parse_amount(amount_str), description=label))
+            Adjustment(amount=parse_amount(amount_str, assumed_currency), 
+                       description=label))
     return adjustments
 
 
@@ -198,15 +199,41 @@ def parse_shipments(soup) -> List[Shipment]:
             price_node = tds[1]
             price = price_node.text.strip()
 
-            pattern_without_condition = r'^\s*(?P<quantity>[0-9]+)\s+of:(?P<description>.*)\n\s*(?:Sold|Provided) by:? (?P<sold_by>[^\n]+)'
+            price = parse_amount(price)
+            if price is None:
+                price = Amount(D(0), 'USD')
+
+            # 1 of: 365 Everyday Value, Potato Yellow Bag Organic, 48 Ounce
+            # 2 (1.04 lb) of: Broccoli Crowns Conventional, 1 Each
+            # 2.07 lb of: Pork Sausage Link Italian Mild Step 1
+
+            pattern_quantity = r'^\s*(?:(?P<quantity>[0-9]+)|(?P<weight1>[0-9.]+\s+(?:lb|kg))|(?:(?P<quantityIgnore>[0-9.]+) [(](?P<weight2>[^)]+)[)]))\s+of:'
+            m = re.match(pattern_quantity, description_node.text, re.UNICODE|re.DOTALL)
+            quantity = 1
+            if m is not None:
+                # Amazon will say you got, e.g. 2 broccoli crowns at $1.69/lb - but then this code multiplies the 2 by the price listed
+                # on the invoice, which is the total price in this case (but the per-unit price in other cases) - so if there's a quantity
+                # and a weight, ignore the quantity and treat it as 1
+                # alternately, capture the weight and the per-unit price and multiply out
+                quantity = m.group("quantity") # ignore quantity for weight items
+            
+            if quantity is None:
+                #print("Unable to extract quantity, using 1: %s" % description_node.text)
+                quantity = D(1)
+            else:
+                quantity = D(quantity)
+
+            text = description_node.text.split("of:",1)[1]
+
+            pattern_without_condition = r'(?P<description>.*)\n\s*(?:Sold|Provided) by:? (?P<sold_by>[^\n]+)'
             pattern_with_condition = pattern_without_condition + r'\n.*\n\s*Condition: (?P<condition>[^\n]+)'
 
-            m = re.match(pattern_with_condition, description_node.text,
-                         re.UNICODE | re.DOTALL)
+            m = re.match(pattern_with_condition, text, re.UNICODE | re.DOTALL)
             if m is None:
-                m = re.match(pattern_without_condition, description_node.text,
-                             re.UNICODE | re.DOTALL)
-            assert m is not None
+                m = re.match(pattern_without_condition, text, re.UNICODE | re.DOTALL)
+            if m is None:
+                raise Exception("Could not extract item from row", text)
+            
             description = re.sub(r'\s+', ' ', m.group('description').strip())
             sold_by = re.sub(r'\s+', ' ', m.group('sold_by').strip())
             try:
@@ -218,11 +245,11 @@ def parse_shipments(soup) -> List[Shipment]:
                 sold_by = sold_by[:-len(suffix)]
             items.append(
                 Item(
-                    quantity=D(m.group('quantity')),
+                    quantity=quantity,
                     description=description,
                     sold_by=sold_by,
                     condition=condition,
-                    price=parse_amount(price),
+                    price=price,
                 ))
 
         items_subtotal = parse_amount(
@@ -374,11 +401,16 @@ def parse_regular_order_invoice(path: str) -> Order:
     payments_total_adjustments = []
     shipments_total_adjustments = []
 
+    # parse first to get an idea of the working currency
+    grand_total = parse_amount(
+        get_field_in_table(payment_table, 'Grand Total:'))
+
     def resolve_posttax_adjustments():
         payment_adjustments.update(
             reduce_adjustments(
                 get_adjustments_in_table(payment_table,
-                                         posttax_adjustment_fields_pattern)))
+                                         posttax_adjustment_fields_pattern,
+                                         assumed_currency=grand_total.currency)))
         all_shipments_adjustments = collections.OrderedDict(
             reduce_adjustments(
                 sum((x.posttax_adjustments for x in shipments), [])))
@@ -419,8 +451,6 @@ def parse_regular_order_invoice(path: str) -> Order:
 
     payments_total_adjustment = reduce_amounts(payments_total_adjustments)
     shipments_total_adjustment = reduce_amounts(shipments_total_adjustments)
-    grand_total = parse_amount(
-        get_field_in_table(payment_table, 'Grand Total:'))
 
     expected_total = add_amount(shipments_total_adjustment,
                                 reduce_amounts(x.total for x in shipments))
