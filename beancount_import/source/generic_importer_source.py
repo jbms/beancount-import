@@ -48,7 +48,12 @@ class ImporterSource(DescriptionBasedSource):
                            )
         ]
         # filter the valid files for this importer
-        self.files = [f for f in files if self.importer.identify(f)]
+        # handle the fact that importer.identify could raise an exception
+        # instead of returning False, but that ultimately means False for this purpose
+        def try_identify(importer, file):
+            try: return importer.identify(file)
+            except: return False
+        self.files = [f for f in files if try_identify(self.importer, f ) ]
 
     @property
     def name(self) -> str:
