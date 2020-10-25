@@ -154,6 +154,7 @@ def parse_shipments(soup) -> List[Shipment]:
         'Service completed',
         'Preparing for Shipment',
         'Not Yet Shipped',
+        'Shipping now'
     }
 
     def is_shipment_header_table(node):
