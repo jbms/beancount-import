@@ -386,18 +386,24 @@ def parse_regular_order_invoice(path: str) -> Order:
     output_fields = dict()
     output_fields['pretax_adjustments'] = get_adjustments_in_table(
         payment_table, pretax_adjustment_fields_pattern)
-    amount = reduce_amounts(
-        a.amount for a in output_fields['pretax_adjustments'])
     payment_adjustments = collections.OrderedDict()  # type: Dict[str, Amount]
+
+    # older invoices put pre-tax amounts on a per-shipment basis
+    # new invoices only put pre-tax amounts on the overall payments section
+    # detect which this is
+    pretax_amount = reduce_amounts(
+        a.amount for a in output_fields['pretax_adjustments'])
+    shipments_pretax_amount = None
+
     if any(s.pretax_adjustments for s in shipments):
-        expected_amount = reduce_amounts(
-            a.amount
+        shipments_pretax_amount = reduce_amounts(a.amount
             for shipment in shipments
-            for a in shipment.pretax_adjustments)
-        if expected_amount != amount:
+            for a in shipment.pretax_adjustments)            
+
+        if shipments_pretax_amount != pretax_amount:
             errors.append(
                 'expected total pretax adjustment to be %s, but parsed total is %s'
-                % (expected_amount, amount))
+                % (shipments_pretax_amount, pretax_amount))
 
     payments_total_adjustments = []
     shipments_total_adjustments = []
@@ -455,6 +461,12 @@ def parse_regular_order_invoice(path: str) -> Order:
 
     expected_total = add_amount(shipments_total_adjustment,
                                 reduce_amounts(x.total for x in shipments))
+
+    # if no shipments pre-tax section, then the expected total isn't accounting
+    # for the pre-tax adjustments yet since they are only in the grand total section
+    if shipments_pretax_amount is None:
+        expected_total = add_amount(expected_total, pretax_amount)
+
     adjusted_grand_total = add_amount(payments_total_adjustment, grand_total)
     if expected_total != adjusted_grand_total:
         errors.append('expected grand total is %s, but parsed value is %s' %

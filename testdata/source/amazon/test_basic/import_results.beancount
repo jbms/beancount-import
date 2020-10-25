@@ -541,3 +541,47 @@
   Expenses:FIXME    -27.05 USD
     amazon_credit_card_description: "Visa ending in 1234"
     transaction_date: 2020-09-01
+
+;; date: 2020-10-24
+;; info: {"filename": "<testdata>/111-1120740-1860260.html", "type": "text/html"}
+
+; features: [
+;             {
+;               "amount": "1.32 USD",
+;               "date": "2020-10-24",
+;               "key_value_pairs": {
+;                 "amazon_item_description": [
+;                   "Magnetic USB C Adapter 20Pins Type C Connector, Support USB PD 100W Quick Charge, 10Gb/s Data Transfer and 4K@60 Hz Video Output Compatible with MacBook Pro/Air and More Type C Devices (Grey)"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "0.00 USD",
+;               "date": "2020-10-24",
+;               "key_value_pairs": {
+;                 "amazon_credit_card_description": [
+;                   "Amazon.com Visa Signature ending in 1234"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2020-10-24 * "Amazon.com" "Order"
+  amazon_account: "name@domain.com"
+  amazon_order_id: "111-1120740-1860260"
+  associated_data0: "{\"description\": \"Amazon order invoice\", \"meta\": [\"amazon_order_id\", \"111-1120740-1860260\"], \"path\": \"<testdata>/111-1120740-1860260.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A           24.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Magnetic USB C Adapter 20Pins Type C Connector, Support USB PD 100W Quick Charge, 10Gb/s Data Transfer and 4K@60 Hz Video Output Compatible with MacBook Pro/Air and More Type C Devices (Grey)"
+    amazon_item_quantity: 1
+    amazon_seller: "YDM-US"
+  Expenses:FIXME:A           -3.00 USD
+    amazon_invoice_description: "Your Coupon Savings"
+  Expenses:FIXME:A            1.32 USD
+    amazon_invoice_description: "Sales Tax"
+  Assets:Gift-Cards:Amazon  -23.31 USD
+    amazon_posttax_adjustment: "Gift Card Amount"
+  Expenses:FIXME              0.00 USD
+    amazon_credit_card_description: "Amazon.com Visa Signature ending in 1234"
+    transaction_date: 2020-10-24
