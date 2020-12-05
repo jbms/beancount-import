@@ -1,8 +1,10 @@
+from decimal import Decimal
 from typing import TypeVar, Generic, Tuple, Iterable
 import bisect
 import itertools
 
-K = TypeVar('K')
+
+K = TypeVar('K', bound=Decimal)
 V = TypeVar('V')
 
 
