@@ -1,5 +1,5 @@
 ;; date: 2020-01-01
-;; info: {"filename": "<testdata>/generic_statement.csv", "line": 1, "type": "text/csv"}
+;; info: {"filename": "<testdata>/csv/generic_statement.csv", "line": 1, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -18,7 +18,7 @@
   Expenses:FIXME   1 USD
 
 ;; date: 2020-01-01
-;; info: {"filename": "<testdata>/generic_statement.csv", "line": 2, "type": "text/csv"}
+;; info: {"filename": "<testdata>/csv/generic_statement.csv", "line": 2, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -37,7 +37,7 @@
   Expenses:FIXME   1 USD
 
 ;; date: 2020-01-02
-;; info: {"filename": "<testdata>/generic_statement.csv", "line": 3, "type": "text/csv"}
+;; info: {"filename": "<testdata>/csv/generic_statement.csv", "line": 3, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -56,7 +56,7 @@
   Expenses:FIXME  -1 USD
 
 ;; date: 2020-01-02
-;; info: {"filename": "<testdata>/generic_statement.csv", "line": 5, "type": "text/csv"}
+;; info: {"filename": "<testdata>/csv/generic_statement.csv", "line": 5, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -75,7 +75,7 @@
   Expenses:FIXME  -1 USD
 
 ;; date: 2020-01-02
-;; info: {"filename": "<testdata>/generic_statement.csv", "line": 4, "type": "text/csv"}
+;; info: {"filename": "<testdata>/csv/generic_statement.csv", "line": 4, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -94,7 +94,7 @@
   Expenses:FIXME  -500 USD
 
 ;; date: 2020-01-05
-;; info: {"filename": "<testdata>/generic_statement.csv", "line": 6, "type": "text/csv"}
+;; info: {"filename": "<testdata>/csv/generic_statement.csv", "line": 6, "type": "text/csv"}
 
 ; features: [
 ;             {

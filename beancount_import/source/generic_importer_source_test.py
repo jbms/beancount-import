@@ -9,6 +9,8 @@ testdata_dir = os.path.realpath(
     os.path.join(
         os.path.dirname(__file__), '..', '..', 'testdata', 'source', 'generic_importer'))
 
+testdata_csv = os.path.join(testdata_dir, "csv")
+
 examples = [
     'test_basic',
     'test_invalid',
@@ -31,7 +33,7 @@ def test_source(name: str):
         example_dir=os.path.join(testdata_dir, name),
         source_spec={
             'module': 'beancount_import.source.generic_importer_source',
-            'directory': testdata_dir,
+            'directory': testdata_csv,
             'account': 'Assets:Bank',
             'importer': importer,
         },
