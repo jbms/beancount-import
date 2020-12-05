@@ -12,6 +12,12 @@ each other and with existing transactions.
 - Pluggable data source architecture, including existing support for OFX (cash,
   investment, and retirement accounts), Mint.com, Amazon.com, and Venmo.
 
+- Due to the existing OFX support and the tool
+  [ofxstatement](https://github.com/kedder/ofxstatement) it is very easy to
+  import any financial source provided there is an ofxstatement plugin for
+  it. A lot of european financial institutes are available via plugins besides
+  a plugin for the generic Swift MT940 format.
+
 - Robustly associates imported transactions with the source data, to
   automatically avoid duplicates.
 
@@ -125,14 +131,26 @@ The currently supported set of data sources is:
 - [beancount_import.source.ultipro_google](beancount_import/source/ultipro_google.py):
   imports Google employee Ultipro payroll statements.
 
+Since the OFX support is the most versatile, a function convert2ofx() has been
+created to convert an input file to an OFX file provided an ofxstatement
+plugin is available. See the OFX source file and Usage below.  This function
+allows you to use the beancount importer without creating a new data source.
+
 Refer to the individual data source documentation for details on configuration.
+
+
 
 # Usage
 
 To run Beancount-import, create a Python script that invokes the
 `beancount_import.webserver.main` function.  Refer to the examples
-[fresh](examples/fresh/run.py) and
-[manually_entered](examples/manually_entered/run.py).
+[fresh](examples/fresh/run.py),
+[manually_entered](examples/manually_entered/run.py) and
+[convert2ofx](examples/convert2ofx/run.py).
+
+The convert2ofx example needs you to have the plugin ofxstatement-dutch
+installed, please follow the instructions of the
+[ofxstatement-dutch README](https://github.com/gpaulissen/ofxstatement-dutch).
 
 ## Errors
 

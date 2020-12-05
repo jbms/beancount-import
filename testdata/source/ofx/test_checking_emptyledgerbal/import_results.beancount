@@ -61,7 +61,7 @@
 ;           ]
 2011-04-07 * "STMTTRN - RETURNED CHECK FEE, CHECK # 319 FOR $45.33 ON 04/07/11"
   Assets:Checking  -25.00 USD
-    check: 319
+    check: "319"
     date: 2011-04-07
     ofx_fitid: "0000488"
     ofx_memo: "RETURNED CHECK FEE, CHECK # 319 FOR $45.33 ON 04/07/11"

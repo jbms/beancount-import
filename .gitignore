@@ -7,3 +7,5 @@ beancount_import/frontend_dist
 .tox
 .coverage
 htmlcov/
+.*.ofx
+*~

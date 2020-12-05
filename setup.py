@@ -1,6 +1,21 @@
 import os
 from setuptools import setup
 
+import glob
+import sys
+
+def get_egg_file(module_name):
+    def f(packages):
+        return glob.glob(
+            os.path.join(os.path.dirname(os.path.dirname(sys.executable)),
+                         'lib', 'python*', packages, module_name + '.egg-link'))
+
+    return f('site-packages') or f('dist-packages')
+
+egg_file = get_egg_file('beancount_import')
+if egg_file:
+    os.remove(egg_file[0])
+    
 with open(
         os.path.join(os.path.dirname(__file__), 'README.md'),
         'r',
@@ -14,7 +29,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/jbms/beancount-import',
-    version='1.3.3',
+    version='1.4.0',
     author='Jeremy Maitin-Shepard',
     author_email="jeremy@jeremyms.com",
     license='GPLv2',
@@ -38,7 +53,7 @@ setup(
         'jsonschema',
         'watchdog',
     ],
-    test_requirements=[
+    test_requires=[
         'pytest',
         'coverage',
     ],

@@ -43,7 +43,7 @@ Within your Python script for invoking beancount_import, you might use an
 expression like the following to specify the Mint source:
 
     dict(module='beancount_import.source.mint',
-         directory=os.path.join(journal_dir, 'data', 'mint', 'mint.csv'),
+         filename=os.path.join(journal_dir, 'data', 'mint', 'mint.csv'),
          balances_directory=os.path.join(journal_dir, 'data', 'mint'),
     )
 

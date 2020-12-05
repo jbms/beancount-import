@@ -38,6 +38,7 @@
 ;           ]
 2009-04-02 * "STMTTRN - MISCELLANEOUS PAYMENTS;Joe's Bald Hairstyles"
   Assets:Checking  -316.67 CAD
+    check: "0"
     date: 2009-04-02
     ofx_fitid: "0000123456782009040200004"
     ofx_memo: "MISCELLANEOUS PAYMENTS;Joe's Bald Hairstyles"
