@@ -786,11 +786,11 @@ def test_match_grouped_differing_signs_sum_zero():
           Expenses:FIXME 1.35 USD
             note1: "B"
           Expenses:FIXME 2.90 USD
-            note1: "D"
+            note1: "C"
           Expenses:FIXME -1.35 USD
-            note1: "F"
+            note1: "D"
           Expenses:FIXME -2.90 USD
-            note1: "G"
+            note1: "E"
         """,
         journal="""
         2020-12-05 * "Narration"
@@ -807,14 +807,68 @@ def test_match_grouped_differing_signs_sum_zero():
           note3: "A"
           Assets:Bank -1.35 USD
             cleared: TRUE
-            note1: "F"
+            note1: "D"
             note2: "A"
           Expenses:Foo 1.35 USD
             note1: "B"
             note3: "B"
           Expenses:FIXME 2.90 USD
-            note1: "D"
+            note1: "C"
           Expenses:FIXME -2.90 USD
+            note1: "E"
+        """,
+    )
+
+def test_match_grouped_maximal_differing_signs():
+    # Maximal matching groups are still per-sign.
+    assert_match(
+        pending_candidate="""
+        2020-12-05 * "Narration"
+          note1: "A"
+          Expenses:FIXME 1 USD
+            note1: "B"
+          Expenses:FIXME 2 USD
+            note1: "C"
+          Expenses:FIXME 3 USD
+            note1: "D"
+          Expenses:FIXME 4 USD
+            note1: "E"
+          Expenses:FIXME 5 USD
+            note1: "F"
+          Expenses:FIXME -15 USD
             note1: "G"
+        """,
+        journal="""
+        2020-12-05 * "Narration"
+          note2: "A"
+          Assets:Bank -15 USD
+            cleared: TRUE
+            note2: "B"
+          Expenses:Foo 15 USD
+            note2: "C"
+        """,
+        matches="""
+        2020-12-05 * "Narration"
+          note1: "A"
+          note2: "A"
+          Assets:Bank -15 USD
+            cleared: TRUE
+            note1: "G"
+            note2: "B"
+          Expenses:Foo 1 USD
+            note1: "B"
+            note2: "C"
+          Expenses:Foo 2 USD
+            note1: "C"
+            note2: "C"
+          Expenses:Foo 3 USD
+            note1: "D"
+            note2: "C"
+          Expenses:Foo 4 USD
+            note1: "E"
+            note2: "C"
+          Expenses:Foo 5 USD
+            note1: "F"
+            note2: "C"
         """,
     )

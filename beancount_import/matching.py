@@ -704,7 +704,7 @@ def get_aggregate_posting_candidates(
     5. Subsets may not sum to zero, or contain any sub-subsets that sum to zero.
 
     6. To limit the computational cost, subsets are limited to at most 4
-       elements, except that all maximal subsets are also returned.
+       elements, except that all same-sign maximal subsets are also returned.
 
     The returned subsets are not, in general, disjoint.
 
@@ -730,15 +730,26 @@ def get_aggregate_posting_candidates(
     def posting_set_id(postings):
         return tuple(id(x) for x in postings)
 
-    def add_subset(account, currency, subset):
+    def partition(predicate, postings):
+        t = []
+        f = []
+        for p in postings:
+            if predicate(p):
+                t.append(p)
+            else:
+                f.append(p)
+        return t, f
+
+    def add_subset(account, currency, subset, check_zero=True):
         total = sum(x.units.number for x in subset)
-        if total == ZERO:
-            sum_to_zero.add(posting_set_id(subset))
-            return
-        for subsubset_size in range(2, len(subset)):
-            for subsubset in itertools.combinations(subset, subsubset_size):
-                if posting_set_id(subsubset) in sum_to_zero:
-                    return
+        if check_zero:
+            if total == ZERO:
+                sum_to_zero.add(posting_set_id(subset))
+                return
+            for subsubset_size in range(2, len(subset)):
+                for subsubset in itertools.combinations(subset, subsubset_size):
+                    if posting_set_id(subsubset) in sum_to_zero:
+                        return
         aggregate_posting = Posting(
             account=account,
             units=Amount(currency=currency, number=total),
@@ -751,8 +762,9 @@ def get_aggregate_posting_candidates(
     for (account, currency), posting_list in possible_sets.items():
         if len(posting_list) == 1:
             continue
-        if len(posting_list) > max_subset_size:
-            add_subset(account, currency, posting_list)
+        for samesign_list in partition(lambda p: p.units.number > ZERO, posting_list):
+            if len(samesign_list) > max_subset_size:
+                add_subset(account, currency, samesign_list, check_zero=False)
         for subset_size in range(
                 2, min(len(posting_list) + 1, max_subset_size + 1)):
             for subset in itertools.combinations(posting_list, subset_size):
