@@ -57,3 +57,15 @@
 2018-06-15 * "Coffee"
   Assets:Checking:Chase  -70.71 USD
   Expenses:Coffee         70.71 USD
+
+2020-01-02 * "Imaginary Son" "Withdrawn 500 EURs for my Imaginary Son's College Fees"
+  Assets:FooBarBank -500 EUR
+  Expenses:ImaginarySon:Education
+
+2020-01-10 * "Groceries from Amazon"
+  Liabilities:Amex-Credit-Card                -15.5 EUR
+  Expenses:Groceries
+
+2020-01-14 * "Paid 30 EUR to Amex Credit Card"
+  Assets:FooBarBank -30 EUR
+  Liabilities:Amex-Credit-Card

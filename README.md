@@ -12,6 +12,9 @@ each other and with existing transactions.
 - Pluggable data source architecture, including existing support for OFX (cash,
   investment, and retirement accounts), Mint.com, Amazon.com, and Venmo.
 
+- Supports [beancount importers](https://beancount.github.io/docs/importing_external_data.html) so it's easier to write your own,
+  and existing beancount and fava users can hop right on with no hustle.
+
 - Robustly associates imported transactions with the source data, to
   automatically avoid duplicates.
 
@@ -124,6 +127,8 @@ The currently supported set of data sources is:
   [Morgan Stanley StockPlan Connect](https://stockplanconnect.com).
 - [beancount_import.source.ultipro_google](beancount_import/source/ultipro_google.py):
   imports Google employee Ultipro payroll statements.
+- [beancount_import.source.generic_importer_source](beancount_import/source/generic_importer_source.py):
+  imports from `beancount.ingest.importer.ImporterProtocol` subclass Importers. See [beancount's documentation](https://beancount.github.io/docs/importing_external_data.html#the-importing-process) on how to write one and checkout the [examples](examples/) directory for a simple csv importer
 
 Refer to the individual data source documentation for details on configuration.
 
