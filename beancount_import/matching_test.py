@@ -737,3 +737,138 @@ def test_nonmatch_fuzzy_amount():
           note: "B"
         Expenses:FIXME -99.98 USD
       """)
+
+def test_match_grouped_differing_signs():
+    # Can group postings of differing signs to make a match.
+    assert_match(
+        pending_candidate="""
+        2020-12-05 * "Narration"
+          note1: "A"
+          Expenses:FIXME:A 1.23 USD
+            note1: "B"
+          Expenses:FIXME:A -0.12 USD
+            note1: "C"
+          Assets:Bank -1.11 USD
+            note2: "A"
+        """,
+        journal="""
+        2020-12-05 * "Narration"
+          note3: "E"
+          Assets:Bank -1.11 USD
+            cleared: TRUE
+            note3: "A"
+          Expenses:Foo 1.11 USD
+            note4: "A"
+        """,
+        matches="""
+        2020-12-05 * "Narration"
+          note1: "A"
+          note3: "E"
+          Assets:Bank -1.11 USD
+            cleared: TRUE
+            note2: "A"
+            note3: "A"
+          Expenses:Foo 1.23 USD
+            note1: "B"
+            note4: "A"
+          Expenses:Foo -0.12 USD
+            note1: "C"
+            note4: "A"
+        """,
+    )
+
+def test_match_grouped_differing_signs_sum_zero():
+    # Cannot make a matching group that contains canceling transactions.
+    assert_match(
+        pending_candidate="""
+        2020-12-05 * "Narration"
+          note1: "A"
+          Expenses:FIXME 1.35 USD
+            note1: "B"
+          Expenses:FIXME 2.90 USD
+            note1: "C"
+          Expenses:FIXME -1.35 USD
+            note1: "D"
+          Expenses:FIXME -2.90 USD
+            note1: "E"
+        """,
+        journal="""
+        2020-12-05 * "Narration"
+          note3: "A"
+          Assets:Bank -1.35 USD
+            cleared: TRUE
+            note2: "A"
+          Expenses:Foo 1.35 USD
+            note3: "B"
+        """,
+        matches="""
+        2020-12-05 * "Narration"
+          note1: "A"
+          note3: "A"
+          Assets:Bank -1.35 USD
+            cleared: TRUE
+            note1: "D"
+            note2: "A"
+          Expenses:Foo 1.35 USD
+            note1: "B"
+            note3: "B"
+          Expenses:FIXME 2.90 USD
+            note1: "C"
+          Expenses:FIXME -2.90 USD
+            note1: "E"
+        """,
+    )
+
+def test_match_grouped_maximal_differing_signs():
+    # Maximal matching groups are still per-sign.
+    assert_match(
+        pending_candidate="""
+        2020-12-05 * "Narration"
+          note1: "A"
+          Expenses:FIXME 1 USD
+            note1: "B"
+          Expenses:FIXME 2 USD
+            note1: "C"
+          Expenses:FIXME 3 USD
+            note1: "D"
+          Expenses:FIXME 4 USD
+            note1: "E"
+          Expenses:FIXME 5 USD
+            note1: "F"
+          Expenses:FIXME -15 USD
+            note1: "G"
+        """,
+        journal="""
+        2020-12-05 * "Narration"
+          note2: "A"
+          Assets:Bank -15 USD
+            cleared: TRUE
+            note2: "B"
+          Expenses:Foo 15 USD
+            note2: "C"
+        """,
+        matches="""
+        2020-12-05 * "Narration"
+          note1: "A"
+          note2: "A"
+          Assets:Bank -15 USD
+            cleared: TRUE
+            note1: "G"
+            note2: "B"
+          Expenses:Foo 1 USD
+            note1: "B"
+            note2: "C"
+          Expenses:Foo 2 USD
+            note1: "C"
+            note2: "C"
+          Expenses:Foo 3 USD
+            note1: "D"
+            note2: "C"
+          Expenses:Foo 4 USD
+            note1: "E"
+            note2: "C"
+          Expenses:Foo 5 USD
+            note1: "F"
+            note2: "C"
+        """,
+    )

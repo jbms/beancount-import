@@ -467,10 +467,10 @@ def combine_transactions_using_match_set(
         txns: Tuple[Transaction, Transaction], is_cleared: IsClearedFunction,
         match_set: PostingMatchSet) -> Transaction:
     """Combines two transactions.
-    
+
     Metadata is merged (it is assumed that the metadata keys, other than
     ignorable ones, are disjoint).
-    
+
     If a cleared transaction is matched with multiple transactions (guaranteed
     to be uncleared), the result is a single merged transaction.
 
@@ -699,11 +699,12 @@ def get_aggregate_posting_candidates(
     3. Subsets must not contain cleared postings, or postings with a `cost` or
        `price` specification, or with `MISSING` units.
 
-    4. All postings in a subset must have the same `units.currency`, and the
-       same sign of `units.number` (i.e. positive or negative).
+    4. All postings in a subset must have the same `units.currency`.
+
+    5. Subsets may not sum to zero, or contain any sub-subsets that sum to zero.
 
     6. To limit the computational cost, subsets are limited to at most 4
-       elements, except that all maximal subsets are also returned.
+       elements, except that all same-sign maximal subsets are also returned.
 
     The returned subsets are not, in general, disjoint.
 
@@ -713,21 +714,42 @@ def get_aggregate_posting_candidates(
         the sum of the `units` of each posting in the subset.
     """
     possible_sets = collections.OrderedDict(
-    )  # type: Dict[Tuple[str, str, bool], List[Posting]]
+    )  # type: Dict[Tuple[str, str], List[Posting]]
     for posting in postings:
         if (posting.price is not None or posting.cost is not None or
                 posting.units is None or posting.units is MISSING):
             continue
         if is_cleared(posting):
             continue
-        possible_sets.setdefault((posting.account, posting.units.currency,
-                                  posting.units.number > ZERO),
+        possible_sets.setdefault((posting.account, posting.units.currency),
                                  []).append(posting)
     results = []
     max_subset_size = 4
+    sum_to_zero = set()  # type: Set[Tuple[int, ...]]
 
-    def add_subset(account, currency, subset):
+    def posting_set_id(postings):
+        return tuple(id(x) for x in postings)
+
+    def partition(predicate, postings):
+        t = []
+        f = []
+        for p in postings:
+            if predicate(p):
+                t.append(p)
+            else:
+                f.append(p)
+        return t, f
+
+    def add_subset(account, currency, subset, check_zero=True):
         total = sum(x.units.number for x in subset)
+        if check_zero:
+            if total == ZERO:
+                sum_to_zero.add(posting_set_id(subset))
+                return
+            for subsubset_size in range(2, len(subset)):
+                for subsubset in itertools.combinations(subset, subsubset_size):
+                    if posting_set_id(subsubset) in sum_to_zero:
+                        return
         aggregate_posting = Posting(
             account=account,
             units=Amount(currency=currency, number=total),
@@ -737,11 +759,13 @@ def get_aggregate_posting_candidates(
             meta=None)
         results.append((aggregate_posting, tuple(subset)))
 
-    for (account, currency, _), posting_list in possible_sets.items():
+    for (account, currency), posting_list in possible_sets.items():
         if len(posting_list) == 1:
             continue
         if len(posting_list) > max_subset_size:
-            add_subset(account, currency, posting_list)
+            for samesign_list in partition(lambda p: p.units.number > ZERO, posting_list):
+                if len(samesign_list) > max_subset_size:
+                    add_subset(account, currency, samesign_list, check_zero=False)
         for subset_size in range(
                 2, min(len(posting_list) + 1, max_subset_size + 1)):
             for subset in itertools.combinations(posting_list, subset_size):
