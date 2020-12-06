@@ -35,6 +35,7 @@ expression like the following to specify the Amazon source:
 
     dict(module='beancount_import.source.amazon',
          directory=os.path.join(journal_dir, 'data/amazon'),
+         pickle_dir=os.path.join(journal_dir, 'data/amazon/.pickle')
          amazon_account='name@domain.com',
          posttax_adjustment_accounts={
              'Gift Card Amount': 'Assets:Gift-Cards:Amazon',
@@ -236,12 +237,33 @@ If you run into an invoice that results in a parse error, you can use the
 `beancount_import.source.amazon_invoice` module, which has a command-line
 interface, to try to debug it.
 
+Caching Parsing Results
+=======================
+
+Parsing the HTML files can be slow, so this module uses the Python pickle 
+module/file format to cache the results of parsing the individual HTML files.
+These cached results are loaded as long as their mtime is more recent than
+the HTML file to load. If you want to enable this funcionality, pass a path
+to the `pickle_dir` parameter when initializing this class.
+
+Skipping Older Invoices
+=======================
+
+In the event you want to only process invoices that happened after a certain
+date you can pass the earliest date you want to process as a configuration 
+parameter `earliest_date` when initializing the this class.
+
+This requires parsing the HTML file in order to determine the date of the
+invoice, so it is recommended to use the caching/pickling mechanism described
+above if you choose to have a large number of invoices in your data folder that
+are not accounted for in your journal.
 """
 
 import collections
 from typing import Dict, List, Tuple, Optional
 import os
 import sys
+import pickle
 
 from beancount.core.data import Transaction, Posting, Balance, Commodity, Price, EMPTY_SET, Directive
 from beancount.core.amount import Amount
@@ -255,6 +277,8 @@ from ..matching import FIXME_ACCOUNT, SimpleInventory
 from ..posting_date import POSTING_DATE_KEY, POSTING_TRANSACTION_DATE_KEY
 from . import ImportResult, Source, SourceResults, InvalidSourceReference, AssociatedData
 from ..journal_editor import JournalEditor
+
+import datetime
 
 ITEM_DESCRIPTION_KEY = 'amazon_item_description'
 ITEM_URL_KEY = 'amazon_item_url'
@@ -452,12 +476,69 @@ def get_order_ids_seen(journal: JournalEditor,
         order_ids.setdefault(order_id, []).append(entry)
     return order_ids
 
+class AmazonPickler():
+    def __init__( self, pickle_dir: Optional[str] ):
+        self.pickle_dir = pickle_dir
+        if pickle_dir is not None and not os.access(pickle_dir, os.W_OK):
+            raise Exception("Amazon pickled invoice path is not writable: %s" % pickle_dir)
+        
+    @staticmethod
+    def try_get_mtime( path: str ):
+        try:
+            return os.stat(path).st_mtime
+        except:
+            return None
+
+    def _build_pickle_path( self, pickle_dir: str, invoice_path: str ):
+        invoice_dir, invoice_file = os.path.split(invoice_path)
+        pickle_file = invoice_file.replace(".html", ".order.p")
+        return os.path.join(pickle_dir, pickle_file)
+
+    def load( self, results: SourceResults, invoice_path: str ):
+        if not self.pickle_dir: return None
+
+        pickle_path = self._build_pickle_path( self.pickle_dir, invoice_path )
+
+        try:
+            invoice_mtime = AmazonPickler.try_get_mtime( invoice_path )
+            pickle_mtime  = AmazonPickler.try_get_mtime( pickle_path  )
+
+            if invoice_mtime is None or pickle_mtime is None: return None
+            if pickle_mtime < invoice_mtime: return None
+
+            with open(pickle_path, "rb") as f:
+                return pickle.load( f )
+        except:
+            results.add_error('Failed to load pickled invoice %s: %s' % (
+                        pickle_path, sys.exc_info()))
+
+    def dump( self, results: SourceResults, invoice_path: str, invoice: Optional[Order]):
+        if not self.pickle_dir: return None
+        if not invoice: return None
+
+        try:
+            pickle_path = self._build_pickle_path( self.pickle_dir, invoice_path )
+
+            if invoice is None:
+                # remove existing pickles if invoice couldn't be parsed
+                pickle_mtime = AmazonPickler.try_get_mtime( pickle_path ) 
+                if pickle_mtime: os.remove( pickle_path )
+                return
+
+            with open(pickle_path, "wb") as f:
+                return pickle.dump( invoice, f )
+
+        except:
+            results.add_error('Failed to save pickled invoice %s: %s' % (
+                        pickle_path, sys.exc_info()))
 
 class AmazonSource(Source):
     def __init__(self,
                  directory: str,
                  amazon_account: str,
                  posttax_adjustment_accounts: Dict[str, str] = {},
+                 pickle_dir: str = None,
+                 earliest_date: datetime.date = None,
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
@@ -467,6 +548,9 @@ class AmazonSource(Source):
         self.example_posting_key_extractors[CREDIT_CARD_DESCRIPTION_KEY] = None
         self.example_posting_key_extractors[POSTTAX_DESCRIPTION_KEY] = None
         self.example_transaction_key_extractors[AMAZON_ACCOUNT_KEY] = None
+        self.pickler = AmazonPickler(pickle_dir)
+
+        self.earliest_date = earliest_date
 
         self.invoice_filenames = []  # type: List[Tuple[str, str]]
         for filename in os.listdir(self.directory):
@@ -478,14 +562,19 @@ class AmazonSource(Source):
         self._cached_invoices = {
         }  # type: Dict[str, Tuple[Optional[Order], str]]
 
-    def _get_invoice(self, invoice_filename: str):
+    def _get_invoice(self, results: SourceResults, order_id: str, invoice_filename: str):
         if invoice_filename in self._cached_invoices:
             return self._cached_invoices.get(invoice_filename)
-        path = os.path.realpath(os.path.join(self.directory, invoice_filename))
-        self.log_status('amazon: processing %s' % (path, ))
-        invoice = parse_invoice(path)  # type: Optional[Order]
-        self._cached_invoices[invoice_filename] = invoice, path
-        return invoice, path
+        invoice_path = os.path.realpath(os.path.join(self.directory, invoice_filename))
+
+        invoice = self.pickler.load(results, invoice_path) # type: Optional[Order]
+        if invoice is None:
+            self.log_status('amazon: processing %s: %s' % (order_id, invoice_path, ))
+            invoice = parse_invoice(invoice_path)
+            self.pickler.dump( results, invoice_path, invoice )
+
+        self._cached_invoices[invoice_filename] = invoice, invoice_path
+        return invoice, invoice_path
 
     def prepare(self, journal: JournalEditor, results: SourceResults):
         credit_card_accounts = get_credit_card_accounts(journal)
@@ -500,13 +589,18 @@ class AmazonSource(Source):
         for order_id, invoice_filename in self.invoice_filenames:
             if order_id in order_ids_seen: continue
             try:
-              invoice, path = self._get_invoice(invoice_filename)
+              invoice, path = self._get_invoice(results, order_id, invoice_filename)
             except:
                 results.add_error('Failed to parse invoice %s: %s' % (
                     invoice_filename, sys.exc_info()))
                 continue
             if invoice is None:
               continue
+
+            if self.earliest_date is not None and invoice.order_date < self.earliest_date:
+                self.log_status("Skipping order with date [%s] before [%s]" % ( str(invoice.order_date), self.earliest_date ) )
+                continue
+
             transaction = make_amazon_transaction(
                 invoice=invoice,
                 posttax_adjustment_accounts=self.posttax_adjustment_accounts,
