@@ -762,9 +762,10 @@ def get_aggregate_posting_candidates(
     for (account, currency), posting_list in possible_sets.items():
         if len(posting_list) == 1:
             continue
-        for samesign_list in partition(lambda p: p.units.number > ZERO, posting_list):
-            if len(samesign_list) > max_subset_size:
-                add_subset(account, currency, samesign_list, check_zero=False)
+        if len(posting_list) > max_subset_size:
+            for samesign_list in partition(lambda p: p.units.number > ZERO, posting_list):
+                if len(samesign_list) > max_subset_size:
+                    add_subset(account, currency, samesign_list, check_zero=False)
         for subset_size in range(
                 2, min(len(posting_list) + 1, max_subset_size + 1)):
             for subset in itertools.combinations(posting_list, subset_size):
