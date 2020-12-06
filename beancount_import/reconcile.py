@@ -1,7 +1,7 @@
 import collections
 import datetime
 import re
-from typing import List, Optional, Union, Callable, Dict, Tuple, Any, Iterable, Set, NamedTuple
+from typing import List, Optional, Union, Callable, Dict, Mapping, Tuple, Any, Iterable, Set, NamedTuple
 import argparse
 import os
 import tempfile
@@ -33,7 +33,7 @@ PendingEntry = NamedTuple('PendingEntry', [
     ('date', datetime.date),
     ('entries', Entries),
     ('source', Optional[Source]),
-    ('info', Optional[Dict[str, Any]]),
+    ('info', Optional[Mapping[str, Any]]),
     ('formatted', str),
     ('id', str),
 ])

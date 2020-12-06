@@ -90,7 +90,7 @@ The other `Expenses:FIXME` accounts will be predicted individually.
 """
 
 import datetime
-from typing import Iterable, NamedTuple, List, Dict, Any, Tuple, Union, Callable, Optional
+from typing import Iterable, NamedTuple, List, Dict, Mapping, Any, Tuple, Union, Callable, Optional
 import importlib
 
 from beancount.core.data import Transaction, Entries, Directive, Posting, Meta
@@ -103,7 +103,7 @@ from ..training import TrainingExamples, PredictionInput, ExampleKeyValuePairs
 ImportResult = NamedTuple('ImportResult', [
     ('date', datetime.date),
     ('entries', Entries),
-    ('info', Optional[Dict[str, Any]]),
+    ('info', Optional[Mapping[str, Any]]),
 ])
 
 InvalidSourceReference = NamedTuple('InvalidSourceReference', [
