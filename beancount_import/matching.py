@@ -699,8 +699,9 @@ def get_aggregate_posting_candidates(
     3. Subsets must not contain cleared postings, or postings with a `cost` or
        `price` specification, or with `MISSING` units.
 
-    4. All postings in a subset must have the same `units.currency`, and the
-       same sign of `units.number` (i.e. positive or negative).
+    4. All postings in a subset must have the same `units.currency`.
+
+    5. Subsets may not sum to zero, or contain any sub-subsets that sum to zero.
 
     6. To limit the computational cost, subsets are limited to at most 4
        elements, except that all maximal subsets are also returned.
@@ -713,7 +714,7 @@ def get_aggregate_posting_candidates(
         the sum of the `units` of each posting in the subset.
     """
     possible_sets = collections.OrderedDict(
-    )  # type: Dict[Tuple[str, str, bool], List[Posting]]
+    )  # type: Dict[Tuple[str, str], List[Posting]]
     for posting in postings:
         if (posting.price is not None or posting.cost is not None or
                 posting.units is None or posting.units is MISSING):
@@ -724,9 +725,20 @@ def get_aggregate_posting_candidates(
                                  []).append(posting)
     results = []
     max_subset_size = 4
+    sum_to_zero = set()  # type: Set[Tuple[int, ...]]
+
+    def posting_set_id(postings):
+        return tuple(id(x) for x in postings)
 
     def add_subset(account, currency, subset):
         total = sum(x.units.number for x in subset)
+        if total == ZERO:
+            sum_to_zero.add(posting_set_id(subset))
+            return
+        for subsubset_size in range(2, len(subset)):
+            for subsubset in itertools.combinations(subset, subsubset_size):
+                if posting_set_id(subsubset) in sum_to_zero:
+                    return
         aggregate_posting = Posting(
             account=account,
             units=Amount(currency=currency, number=total),
