@@ -467,10 +467,10 @@ def combine_transactions_using_match_set(
         txns: Tuple[Transaction, Transaction], is_cleared: IsClearedFunction,
         match_set: PostingMatchSet) -> Transaction:
     """Combines two transactions.
-    
+
     Metadata is merged (it is assumed that the metadata keys, other than
     ignorable ones, are disjoint).
-    
+
     If a cleared transaction is matched with multiple transactions (guaranteed
     to be uncleared), the result is a single merged transaction.
 
@@ -720,8 +720,7 @@ def get_aggregate_posting_candidates(
             continue
         if is_cleared(posting):
             continue
-        possible_sets.setdefault((posting.account, posting.units.currency,
-                                  posting.units.number > ZERO),
+        possible_sets.setdefault((posting.account, posting.units.currency),
                                  []).append(posting)
     results = []
     max_subset_size = 4
@@ -737,7 +736,7 @@ def get_aggregate_posting_candidates(
             meta=None)
         results.append((aggregate_posting, tuple(subset)))
 
-    for (account, currency, _), posting_list in possible_sets.items():
+    for (account, currency), posting_list in possible_sets.items():
         if len(posting_list) == 1:
             continue
         if len(posting_list) > max_subset_size:
