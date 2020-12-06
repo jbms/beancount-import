@@ -358,7 +358,7 @@ def parse_regular_order_invoice(path: str) -> Order:
     output_fields = dict()
     output_fields['pretax_adjustments'] = get_adjustments_in_table(
         payment_table, pretax_adjustment_fields_pattern)
-    amount = reduce_amounts(
+    payments_pretax_adjustment_total = reduce_amounts(
         a.amount for a in output_fields['pretax_adjustments'])
     payment_adjustments = collections.OrderedDict()  # type: Dict[str, Amount]
     if any(s.pretax_adjustments for s in shipments):
@@ -366,10 +366,15 @@ def parse_regular_order_invoice(path: str) -> Order:
             a.amount
             for shipment in shipments
             for a in shipment.pretax_adjustments)
-        if expected_amount != amount:
+        assert expected_amount is not None
+        if expected_amount != payments_pretax_adjustment_total:
             errors.append(
                 'expected total pretax adjustment to be %s, but parsed total is %s'
-                % (expected_amount, amount))
+                % (expected_amount, payments_pretax_adjustment_total))
+        # don't double-count adjustments in older invoices that are both in shipments and
+        # payment table
+        payments_pretax_adjustment_total = add_amount(payments_pretax_adjustment_total,
+                                                      -expected_amount)
 
     payments_total_adjustments = []
     shipments_total_adjustments = []
@@ -422,8 +427,9 @@ def parse_regular_order_invoice(path: str) -> Order:
     grand_total = parse_amount(
         get_field_in_table(payment_table, 'Grand Total:'))
 
-    expected_total = add_amount(shipments_total_adjustment,
-                                reduce_amounts(x.total for x in shipments))
+    expected_total = add_amount(payments_pretax_adjustment_total,
+                                add_amount(shipments_total_adjustment,
+                                           reduce_amounts(x.total for x in shipments)))
     adjusted_grand_total = add_amount(payments_total_adjustment, grand_total)
     if expected_total != adjusted_grand_total:
         errors.append('expected grand total is %s, but parsed value is %s' %

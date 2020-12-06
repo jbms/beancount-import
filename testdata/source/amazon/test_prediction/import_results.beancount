@@ -178,3 +178,36 @@
   Liabilities:Credit-Card    0.00 USD
     amazon_credit_card_description: "Amazon.com Visa Signature ending in 1234"
     transaction_date: 2019-09-18
+
+;; date: 2020-02-18
+;; info: {"filename": "<testdata>/113-0374995-0086668.html", "type": "text/html"}
+
+; features: [
+;             {
+;               "amount": "0.40 USD",
+;               "date": "2020-02-18",
+;               "key_value_pairs": {
+;                 "amazon_item_description": [
+;                   "Tom's of Maine Fluoride-Free Children's Toothpaste, Kids Toothpaste, Natural Toothpaste, Silly Strawberry, 4.2 Ounce, Pack of 3"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2020-02-18 * "Amazon.com" "Order"
+  amazon_account: "name@domain.com"
+  amazon_order_id: "113-0374995-0086668"
+  associated_data0: "{\"description\": \"Amazon order invoice\", \"meta\": [\"amazon_order_id\", \"113-0374995-0086668\"], \"path\": \"<testdata>/113-0374995-0086668.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A          7.32 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Tom's of Maine Fluoride-Free Children's Toothpaste, Kids Toothpaste, Natural Toothpaste, Silly Strawberry, 4.2 Ounce, Pack of 3"
+    amazon_item_quantity: 1
+    amazon_seller: "Amazon.com Services LLC"
+    shipped_date: 2020-02-28
+  Expenses:FIXME:A         -1.10 USD
+    amazon_invoice_description: "Subscribe & Save"
+  Expenses:FIXME:A          0.40 USD
+    amazon_invoice_description: "Sales Tax"
+  Liabilities:Credit-Card  -6.62 USD
+    amazon_credit_card_description: "Visa ending in 1234"
+    transaction_date: 2020-02-28
