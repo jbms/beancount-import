@@ -453,15 +453,6 @@ class Buy(TransactionEntry):
         return "BUYSTOCK"
 
 
-# TODO Hack: I usually download positions in the evening, but my beancount files are
-# structured with balances before transactions, which means they are effectively
-# start-of-day balances (and changing that now would require retroactively changing dates
-# on lots of transactions and/or balances). So for now just add one day to date of all
-# balance entries. Best option might be to check time on positions CSV and add one day if
-# the positions CSV is from sufficiently late in the day?
-ONE_DAY = datetime.timedelta(days=1)
-
-
 @dataclass(frozen=True)
 class RawPosition:
     date: datetime.date
@@ -481,7 +472,7 @@ class RawPosition:
             assert qty is not None
             amount = Amount(Decimal(str(qty)), currency=self.symbol)
         return BalanceEntry(
-            date=self.date + ONE_DAY,
+            date=self.date,
             account=f"{account}:{self.symbol}",
             amount=amount,
             filename=self.filename,
