@@ -14,7 +14,6 @@ you have a structure like this:
 And you download your transaction history CSV into `transactions/` and your positions
 statement CSV into `positions/`, then you could specify your beancount-import source like
 this:
-
     dict(module="beancount_import.source.schwab_csv",
          transaction_csv_filenames=glob.glob("data/schwab/transactions/*.CSV"),
          position_csv_filenames=glob.glob("data/schwab/positions/*.CSV"),
@@ -42,10 +41,18 @@ security as needed; e.g. `Assets:Investments:Schwab:Brokerage-1234:XYZ` would be
 to track the balance of `XYZ` shares owned, and `Income:Dividend:Schwab:XYZ` for dividends
 earned from `XYZ`, etc.
 
-Note that because Schwab CSV downloads do not provide any unique transaction identifier,
-and it is possible for two identical rows to exist in the CSV and be actual separate but
-identical transactions, no de-duplication is performed on incoming CSV rows. Thus, it's
-required to download non-overlapping CSV statements.
+Caveats
+=======
+
+* Because Schwab CSV downloads do not provide any unique transaction identifier, and it is
+possible for two identical rows to exist in the CSV and be actual separate but identical
+transactions, no de-duplication is performed on incoming CSV rows. Thus, it's required to
+download non-overlapping CSV statements.
+
+* Not all Schwab "actions" (transaction types) are supported. There's no reference for all
+the possible actions, and Schwab could add new ones any time. If your CSV includes an
+unsupported action, you'll get a `ValueError: 'Foo' is not a valid SchwabAction`. Please
+file an issue (and ideally a pull request!) to add support for that action.
 
 """
 from __future__ import annotations
@@ -109,8 +116,6 @@ class SchwabAction(enum.Enum):
     MONEYLINK_TRANSFER = "MoneyLink Transfer"
     BANK_INTEREST = "Bank Interest"
     JOURNAL = "Journal"
-    PRIOR_YEAR_CASH_DIVIDEND = "Pr Yr Cash Div"
-    SPECIAL_DIVIDEND = "Special Dividend"
     STOCK_PLAN_ACTIVITY = "Stock Plan Activity"
 
 
@@ -193,7 +198,6 @@ class RawEntry:
                 fees=self.fees,
                 **shared_attrs,
             )
-        # TODO add support for all actions
         assert False, self.action
 
 
