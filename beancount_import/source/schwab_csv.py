@@ -2,6 +2,46 @@
 
 Imports transactions from Schwab.com brokerage transaction history CSV files.
 
+To use, first you have to download Schwab CSV data into a directory on your filesystem. If
+you have a structure like this:
+
+    financial/
+      data/
+        schwab/
+          transactions/
+          positions/
+
+And you download your transaction history CSV into `transactions/` and your positions
+statement CSV into `positions/`, then you could specify your beancount-import source like
+this:
+
+    dict(module="beancount_import.source.schwab_csv",
+         transaction_csv_filenames=glob.glob("data/schwab/transactions/*.CSV"),
+         position_csv_filenames=glob.glob("data/schwab/positions/*.CSV"),
+    )
+
+This importer also makes use of certain metadata keys on your accounts. In order to label
+a beancount account as a Schwab account whose authoritative transaction source is this
+importer, specify the `schwab_account` metadata key as the account name exactly as it
+appears in your Schwab CSV downloads, as well as specifying sub-accounts to be used for
+recording dividends, capital gains, and fees. For example:
+
+    2015-11-09 open Assets:Investments:Schwab:Brokerage-1234
+         schwab_account: "Brokerage XXXX-1234"
+         div_income_account: "Income:Dividend:Schwab"
+         capital_gains_account: "Income:Capital-Gains:Schwab"
+         fees_account: "Expenses:Brokerage-Fees:Schwab"
+
+This importer will add the metadata keys `date`, `source_desc`, and `schwab_action` to the
+imported transactions; these (along with the account and transaction amount) are used to
+match and reconcile/clear already-imported transactions with transactions found in the
+CSV.
+
+Note that because Schwab CSV downloads do not provide any unique transaction identifier,
+and it is possible for two identical rows to exist in the CSV and be actual separate but
+identical transactions, no de-duplication is performed on incoming CSV rows. Thus, it's
+required to download non-overlapping CSV statements.
+
 """
 from __future__ import annotations
 
