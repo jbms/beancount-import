@@ -238,7 +238,8 @@ class DirectiveEntry:
             line=self.line,
         )
 
-    def get_auto_accounts(self) -> List[str]:
+    def get_accounts(self) -> List[str]:
+        """Get any accounts for which this importer is authoritative."""
         return []
 
 
@@ -291,6 +292,9 @@ class TransactionEntry(DirectiveEntry):
         sub = self.get_sub_account()
         return f"{self.account}:{sub}" if sub is not None else self.account
 
+    def get_accounts(self) -> List[str]:
+        return [self.get_primary_account()]
+
     def get_cost(self) -> Optional[CostSpec]:
         return None
 
@@ -312,13 +316,6 @@ class TransactionEntry(DirectiveEntry):
 
     def get_narration_prefix(self) -> str:
         raise NotImplementedError()
-
-    def get_auto_accounts(self) -> List[str]:
-        ret = [self.get_primary_account()]
-        other = self.get_other_account()
-        if other != FIXME_ACCOUNT:
-            ret.append(other)
-        return ret
 
 
 @dataclass(frozen=True)
@@ -456,13 +453,8 @@ class Sell(TransactionEntry):
     def get_cap_gains_account(self) -> str:
         return f"{self.capital_gains_account}:{self.symbol}"
 
-    def get_auto_accounts(self) -> List[str]:
-        ret = super().get_auto_accounts()
-        ret.append(self.get_cap_gains_account())
-        if self.fees is not None:
-            ret.append(self.fees_account)
-        return ret
-
+    def get_accounts(self) -> List[str]:
+        return [self.get_primary_account(), self.get_other_account()]
 
 @dataclass(frozen=True)
 class Buy(TransactionEntry):
@@ -521,11 +513,8 @@ class Buy(TransactionEntry):
     def get_narration_prefix(self) -> str:
         return "BUYSTOCK"
 
-    def get_auto_accounts(self) -> List[str]:
-        ret = super().get_auto_accounts()
-        if self.fees is not None:
-            ret.append(self.fees_account)
-        return ret
+    def get_accounts(self) -> List[str]:
+        return [self.get_primary_account(), self.get_other_account()]
 
 
 @dataclass(frozen=True)
@@ -591,9 +580,6 @@ class BalanceEntry(DirectiveEntry):
             diff_amount=None,
         )
 
-    def get_auto_accounts(self) -> List[str]:
-        return [self.account]
-
 
 class EntryProcessor:
     def __init__(self, journal: JournalEditor) -> None:
@@ -603,7 +589,7 @@ class EntryProcessor:
         ) = get_account_mapping(journal.accounts, POSTING_META_ACCOUNT_KEY)
         self.journal = journal
         self.missing_accounts: Set[str] = set()
-        self.auto_accounts: Set[str] = set()
+        self.found_accounts: Set[str] = set()
 
     def process_entry(self, raw_entry: RawEntry) -> Optional[TransactionEntry]:
         account = self.schwab_to_account.get(raw_entry.account)
@@ -619,7 +605,7 @@ class EntryProcessor:
         for raw_entry in raw_entries:
             processed = self.process_entry(raw_entry)
             if processed is not None:
-                self.auto_accounts.update(processed.get_auto_accounts())
+                self.found_accounts.update(processed.get_accounts())
                 yield processed
 
     def process_positions(
@@ -631,7 +617,6 @@ class EntryProcessor:
                 self.missing_accounts.add(raw_position.account)
                 return None
             balance = raw_position.get_balance(account)
-            self.auto_accounts.update(balance.get_auto_accounts())
             price = raw_position.get_price()
             yield (balance, price)
 
@@ -688,6 +673,8 @@ class SchwabSource(DescriptionBasedSource):
 
         processor = EntryProcessor(journal)
         account_set = set(processor.account_to_schwab.keys())
+        base_accounts = tuple(f"{a}:" for a in account_set)
+        account_set.update(a for a in journal.accounts if a.startswith(base_accounts))
 
         balance_entries: List[BalanceEntry] = []
         price_entries: List[PriceEntry] = []
@@ -700,7 +687,7 @@ class SchwabSource(DescriptionBasedSource):
 
         source_entries = list(processor.process_entries(self.raw_entries))
 
-        account_set.update(processor.auto_accounts)
+        account_set.update(processor.found_accounts)
 
         self._get_pending_and_invalid_entries(
             source_entries=source_entries,
@@ -731,7 +718,7 @@ class SchwabSource(DescriptionBasedSource):
 
         for entry in journal_entries:
             if isinstance(entry, Balance):
-                bkey = self._get_key_from_balance(entry, account_set)
+                bkey = self._get_key_from_balance(entry)
                 if bkey is not None:
                     matched_balances.add(bkey)
             elif isinstance(entry, Price):
@@ -781,7 +768,7 @@ class SchwabSource(DescriptionBasedSource):
         for balance_entry in balance_entries:
             import_result = balance_entry.get_import_result()
             for directive in import_result.entries:
-                bkey = self._get_key_from_balance(directive, account_set)
+                bkey = self._get_key_from_balance(directive)
                 if bkey and bkey not in matched_balances:
                     results.add_pending_entry(import_result)
 
@@ -802,7 +789,7 @@ class SchwabSource(DescriptionBasedSource):
     ) -> Optional[PostingKey]:
         if posting.meta is None:
             return None
-        if posting.account not in account_set:
+        if not posting.account in account_set:
             return None
         source_desc = cast(str, posting.meta.get(SOURCE_DESC_KEYS[0], ""))
         if not source_desc:
@@ -821,11 +808,7 @@ class SchwabSource(DescriptionBasedSource):
             source_desc,
         )
 
-    def _get_key_from_balance(
-        self, entry: Balance, account_set: AbstractSet[str]
-    ) -> Optional[BalanceKey]:
-        if entry.account not in account_set:
-            return None
+    def _get_key_from_balance(self, entry: Balance) -> Optional[BalanceKey]:
         return (
             entry.account,
             entry.date,
