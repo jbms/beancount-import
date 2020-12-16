@@ -1,0 +1,14 @@
+Assets:Schwab:Brokerage-1234
+Assets:Schwab:Brokerage-1234:Cash
+Assets:Schwab:Brokerage-1234:FB
+Assets:Schwab:Intelligent-4321
+Assets:Schwab:Intelligent-4321:Cash
+Assets:Schwab:Intelligent-4321:FNDA
+Assets:Schwab:Intelligent-4321:SCHA
+Expenses:Brokerage-Fees:Schwab
+Income:Capital-Gains:Schwab:FB
+Income:Capital-Gains:Schwab:FNDA
+Income:Capital-Gains:Schwab:SCHA
+Income:Dividend:Schwab
+Income:Dividend:Schwab:HYLB
+Income:Dividend:Schwab:SCHP

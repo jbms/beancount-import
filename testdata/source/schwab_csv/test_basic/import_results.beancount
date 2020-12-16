@@ -1,0 +1,227 @@
+;; date: 2020-08-24
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 10, "type": "text/csv"}
+
+; features: []
+2020-08-24 * "BUYSTOCK - SCHWAB FUNDAMENTAL US SMALL COM ETF"
+  Assets:Schwab:Intelligent-4321:FNDA       139 FNDA {34.8999 USD}
+    date: 2020-08-24
+    schwab_action: "Buy"
+    source_desc: "SCHWAB FUNDAMENTAL US SMALL COM ETF"
+  Assets:Schwab:Intelligent-4321:Cash  -4851.09 USD
+    date: 2020-08-24
+    schwab_action: "Buy"
+    source_desc: "SCHWAB FUNDAMENTAL US SMALL COM ETF"
+
+;; date: 2020-08-24
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 9, "type": "text/csv"}
+
+; features: []
+2020-08-24 * "BUYSTOCK - SCHWAB US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:SCHA       122 SCHA {71.0035 USD}
+    date: 2020-08-24
+    schwab_action: "Buy"
+    source_desc: "SCHWAB US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:Cash  -8662.43 USD
+    date: 2020-08-24
+    schwab_action: "Buy"
+    source_desc: "SCHWAB US SMALL CAP ETF"
+
+;; date: 2020-09-15
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 5, "type": "text/csv"}
+
+; features: []
+2020-09-15 * "INVBANKTRAN - BANK INT 081620-091520 SCHWAB PREMIER BANK"
+  Assets:Schwab:Brokerage-1234:Cash   0.05 USD
+    date: 2020-09-15
+    schwab_action: "Bank Interest"
+    source_desc: "BANK INT 081620-091520 SCHWAB PREMIER BANK"
+  Income:Dividend:Schwab             -0.05 USD
+
+;; date: 2020-10-15
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 8, "type": "text/csv"}
+
+; features: []
+2020-10-15 * "INVBANKTRAN - BANK INT SCHWAB BANK"
+  Assets:Schwab:Intelligent-4321:Cash   33.93 USD
+    date: 2020-10-15
+    schwab_action: "Bank Interest"
+    source_desc: "BANK INT SCHWAB BANK"
+  Income:Dividend:Schwab               -33.93 USD
+
+;; date: 2020-10-19
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 7, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-4000.00 USD",
+;               "date": "2020-10-19",
+;               "key_value_pairs": {
+;                 "desc": "Tfr SOME BANK"
+;               },
+;               "source_account": "Assets:Schwab:Intelligent-4321:Cash"
+;             }
+;           ]
+2020-10-19 * "INVBANKTRAN - Tfr SOME BANK"
+  Assets:Schwab:Intelligent-4321:Cash  -4000.00 USD
+    date: 2020-10-19
+    schwab_action: "MoneyLink Transfer"
+    source_desc: "Tfr SOME BANK"
+  Expenses:FIXME                        4000.00 USD
+
+;; date: 2020-10-19
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 6, "type": "text/csv"}
+
+; features: []
+2020-10-19 * "SELLSTOCK - SCHWAB FUNDAMENTAL US SMALL COM ETF"
+  Assets:Schwab:Intelligent-4321:FNDA      -71 FNDA {} @ 35.6883 USD
+    date: 2020-10-19
+    schwab_action: "Sell"
+    source_desc: "SCHWAB FUNDAMENTAL US SMALL COM ETF"
+  Income:Capital-Gains:Schwab:FNDA
+  Assets:Schwab:Intelligent-4321:Cash  2533.87 USD
+    date: 2020-10-19
+    schwab_action: "Sell"
+    source_desc: "SCHWAB FUNDAMENTAL US SMALL COM ETF"
+
+;; date: 2020-10-19
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 5, "type": "text/csv"}
+
+; features: []
+2020-10-19 * "SELLSTOCK - SCHWAB US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:SCHA      -81 SCHA {} @ 74.235 USD
+    date: 2020-10-19
+    schwab_action: "Sell"
+    source_desc: "SCHWAB US SMALL CAP ETF"
+  Income:Capital-Gains:Schwab:SCHA
+  Assets:Schwab:Intelligent-4321:Cash  6013.04 USD
+    date: 2020-10-19
+    schwab_action: "Sell"
+    source_desc: "SCHWAB US SMALL CAP ETF"
+
+;; date: 2020-11-01
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 4, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "300 FB",
+;               "date": "2020-11-01",
+;               "key_value_pairs": {
+;                 "desc": "FACEBOOK INC CLASS A"
+;               },
+;               "source_account": "Assets:Schwab:Brokerage-1234:FB"
+;             }
+;           ]
+2020-11-01 * "TRANSFER - FACEBOOK INC CLASS A"
+  Assets:Schwab:Brokerage-1234:FB  300 FB {1 FIXME}
+    date: 2020-11-01
+    schwab_action: "Stock Plan Activity"
+    source_desc: "FACEBOOK INC CLASS A"
+  Expenses:FIXME
+
+;; date: 2020-11-05
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 3, "type": "text/csv"}
+
+; features: []
+2020-11-05 * "SELLSTOCK - FACEBOOK INC CLASS A"
+  Assets:Schwab:Brokerage-1234:FB        -100 FB {} @ 261.50 USD
+    date: 2020-11-05
+    schwab_action: "Sell"
+    source_desc: "FACEBOOK INC CLASS A"
+  Income:Capital-Gains:Schwab:FB
+  Assets:Schwab:Brokerage-1234:Cash  26143.94 USD
+    date: 2020-11-05
+    schwab_action: "Sell"
+    source_desc: "FACEBOOK INC CLASS A"
+  Expenses:Brokerage-Fees:Schwab         6.06 USD
+
+;; date: 2020-11-06
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 4, "type": "text/csv"}
+
+; features: []
+2020-11-06 * "INCOME - DIV - SCHWAB US TIPS ETF"
+  Assets:Schwab:Intelligent-4321:Cash   136.69 USD
+    date: 2020-11-06
+    schwab_action: "Cash Dividend"
+    source_desc: "SCHWAB US TIPS ETF"
+  Income:Dividend:Schwab:SCHP          -136.69 USD
+
+;; date: 2020-11-09
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 3, "type": "text/csv"}
+
+; features: []
+2020-11-09 * "INCOME - DIV - XTRACKERS USD HIGH YIELDCOR BND ETF"
+  Assets:Schwab:Intelligent-4321:Cash   92.16 USD
+    date: 2020-11-09
+    schwab_action: "Cash Dividend"
+    source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
+  Income:Dividend:Schwab:HYLB          -92.16 USD
+
+;; date: 2020-11-10
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 2, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-123.45 USD",
+;               "date": "2020-11-10",
+;               "key_value_pairs": {
+;                 "desc": "JOURNAL TO 00004321"
+;               },
+;               "source_account": "Assets:Schwab:Brokerage-1234:Cash"
+;             }
+;           ]
+2020-11-10 * "INVBANKTRAN - JOURNAL TO 00004321"
+  Assets:Schwab:Brokerage-1234:Cash  -123.45 USD
+    date: 2020-11-10
+    schwab_action: "Journal"
+    source_desc: "JOURNAL TO 00004321"
+  Expenses:FIXME                      123.45 USD
+
+;; date: 2020-11-10
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 2, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "123.45 USD",
+;               "date": "2020-11-10",
+;               "key_value_pairs": {
+;                 "desc": "JOURNAL FRM 00001234"
+;               },
+;               "source_account": "Assets:Schwab:Intelligent-4321:Cash"
+;             }
+;           ]
+2020-11-10 * "INVBANKTRAN - JOURNAL FRM 00001234"
+  Assets:Schwab:Intelligent-4321:Cash   123.45 USD
+    date: 2020-11-10
+    schwab_action: "Journal"
+    source_desc: "JOURNAL FRM 00001234"
+  Expenses:FIXME                       -123.45 USD
+
+;; date: 2020-11-15
+;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 5, "type": "text/csv"}
+
+2020-11-15 balance Assets:Schwab:Brokerage-1234:Cash               0.00 USD
+
+;; date: 2020-11-15
+;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 11, "type": "text/csv"}
+
+2020-11-15 balance Assets:Schwab:Intelligent-4321:FNDA             100 FNDA
+
+;; date: 2020-11-15
+;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 12, "type": "text/csv"}
+
+2020-11-15 balance Assets:Schwab:Intelligent-4321:SCHA             100 SCHA
+
+;; date: 2020-11-15
+;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 13, "type": "text/csv"}
+
+2020-11-15 balance Assets:Schwab:Intelligent-4321:Cash             2000.00 USD
+
+;; date: 2020-11-15
+;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 11, "type": "text/csv"}
+
+2020-11-15 price FNDA                                38.30 USD
+
+;; date: 2020-11-15
+;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 12, "type": "text/csv"}
+
+2020-11-15 price SCHA                                78.97 USD

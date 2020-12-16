@@ -1,0 +1,7 @@
+"Transactions  for account Brokerage XXXX-1234 as of 11/15/2020 18:00:21 ET"
+"Date","Action","Symbol","Description","Quantity","Price","Fees & Comm","Amount",
+"11/10/2020","Journal","","JOURNAL TO 00004321","","","","-$123.45",
+"11/05/2020","Sell","FB","FACEBOOK INC CLASS A","100","$261.50","$6.06","$26143.94",
+"11/01/2020","Stock Plan Activity","FB","FACEBOOK INC CLASS A","300","","","",
+"09/16/2020 as of 09/15/2020","Bank Interest","","BANK INT 081620-091520 SCHWAB PREMIER BANK","","","","$0.05",
+Transactions Total,"","","","","","",$0.00
