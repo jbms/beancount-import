@@ -22,14 +22,22 @@ this:
 This importer also makes use of certain metadata keys on your accounts. In order to label
 a beancount account as a Schwab account whose authoritative transaction source is this
 importer, specify the `schwab_account` metadata key as the account name exactly as it
-appears in your Schwab CSV downloads, as well as specifying sub-accounts to be used for
-recording dividends, capital gains, and fees. For example:
+appears in your Schwab CSV downloads. For example:
+
+    2015-11-09 open Assets:Investments:Schwab:Brokerage-1234
+         schwab_account: "Brokerage XXXX-1234"
+
+You can also optionally specify accounts to be used for recording dividends, capital
+gains, fees, and taxes:
 
     2015-11-09 open Assets:Investments:Schwab:Brokerage-1234
          schwab_account: "Brokerage XXXX-1234"
          div_income_account: "Income:Dividend:Schwab"
          capital_gains_account: "Income:Capital-Gains:Schwab"
          fees_account: "Expenses:Brokerage-Fees:Schwab"
+         taxes_account: "Expenses:Taxes"
+
+These are all optional and will fall back to `Expenses:FIXME` if not specified.
 
 This importer will add the metadata keys `date`, `source_desc`, and `schwab_action` to the
 imported transactions; these (along with the account and transaction amount) are used to
@@ -138,12 +146,16 @@ class RawEntry:
     filename: str
     line: int
 
+    def get_meta_account(self, account_meta: Meta, key: str) -> str:
+        return cast(str, account_meta.get(key, FIXME_ACCOUNT))
+
     def get_processed_entry(
         self, account: str, account_meta: Meta
     ) -> Optional[TransactionEntry]:
-        capital_gains_account = cast(str, account_meta[CAPITAL_GAINS_ACCOUNT_KEY])
-        fees_account = cast(str, account_meta[FEES_ACCOUNT_KEY])
-        dividend_account = cast(str, account_meta[DIV_INCOME_ACCOUNT_KEY])
+        capital_gains_account = self.get_meta_account(account_meta, CAPITAL_GAINS_ACCOUNT_KEY)
+        fees_account = self.get_meta_account(account_meta, FEES_ACCOUNT_KEY)
+        dividend_account = self.get_meta_account(account_meta, DIV_INCOME_ACCOUNT_KEY)
+        taxes_account = self.get_meta_account(account_meta, TAXES_ACCOUNT_KEY)
         amount = self.amount
         if self.action == SchwabAction.STOCK_PLAN_ACTIVITY:
             quantity = self.quantity
@@ -209,12 +221,9 @@ class RawEntry:
                 **shared_attrs,
             )
         if self.action == SchwabAction.ADR_MGMT_FEE:
-            return Fee(
-                fees_account=fees_account,
-                **shared_attrs,
-            )
+            return Fee(fees_account=fees_account, **shared_attrs)
         if self.action == SchwabAction.FOREIGN_TAX_PAID:
-            return TaxPaid(**shared_attrs)
+            return TaxPaid(taxes_account=taxes_account, **shared_attrs)
         assert False, self.action
 
 
@@ -351,8 +360,13 @@ class Fee(TransactionEntry):
 
 @dataclass(frozen=True)
 class TaxPaid(TransactionEntry):
+    taxes_account: str
+
     def get_sub_account(self) -> Optional[str]:
         return "Cash"
+
+    def get_other_account(self) -> str:
+        return self.taxes_account
 
     def get_narration_prefix(self) -> str:
         return "INVBANKTRAN"
@@ -666,6 +680,7 @@ POSTING_META_ACCOUNT_KEY = "schwab_account"
 DIV_INCOME_ACCOUNT_KEY = "div_income_account"
 FEES_ACCOUNT_KEY = "fees_account"
 CAPITAL_GAINS_ACCOUNT_KEY = "capital_gains_account"
+TAXES_ACCOUNT_KEY = "taxes_account"
 DATE_FORMAT = "%m/%d/%Y"
 TITLE_RE = re.compile(r'"Transactions  for account (?P<account>.+) as of (?P<when>.+)"')
 
