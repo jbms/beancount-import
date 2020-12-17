@@ -1,3 +1,24 @@
+;; date: 2018-06-28
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 16, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-0.05 USD",
+;               "date": "2018-06-28",
+;               "key_value_pairs": {
+;                 "desc": "INTEREST 05/30THRU 06/27",
+;                 "schwab_action": "Margin Interest"
+;               },
+;               "source_account": "Assets:Schwab:Intelligent-4321:Cash"
+;             }
+;           ]
+2018-06-28 * "MARGININTEREST - INTEREST 05/30THRU 06/27"
+  Assets:Schwab:Intelligent-4321:Cash  -0.05 USD
+    date: 2018-06-28
+    schwab_action: "Margin Interest"
+    source_desc: "INTEREST 05/30THRU 06/27"
+  Expenses:FIXME                        0.05 USD
+
 ;; date: 2019-06-11
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 15, "type": "text/csv"}
 
