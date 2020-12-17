@@ -120,6 +120,7 @@ class SchwabAction(enum.Enum):
     BANK_INTEREST = "Bank Interest"
     JOURNAL = "Journal"
     STOCK_PLAN_ACTIVITY = "Stock Plan Activity"
+    ADR_MGMT_FEE = "ADR Mgmt Fee"
 
 
 @dataclass(frozen=True)
@@ -204,6 +205,11 @@ class RawEntry:
                 price=price,
                 quantity=quantity,
                 fees=self.fees,
+                **shared_attrs,
+            )
+        if self.action == SchwabAction.ADR_MGMT_FEE:
+            return Fee(
+                fees_account=fees_account,
                 **shared_attrs,
             )
         assert False, self.action
@@ -324,6 +330,20 @@ class TransactionEntry(DirectiveEntry):
 
     def get_narration_prefix(self) -> str:
         raise NotImplementedError()
+
+
+@dataclass(frozen=True)
+class Fee(TransactionEntry):
+    fees_account: str
+
+    def get_sub_account(self) -> Optional[str]:
+        return "Cash"
+
+    def get_other_account(self) -> str:
+        return self.fees_account
+
+    def get_narration_prefix(self) -> str:
+        return "INVBANKTRAN"
 
 
 @dataclass(frozen=True)
