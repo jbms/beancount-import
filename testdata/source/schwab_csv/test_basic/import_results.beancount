@@ -1,4 +1,24 @@
 ;; date: 2019-06-11
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 15, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-1.05 USD",
+;               "date": "2019-06-11",
+;               "key_value_pairs": {
+;                 "desc": "NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS"
+;               },
+;               "source_account": "Assets:Schwab:Intelligent-4321:Cash"
+;             }
+;           ]
+2019-06-11 * "INVBANKTRAN - NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS"
+  Assets:Schwab:Intelligent-4321:Cash  -1.05 USD
+    date: 2019-06-11
+    schwab_action: "Foreign Tax Paid"
+    source_desc: "NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS"
+  Expenses:FIXME                        1.05 USD
+
+;; date: 2019-06-11
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 14, "type": "text/csv"}
 
 ; features: []

@@ -121,6 +121,7 @@ class SchwabAction(enum.Enum):
     JOURNAL = "Journal"
     STOCK_PLAN_ACTIVITY = "Stock Plan Activity"
     ADR_MGMT_FEE = "ADR Mgmt Fee"
+    FOREIGN_TAX_PAID = "Foreign Tax Paid"
 
 
 @dataclass(frozen=True)
@@ -212,6 +213,8 @@ class RawEntry:
                 fees_account=fees_account,
                 **shared_attrs,
             )
+        if self.action == SchwabAction.FOREIGN_TAX_PAID:
+            return TaxPaid(**shared_attrs)
         assert False, self.action
 
 
@@ -341,6 +344,15 @@ class Fee(TransactionEntry):
 
     def get_other_account(self) -> str:
         return self.fees_account
+
+    def get_narration_prefix(self) -> str:
+        return "INVBANKTRAN"
+
+
+@dataclass(frozen=True)
+class TaxPaid(TransactionEntry):
+    def get_sub_account(self) -> Optional[str]:
+        return "Cash"
 
     def get_narration_prefix(self) -> str:
         return "INVBANKTRAN"
