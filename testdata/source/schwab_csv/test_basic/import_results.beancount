@@ -1,3 +1,14 @@
+;; date: 2019-12-20
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 12, "type": "text/csv"}
+
+; features: []
+2019-12-20 * "INCOME - DIV - ISHARES CORE MSCI EMERGING ETF"
+  Assets:Schwab:Intelligent-4321:Cash   156.87 USD
+    date: 2019-12-20
+    schwab_action: "Special Dividend"
+    source_desc: "ISHARES CORE MSCI EMERGING ETF"
+  Income:Dividend:Schwab:IEMG          -156.87 USD
+
 ;; date: 2020-01-06
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 11, "type": "text/csv"}
 
