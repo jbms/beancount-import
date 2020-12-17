@@ -1,0 +1,17 @@
+"Transactions  for account Intelligent XXXX-4321 as of 11/15/2020 18:01:20 ET"
+"Date","Action","Symbol","Description","Quantity","Price","Fees & Comm","Amount",
+"11/10/2020","Journal","","JOURNAL FRM 00001234","","","","$123.45",
+"11/09/2020","Cash Dividend","HYLB","XTRACKERS USD HIGH YIELDCOR BND ETF","","","","$92.16",
+"11/06/2020","Cash Dividend","SCHP","SCHWAB US TIPS ETF","","","","$136.69",
+"10/19/2020","Sell","SCHA","SCHWAB US SMALL CAP ETF","81","$74.235","","$6013.04",
+"10/19/2020","Sell","FNDA","SCHWAB FUNDAMENTAL US SMALL COM ETF","71","$35.6883","","$2533.87",
+"10/19/2020","MoneyLink Transfer","","Tfr SOME BANK","","","","-$4000.00",
+"10/16/2020 as of 10/15/2020","Bank Interest","","BANK INT SCHWAB BANK","","","","$33.93",
+"08/24/2020","Buy","SCHA","SCHWAB US SMALL CAP ETF","122","$71.0035","","-$8662.43",
+"08/24/2020","Buy","FNDA","SCHWAB FUNDAMENTAL US SMALL COM ETF","139","$34.8999","","-$4851.09",
+"01/06/2020","Pr Yr Cash Div","EMLC","VANECK VECTORS J.P. MORGAN EM LOCAL CURRENCYBOND ETF","","","","$51.77",
+"12/20/2019","Special Dividend","IEMG","ISHARES CORE MSCI EMERGING ETF","","","","$156.87",
+"06/11/2019","Qualified Dividend","NOK","NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS","","","","$6.32",
+"06/11/2019","ADR Mgmt Fee","NOK","NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS","","","","-$0.47",
+"06/11/2019","Foreign Tax Paid","NOK","NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS","","","","-$1.05"
+Transactions Total,"","","","","","",-$8366.94

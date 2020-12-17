@@ -125,6 +125,8 @@ The currently supported set of data sources is:
 - [beancount_import.source.stockplanconnect](beancount_import/source/stockplanconnect.py):
   imports release/trade transactions from
   [Morgan Stanley StockPlan Connect](https://stockplanconnect.com).
+- [beancount_import.source.schwab_csv](beancount_import/source/schwab_csv.py):
+  imports transactions and positions CSV exports from Schwab brokerage accounts.
 - [beancount_import.source.ultipro_google](beancount_import/source/ultipro_google.py):
   imports Google employee Ultipro payroll statements.
 - [beancount_import.source.generic_importer_source](beancount_import/source/generic_importer_source.py):

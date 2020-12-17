@@ -1,0 +1,16 @@
+1900-01-01 open Income:Dividend:Schwab
+1900-01-01 open Income:Capital-Gains:Schwab
+1900-01-01 open Expenses:Brokerage-Fees:Schwab
+1900-01-01 open Assets:Schwab:Brokerage-1234
+    schwab_account: "Brokerage XXXX-1234"
+    div_income_account: "Income:Dividend:Schwab"
+    capital_gains_account: "Income:Capital-Gains:Schwab"
+    fees_account: "Expenses:Brokerage-Fees:Schwab"
+1900-01-01 open Assets:Schwab:Brokerage-1234:Cash
+1900-01-01 open Assets:Schwab:Brokerage-1234:FB
+1900-01-01 open Assets:Schwab:Intelligent-4321
+    schwab_account: "Intelligent XXXX-4321"
+    div_income_account: "Income:Dividend:Schwab"
+    capital_gains_account: "Income:Capital-Gains:Schwab"
+    fees_account: "Expenses:Brokerage-Fees:Schwab"
+1900-01-01 open Assets:Schwab:Intelligent-4321:Cash

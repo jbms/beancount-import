@@ -1,0 +1,7 @@
+Assets:Schwab:Brokerage-1234
+Assets:Schwab:Brokerage-1234:Cash
+Assets:Schwab:Brokerage-1234:FB
+Assets:Schwab:Intelligent-4321
+Assets:Schwab:Intelligent-4321:Cash
+Assets:Schwab:Intelligent-4321:FNDA
+Assets:Schwab:Intelligent-4321:SCHA
