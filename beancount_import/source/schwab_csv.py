@@ -768,17 +768,9 @@ class SchwabSource(DescriptionBasedSource):
         results: SourceResults,
     ) -> None:
         matched_postings: Dict[PostingKey, List[Tuple[Transaction, Posting]]] = {}
-        matched_balances: Set[BalanceKey] = set()
-        matched_prices: Set[PriceKey] = set()
 
         for entry in journal_entries:
-            if isinstance(entry, Balance):
-                bkey = self._get_key_from_balance(entry)
-                if bkey is not None:
-                    matched_balances.add(bkey)
-            elif isinstance(entry, Price):
-                matched_prices.add(self._get_key_from_price(entry))
-            elif isinstance(entry, Transaction):
+            if isinstance(entry, Transaction):
                 for postings in group_postings_by_meta(entry.postings):
                     posting = unbook_postings(postings)
                     key = self._get_key_from_posting(entry, posting, account_set)
@@ -823,16 +815,12 @@ class SchwabSource(DescriptionBasedSource):
         for balance_entry in balance_entries:
             import_result = balance_entry.get_import_result()
             for directive in import_result.entries:
-                bkey = self._get_key_from_balance(directive)
-                if bkey and bkey not in matched_balances:
-                    results.add_pending_entry(import_result)
+                results.add_pending_entry(import_result)
 
         for price_entry in price_entries:
             import_result = price_entry.get_import_result()
             for directive in import_result.entries:
-                pkey = self._get_key_from_price(directive)
-                if pkey not in matched_prices:
-                    results.add_pending_entry(import_result)
+                results.add_pending_entry(import_result)
 
         results.add_accounts(account_set)
 
@@ -861,20 +849,6 @@ class SchwabSource(DescriptionBasedSource):
             cast(datetime.date, posting.meta[POSTING_DATE_KEY]),
             final_units,
             source_desc,
-        )
-
-    def _get_key_from_balance(self, entry: Balance) -> Optional[BalanceKey]:
-        return (
-            entry.account,
-            entry.date,
-            entry.amount,
-        )
-
-    def _get_key_from_price(self, entry: Price) -> PriceKey:
-        return (
-            entry.currency,
-            entry.date,
-            entry.amount,
         )
 
 
