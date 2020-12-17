@@ -113,6 +113,7 @@ class SchwabAction(enum.Enum):
     CASH_DIVIDEND = "Cash Dividend"
     PRIOR_YEAR_CASH_DIVIDEND = "Pr Yr Cash Div"
     SPECIAL_DIVIDEND = "Special Dividend"
+    QUALIFIED_DIVIDEND = "Qualified Dividend"
     BUY = "Buy"
     SELL = "Sell"
     MONEYLINK_TRANSFER = "MoneyLink Transfer"
@@ -164,6 +165,7 @@ class RawEntry:
             SchwabAction.CASH_DIVIDEND,
             SchwabAction.PRIOR_YEAR_CASH_DIVIDEND,
             SchwabAction.SPECIAL_DIVIDEND,
+            SchwabAction.QUALIFIED_DIVIDEND,
         ):
             return CashDividend(
                 symbol=self.symbol,

@@ -1,3 +1,14 @@
+;; date: 2019-06-11
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 13, "type": "text/csv"}
+
+; features: []
+2019-06-11 * "INCOME - DIV - NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS"
+  Assets:Schwab:Intelligent-4321:Cash   6.32 USD
+    date: 2019-06-11
+    schwab_action: "Qualified Dividend"
+    source_desc: "NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS"
+  Income:Dividend:Schwab:NOK           -6.32 USD
+
 ;; date: 2019-12-20
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 12, "type": "text/csv"}
 
