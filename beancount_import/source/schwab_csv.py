@@ -724,6 +724,13 @@ class SchwabSource(DescriptionBasedSource):
         for csv_filename in position_csv_filenames:
             self.raw_positions.extend(_load_positions(csv_filename))
 
+    def get_example_key_value_pairs(self, transaction: Transaction, posting: Posting) -> Dict[str, Union[str, Sequence[str]]]:
+        base = super().get_example_key_value_pairs(transaction, posting)
+        action = posting.meta.get(POSTING_META_ACTION_KEY)
+        if action:
+            base[POSTING_META_ACTION_KEY] = action
+        return base
+
     def prepare(self, journal: JournalEditor, results: SourceResults) -> None:
 
         processor = EntryProcessor(journal)

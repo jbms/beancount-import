@@ -6,7 +6,8 @@
 ;               "amount": "-1.05 USD",
 ;               "date": "2019-06-11",
 ;               "key_value_pairs": {
-;                 "desc": "NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS"
+;                 "desc": "NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS",
+;                 "schwab_action": "Foreign Tax Paid"
 ;               },
 ;               "source_account": "Assets:Schwab:Intelligent-4321:Cash"
 ;             }
@@ -120,7 +121,8 @@
 ;               "amount": "-4000.00 USD",
 ;               "date": "2020-10-19",
 ;               "key_value_pairs": {
-;                 "desc": "Tfr SOME BANK"
+;                 "desc": "Tfr SOME BANK",
+;                 "schwab_action": "MoneyLink Transfer"
 ;               },
 ;               "source_account": "Assets:Schwab:Intelligent-4321:Cash"
 ;             }
@@ -170,7 +172,8 @@
 ;               "amount": "300 FB",
 ;               "date": "2020-11-01",
 ;               "key_value_pairs": {
-;                 "desc": "FACEBOOK INC CLASS A"
+;                 "desc": "FACEBOOK INC CLASS A",
+;                 "schwab_action": "Stock Plan Activity"
 ;               },
 ;               "source_account": "Assets:Schwab:Brokerage-1234:FB"
 ;             }
@@ -228,7 +231,8 @@
 ;               "amount": "-123.45 USD",
 ;               "date": "2020-11-10",
 ;               "key_value_pairs": {
-;                 "desc": "JOURNAL TO 00004321"
+;                 "desc": "JOURNAL TO 00004321",
+;                 "schwab_action": "Journal"
 ;               },
 ;               "source_account": "Assets:Schwab:Brokerage-1234:Cash"
 ;             }
@@ -248,7 +252,8 @@
 ;               "amount": "123.45 USD",
 ;               "date": "2020-11-10",
 ;               "key_value_pairs": {
-;                 "desc": "JOURNAL FRM 00001234"
+;                 "desc": "JOURNAL FRM 00001234",
+;                 "schwab_action": "Journal"
 ;               },
 ;               "source_account": "Assets:Schwab:Intelligent-4321:Cash"
 ;             }
