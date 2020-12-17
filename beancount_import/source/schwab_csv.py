@@ -111,6 +111,7 @@ from beancount_import.unbook import group_postings_by_meta, unbook_postings
 
 class SchwabAction(enum.Enum):
     CASH_DIVIDEND = "Cash Dividend"
+    PRIOR_YEAR_CASH_DIVIDEND = "Pr Yr Cash Div"
     BUY = "Buy"
     SELL = "Sell"
     MONEYLINK_TRANSFER = "MoneyLink Transfer"
@@ -158,7 +159,7 @@ class RawEntry:
         )
         if self.action == SchwabAction.STOCK_PLAN_ACTIVITY:
             return StockPlanActivity(symbol=self.symbol, **shared_attrs)
-        if self.action == SchwabAction.CASH_DIVIDEND:
+        if self.action in (SchwabAction.CASH_DIVIDEND, SchwabAction.PRIOR_YEAR_CASH_DIVIDEND):
             return CashDividend(
                 symbol=self.symbol,
                 dividend_account=dividend_account,

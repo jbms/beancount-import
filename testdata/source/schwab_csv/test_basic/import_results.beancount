@@ -1,3 +1,14 @@
+;; date: 2020-01-06
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 11, "type": "text/csv"}
+
+; features: []
+2020-01-06 * "INCOME - DIV - VANECK VECTORS J.P. MORGAN EM LOCAL CURRENCYBOND ETF"
+  Assets:Schwab:Intelligent-4321:Cash   51.77 USD
+    date: 2020-01-06
+    schwab_action: "Pr Yr Cash Div"
+    source_desc: "VANECK VECTORS J.P. MORGAN EM LOCAL CURRENCYBOND ETF"
+  Income:Dividend:Schwab:EMLC          -51.77 USD
+
 ;; date: 2020-08-24
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 10, "type": "text/csv"}
 
