@@ -21,8 +21,8 @@ def test_source(name: str):
         example_dir=example_dir,
         source_spec={
             'module': 'beancount_import.source.schwab_csv',
-            "transaction_csv_filenames": glob.glob(f"{example_dir}/transactions/*.CSV"),
-            "position_csv_filenames": glob.glob(f"{example_dir}/positions/*.CSV"),
+            "transaction_csv_filenames": sorted(glob.glob(f"{example_dir}/transactions/*.CSV")),
+            "position_csv_filenames": sorted(glob.glob(f"{example_dir}/positions/*.CSV")),
         },
         replacements=[(testdata_dir, '<testdata>')],
     )
