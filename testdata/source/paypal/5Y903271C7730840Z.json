@@ -1,0 +1,118 @@
+{
+  "itemDetails": {
+    "itemList": [
+      {
+        "name": "Dungeons & Dragons 3.5 Core Books: DM Guide, Players Handbook, Monster Manual",
+        "number": "233315823254",
+        "url": "http://cgi.ebay.com/ws/eBayISAPI.dll?ViewItem&item=999",
+        "price": "$64.00",
+        "isNegative": false,
+        "itemTotalPrice": "$64.00"
+      }
+    ],
+    "shippingAmount": "$11.95"
+  },
+  "shippingDetails": [
+    {
+      "gspData": {
+        "domestic": {}
+      },
+      "address": {
+        "countryCode": "US",
+        "line1": "123 Main Street",
+        "city": "SOMEWHERE",
+        "state": "IL",
+        "postalCode": "12345",
+        "countryName": "United States",
+        "addresseeName": "John Doe"
+      },
+      "status": "Shipped",
+      "carrier": "USPS",
+      "trackingNumber": "999",
+      "shippingDate": "August 26, 2019"
+    }
+  ],
+  "fptiTag": "paymentrec",
+  "internal_id": "999",
+  "counterparty": {
+    "detailsCounterpartyText": "John Doe (john_doe)",
+    "name": "eBay - John Doe (john_doe)",
+    "url": "",
+    "isBusiness": false
+  },
+  "actions": {
+    "printPackingSlip": {
+      "content": "Print packing slip",
+      "url": "/shiplabel/packingslip/999"
+    },
+    "editTrackingInfo": {
+      "content": "Edit tracking info",
+      "url": "/addtracking/edit/5Y903271C7730840Z-999"
+    }
+  },
+  "p2pRedirect": {},
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/resolutioncenter/999"
+    },
+    "sellerProtectionPolicy": {
+      "target": "_blank",
+      "linkUrl": "/webapps/mpp/ua/useragreement-full#11"
+    }
+  },
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "EBAY_SALE",
+  "transactionType": "Payment Received",
+  "txnTypeServiceKey": "PAYMENT",
+  "status": "COMPLETED",
+  "date": "August 26, 2019",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": true,
+  "isBuyer": false,
+  "isSeller": true,
+  "buyerConfirmId": "999",
+  "transactionId": "5Y903271C7730840Z",
+  "amount": {
+    "grossAmount": "$75.95",
+    "netAmount": "$73.45",
+    "fullPageNetAmount": "$73.45",
+    "feeAmount": "$2.50",
+    "grossExceedsNet": true,
+    "isZeroFee": false,
+    "feeLabel": "Fee",
+    "rawAmounts": {
+      "gross": {
+        "value": "75.95",
+        "currencyCode": "USD"
+      }
+    }
+  },
+  "isShipped": true,
+  "sellerProtectionStatus": "NOT_ELIGIBLE",
+  "flags": {
+    "isWinSMBEligible": true,
+    "isEbay": true,
+    "isContactSuppressedForEBay": true,
+    "isCheckoutTxn": true,
+    "showPurchaseDetails": true,
+    "hasActions": true,
+    "showSellerSafety": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/999",
+    "target": "_blank"
+  },
+  "partner": {},
+  "accountSubscriptionType": "PAYPAL_CASH_PLUS",
+  "isCFPBEligible": true,
+  "isOffersInfoEligible": false,
+  "isCCCreditFailureWithOffersRecovery": false,
+  "photoUrl": "https://pics.paypal.com/00/p/NzlkM2E4MjYtYmUwYS00M2YyLWIwNTgtNjA1MWNiM2UwYTVj/image_34.JPG",
+  "merchantLogoUrl": "https://www.paypalobjects.com/webstatic/wallet/merchants/mebay/logo_small-xhdpi.png",
+  "badge": {},
+  "hasHideEmailTreatment": false,
+  "isNewActivityUIEnabled": true
+}

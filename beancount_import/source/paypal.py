@@ -439,11 +439,12 @@ class PaypalSource(LinkBasedSource, Source):
             negate_funding_source_amounts = is_credit
         elif transaction_type_enum == 'REFUND':
             negate_funding_source_amounts = False
+        elif transaction_type_enum == 'EBAY_SALE':
+            negate_funding_source_amounts = False
         else:
             raise RuntimeError('Unknown transaction type: %s' % transaction_type_enum)
 
         negate_counterparty_amounts = not negate_funding_source_amounts
-
 
         if negate_funding_source_amounts:
             funding_source_amount = -funding_source_amount
@@ -476,7 +477,7 @@ class PaypalSource(LinkBasedSource, Source):
 
 
         if fee_amount.number != ZERO:
-            if negate_counterparty_amounts:
+            if negate_counterparty_amounts and transaction_type_enum != 'EBAY_SALE':
                 amount = -fee_amount
             else:
                 amount = fee_amount
@@ -538,7 +539,7 @@ class PaypalSource(LinkBasedSource, Source):
         funding_source_inventory = SimpleInventory()
         funding_source_inventory += funding_source_amount
         funding_source_account = FIXME_ACCOUNT
-        if transaction_type_enum == 'SEND_MONEY_RECEIVED':
+        if transaction_type_enum in ('SEND_MONEY_RECEIVED', 'EBAY_SALE'):
             funding_source_account = self.assets_account
             assert 'fundingSource' not in data
             funding_source_metadata = assets_account_metadata
