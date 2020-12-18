@@ -107,6 +107,38 @@
     paypal_funding_source_institution: "VISA"
     paypal_funding_source_last4: "1234"
 
+;; date: 2019-04-17
+;; info: {"filename": "<testdata>/5YB777267S0246440.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "8.31 USD",
+;               "date": "2019-04-17",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "Some Business"
+;                 ],
+;                 "paypal_item_description": [
+;                   "Tracking Number:999"
+;                 ],
+;                 "paypal_item_name": [
+;                   "Shipped to: JANE DOE"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2019-04-17 * "Some Business" "Invoice paid" ^paypal.5YB777267S0246440
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.5YB777267S0246440\", \"path\": \"<testdata>/5YB777267S0246440.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A   8.31 USD
+    paypal_counterparty: "Some Business"
+    paypal_counterparty_url: "http://www.example.com"
+    paypal_item_description: "Tracking Number:999"
+    paypal_item_name: "Shipped to: JANE DOE"
+  Assets:Paypal     -8.31 USD
+    date: 2019-04-17
+    paypal_transaction_id: "5YB777267S0246440"
+
 ;; date: 2019-08-26
 ;; info: {"filename": "<testdata>/5Y903271C7730840Z.json", "type": "application/json"}
 

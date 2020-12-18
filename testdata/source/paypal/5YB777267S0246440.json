@@ -1,0 +1,113 @@
+{
+  "itemDetails": {
+    "itemList": [
+      {
+        "name": "Shipped to: JANE DOE",
+        "description": "Tracking Number:999",
+        "price": "$8.31",
+        "isNegative": false,
+        "itemTotalPrice": "$8.31"
+      },
+      {
+        "name": "Processed by:JOHN DOE",
+        "price": "$0.00",
+        "isNegative": false,
+        "itemTotalPrice": "$0.00"
+      }
+    ],
+    "itemTotalAmount": "$8.31"
+  },
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "BALANCE",
+        "amount": "$8.31",
+        "currencyCode": "USD"
+      }
+    ]
+  },
+  "shippingDetails": [
+    {
+      "address": {
+        "countryCode": "US",
+        "line1": "123 Main St",
+        "city": "Sometown",
+        "state": "TX",
+        "postalCode": "12345",
+        "countryName": "United States",
+        "addresseeName": "Jane Doe"
+      }
+    }
+  ],
+  "fptiTag": "purchase",
+  "internal_id": "999",
+  "counterparty": {
+    "detailsCounterpartyText": "Some Business",
+    "name": "Some Business",
+    "url": "http://www.example.com",
+    "isBusiness": true
+  },
+  "counterpartyBizName": "Some Business",
+  "p2pRedirect": {},
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/resolutioncenter/5YB777267S0246440"
+    },
+    "invoiceDetails": {
+      "target": "_blank",
+      "linkUrl": "/invoice/p/#INV2-999"
+    }
+  },
+  "paidWithHeader": "Paid with",
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "INVOICE_PAID",
+  "transactionType": "Invoice paid",
+  "txnTypeServiceKey": "PAYMENT",
+  "status": "COMPLETED",
+  "date": "April 17, 2019",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": false,
+  "isBuyer": true,
+  "isSeller": false,
+  "buyerConfirmId": "5YB777267S0246440",
+  "transactionId": "5YB777267S0246440",
+  "amount": {
+    "grossAmount": "$8.31",
+    "netAmount": "$8.31",
+    "fullPageNetAmount": "$8.31",
+    "feeAmount": "$0.00",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Fee",
+    "rawAmounts": {
+      "gross": {
+        "value": "8.31",
+        "currencyCode": "USD"
+      }
+    }
+  },
+  "isShipped": false,
+  "flags": {
+    "isWinSMBEligible": true,
+    "isInvoicePayment": true,
+    "claimStatusMessage": null,
+    "showPurchaseDetails": true,
+    "hasActions": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/5YB777267S0246440",
+    "target": "_blank"
+  },
+  "partner": {},
+  "accountSubscriptionType": "PAYPAL_CASH_PLUS",
+  "isCFPBEligible": true,
+  "isOffersInfoEligible": false,
+  "isCCCreditFailureWithOffersRecovery": false,
+  "merchantLogoUrl": null,
+  "badge": {},
+  "hasHideEmailTreatment": false,
+  "isNewActivityUIEnabled": true
+}

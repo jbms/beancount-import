@@ -441,6 +441,8 @@ class PaypalSource(LinkBasedSource, Source):
             negate_funding_source_amounts = False
         elif transaction_type_enum == 'EBAY_SALE':
             negate_funding_source_amounts = False
+        elif transaction_type_enum == 'INVOICE_PAID':
+            pass
         else:
             raise RuntimeError('Unknown transaction type: %s' % transaction_type_enum)
 
