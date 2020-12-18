@@ -364,3 +364,72 @@
     paypal_funding_source_description: "Chase Visa"
     paypal_funding_source_institution: "VISA"
     paypal_funding_source_last4: "1234"
+
+;; date: 2019-04-17
+;; info: {"filename": "<testdata>/5YB777267S0246440.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "8.31 USD",
+;               "date": "2019-04-17",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "Some Business"
+;                 ],
+;                 "paypal_item_description": [
+;                   "Tracking Number:999"
+;                 ],
+;                 "paypal_item_name": [
+;                   "Shipped to: JANE DOE"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2019-04-17 * "Some Business" "Invoice paid" ^paypal.5YB777267S0246440
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.5YB777267S0246440\", \"path\": \"<testdata>/5YB777267S0246440.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A   8.31 USD
+    paypal_counterparty: "Some Business"
+    paypal_counterparty_url: "http://www.example.com"
+    paypal_item_description: "Tracking Number:999"
+    paypal_item_name: "Shipped to: JANE DOE"
+  Assets:Paypal     -8.31 USD
+    date: 2019-04-17
+    paypal_transaction_id: "5YB777267S0246440"
+
+;; date: 2019-08-26
+;; info: {"filename": "<testdata>/5Y903271C7730840Z.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "-11.95 USD",
+;               "date": "2019-08-26",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "eBay - John Doe (john_doe)",
+;                   "eBay - John Doe (john_doe)"
+;                 ],
+;                 "paypal_item_name": [
+;                   "Dungeons & Dragons 3.5 Core Books: DM Guide, Players Handbook, Monster Manual"
+;                 ],
+;                 "paypal_item_number": [
+;                   "233315823254"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2019-08-26 * "eBay - John Doe (john_doe)" "Payment Received" ^paypal.5Y903271C7730840Z
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.5Y903271C7730840Z\", \"path\": \"<testdata>/5Y903271C7730840Z.html\", \"type\": \"text/html\"}"
+  Expenses:Financial:Paypal:Fees    2.50 USD
+  Expenses:FIXME:A                -64.00 USD
+    paypal_counterparty: "eBay - John Doe (john_doe)"
+    paypal_item_name: "Dungeons & Dragons 3.5 Core Books: DM Guide, Players Handbook, Monster Manual"
+    paypal_item_number: "233315823254"
+    paypal_item_url: "http://cgi.ebay.com/ws/eBayISAPI.dll?ViewItem&item=999"
+  Expenses:FIXME:A                -11.95 USD
+    paypal_counterparty: "eBay - John Doe (john_doe)"
+    paypal_item_type: "shippingAmount"
+  Assets:Paypal                    73.45 USD
+    date: 2019-08-26
+    paypal_transaction_id: "5Y903271C7730840Z"
