@@ -5,3 +5,6 @@ Assets:Schwab:Intelligent-4321
 Assets:Schwab:Intelligent-4321:Cash
 Assets:Schwab:Intelligent-4321:FNDA
 Assets:Schwab:Intelligent-4321:SCHA
+Assets:Schwab:Intelligent-4321:SMAL040120203200P
+Assets:Schwab:Intelligent-4321:SMAL040320208300C
+Assets:Schwab:Intelligent-4321:SMAL061920201000P

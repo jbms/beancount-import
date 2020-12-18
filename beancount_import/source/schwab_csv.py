@@ -131,6 +131,10 @@ class SchwabAction(enum.Enum):
     ADR_MGMT_FEE = "ADR Mgmt Fee"
     FOREIGN_TAX_PAID = "Foreign Tax Paid"
     MARGIN_INTEREST = "Margin Interest"
+    BUY_TO_OPEN = "Buy to Open"
+    BUY_TO_CLOSE = "Buy to Close"
+    SELL_TO_OPEN = "Sell to Open"
+    SELL_TO_CLOSE = "Sell to Close"
 
 
 @dataclass(frozen=True)
@@ -194,7 +198,7 @@ class RawEntry:
             )
         if self.action in (SchwabAction.MONEYLINK_TRANSFER, SchwabAction.JOURNAL):
             return Transfer(**shared_attrs)
-        if self.action == SchwabAction.SELL:
+        if self.action in (SchwabAction.SELL, SchwabAction.SELL_TO_OPEN, SchwabAction.SELL_TO_CLOSE):
             quantity = self.quantity
             assert quantity is not None
             price = self.price
@@ -208,7 +212,7 @@ class RawEntry:
                 fees=self.fees,
                 **shared_attrs,
             )
-        if self.action == SchwabAction.BUY:
+        if self.action in (SchwabAction.BUY, SchwabAction.BUY_TO_OPEN, SchwabAction.BUY_TO_CLOSE):
             quantity = self.quantity
             assert quantity is not None
             price = self.price
@@ -381,7 +385,8 @@ class MarginInterest(TransactionEntry):
 
     def get_narration_prefix(self) -> str:
         return "MARGININTEREST"
-        
+
+
 @dataclass(frozen=True)
 class StockPlanActivity(TransactionEntry):
     symbol: str
@@ -512,7 +517,10 @@ class Sell(TransactionEntry):
         return postings
 
     def get_narration_prefix(self) -> str:
-        return "SELLSTOCK"
+        if self.action in (SchwabAction.SELL_TO_OPEN, SchwabAction.SELL_TO_CLOSE):
+            return "SELLOPT"
+        else:
+            return "SELLSTOCK"
 
     def get_cap_gains_account(self) -> str:
         return f"{self.capital_gains_account}:{self.symbol}"
@@ -575,7 +583,10 @@ class Buy(TransactionEntry):
         return postings
 
     def get_narration_prefix(self) -> str:
-        return "BUYSTOCK"
+        if self.action in (SchwabAction.BUY_TO_OPEN, SchwabAction.BUY_TO_CLOSE):
+            return "BUYOPT"
+        else:
+            return "BUYSTOCK"
 
     def get_accounts(self) -> List[str]:
         return [self.get_primary_account(), self.get_other_account()]
@@ -693,6 +704,7 @@ CAPITAL_GAINS_ACCOUNT_KEY = "capital_gains_account"
 TAXES_ACCOUNT_KEY = "taxes_account"
 DATE_FORMAT = "%m/%d/%Y"
 TITLE_RE = re.compile(r'"Transactions  for account (?P<account>.+) as of (?P<when>.+)"')
+STRIP_FROM_SYMBOL_RE = re.compile(r'[^\d\w]')
 
 
 class SchwabSourceSpecDict(TypedDict):
@@ -899,7 +911,7 @@ def _load_transactions(filename: str) -> List[RawEntry]:
             assert not found_total_line
             date = _convert_date(row["Date"])
             action = SchwabAction(row["Action"])
-            symbol = row["Symbol"]
+            symbol = STRIP_FROM_SYMBOL_RE.sub("", row["Symbol"])
             description = row["Description"]
             quantity = int(row["Quantity"]) if row["Quantity"] else None
             price = _convert_decimal(row["Price"])
@@ -1026,7 +1038,7 @@ def _load_positions_csv(
         assert not found_account_total, row
         if symbol == "Cash & Cash Investments":
             symbol = "Cash"
-        assert 3 <= len(symbol) <= 4, symbol
+        symbol = STRIP_FROM_SYMBOL_RE.sub("", symbol)
         quantity = _convert_int(row["Quantity"])
         price_d = _convert_decimal(row["Price"])
         price = None if price_d is None else Amount(price_d, currency="USD")
