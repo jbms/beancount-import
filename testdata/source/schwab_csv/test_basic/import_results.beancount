@@ -108,11 +108,11 @@
     date: 2020-03-18
     schwab_action: "Sell to Close"
     source_desc: "PUT SMALL CAP INDEX $32 EXP 04/01/20"
-  Income:Capital-Gains:Schwab:SMAL040120203200P
   Assets:Schwab:Intelligent-4321:Cash               1565.32 USD
     date: 2020-03-18
     schwab_action: "Sell to Close"
     source_desc: "PUT SMALL CAP INDEX $32 EXP 04/01/20"
+  Income:Capital-Gains:Schwab:SMAL040120203200P
   Expenses:Brokerage-Fees:Schwab                       0.68 USD
 
 ;; date: 2020-03-27
@@ -124,7 +124,6 @@
     date: 2020-03-27
     schwab_action: "Sell to Open"
     source_desc: "PUT SMALL CAP INDEX $10 EXP 06/19/20"
-  Income:Capital-Gains:Schwab:SMAL061920201000P
   Assets:Schwab:Intelligent-4321:Cash               847.33 USD
     date: 2020-03-27
     schwab_action: "Sell to Open"
@@ -159,6 +158,7 @@
     date: 2020-06-12
     schwab_action: "Buy to Close"
     source_desc: "PUT SMALL CAP INDEX $10 EXP 06/19/20"
+  Income:Capital-Gains:Schwab:SMAL061920201000P
   Expenses:Brokerage-Fees:Schwab                     0.65 USD
 
 ;; date: 2020-08-24
@@ -241,11 +241,11 @@
     date: 2020-10-19
     schwab_action: "Sell"
     source_desc: "SCHWAB FUNDAMENTAL US SMALL COM ETF"
-  Income:Capital-Gains:Schwab:FNDA
   Assets:Schwab:Intelligent-4321:Cash  2533.87 USD
     date: 2020-10-19
     schwab_action: "Sell"
     source_desc: "SCHWAB FUNDAMENTAL US SMALL COM ETF"
+  Income:Capital-Gains:Schwab:FNDA
 
 ;; date: 2020-10-19
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 5, "type": "text/csv"}
@@ -256,11 +256,11 @@
     date: 2020-10-19
     schwab_action: "Sell"
     source_desc: "SCHWAB US SMALL CAP ETF"
-  Income:Capital-Gains:Schwab:SCHA
   Assets:Schwab:Intelligent-4321:Cash  6013.04 USD
     date: 2020-10-19
     schwab_action: "Sell"
     source_desc: "SCHWAB US SMALL CAP ETF"
+  Income:Capital-Gains:Schwab:SCHA
 
 ;; date: 2020-11-01
 ;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 4, "type": "text/csv"}
@@ -292,11 +292,11 @@
     date: 2020-11-05
     schwab_action: "Sell"
     source_desc: "FACEBOOK INC CLASS A"
-  Income:Capital-Gains:Schwab:FB
   Assets:Schwab:Brokerage-1234:Cash  26143.94 USD
     date: 2020-11-05
     schwab_action: "Sell"
     source_desc: "FACEBOOK INC CLASS A"
+  Income:Capital-Gains:Schwab:FB
   Expenses:Brokerage-Fees:Schwab         6.06 USD
 
 ;; date: 2020-11-06

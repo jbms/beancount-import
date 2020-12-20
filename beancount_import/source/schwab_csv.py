@@ -218,6 +218,7 @@ class RawEntry:
             price = self.price
             assert price is not None
             return Buy(
+                capital_gains_account=capital_gains_account,
                 fees_account=fees_account,
                 symbol=self.symbol,
                 price=price,
@@ -486,14 +487,6 @@ class Sell(TransactionEntry):
                 meta=self.get_meta(),
             ),
             Posting(
-                account=self.get_cap_gains_account(),
-                units=MISSING,
-                cost=None,
-                price=None,
-                flag=None,
-                meta={},
-            ),
-            Posting(
                 account=self.get_other_account(),
                 units=self.amount,
                 cost=None,
@@ -502,6 +495,18 @@ class Sell(TransactionEntry):
                 meta=self.get_meta(),
             ),
         ]
+        if self.action != SchwabAction.SELL_TO_OPEN:
+            # too early to realize gains/losses when opening a short position
+            postings.append(
+                Posting(
+                    account=self.get_cap_gains_account(),
+                    units=MISSING,
+                    cost=None,
+                    price=None,
+                    flag=None,
+                    meta={},
+                )
+            )
         fees = self.fees
         if fees is not None:
             postings.append(
@@ -530,6 +535,7 @@ class Sell(TransactionEntry):
 
 @dataclass(frozen=True)
 class Buy(TransactionEntry):
+    capital_gains_account: str
     fees_account: str
     symbol: str
     quantity: int
@@ -568,6 +574,18 @@ class Buy(TransactionEntry):
                 meta=self.get_meta(),
             ),
         ]
+        if self.action == SchwabAction.BUY_TO_CLOSE:
+            # need to record gains when closing a short position
+            postings.append(
+                Posting(
+                    account=self.get_cap_gains_account(),
+                    units=MISSING,
+                    cost=None,
+                    price=None,
+                    flag=None,
+                    meta={},
+                )
+            )
         fees = self.fees
         if fees is not None:
             postings.append(
@@ -587,6 +605,9 @@ class Buy(TransactionEntry):
             return "BUYOPT"
         else:
             return "BUYSTOCK"
+
+    def get_cap_gains_account(self) -> str:
+        return f"{self.capital_gains_account}:{self.symbol}"
 
     def get_accounts(self) -> List[str]:
         return [self.get_primary_account(), self.get_other_account()]
