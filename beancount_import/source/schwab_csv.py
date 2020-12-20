@@ -725,6 +725,7 @@ CAPITAL_GAINS_ACCOUNT_KEY = "capital_gains_account"
 TAXES_ACCOUNT_KEY = "taxes_account"
 DATE_FORMAT = "%m/%d/%Y"
 TITLE_RE = re.compile(r'"Transactions  for account (?P<account>.+) as of (?P<when>.+)"')
+OPTION_RE = re.compile(r'\w{1,4} \d\d\/\d\d\/\d\d\d\d \d*\.\d* [PC]')
 STRIP_FROM_SYMBOL_RE = re.compile(r'[^\d\w]')
 
 
@@ -941,6 +942,9 @@ def _load_transactions(filename: str) -> List[RawEntry]:
             price = _convert_decimal(row["Price"])
             fees = _convert_decimal(row["Fees & Comm"])
             amount = _convert_decimal(row["Amount"])
+            if OPTION_RE.match(row["Symbol"]) and quantity:
+                # this is an option, sold in lots of 100
+                quantity *= 100
             entries.append(
                 RawEntry(
                     account=account,
@@ -1077,6 +1081,9 @@ def _load_positions_csv(
         value_d = _convert_decimal(row["Market Value"])
         assert value_d is not None, row["Market Value"]
         value = Amount(value_d, currency="USD")
+        if OPTION_RE.match(row["Symbol"]) and quantity:
+            # this is an option, sold in lots of 100
+            quantity *= 100
         entries.append(
             RawPosition(
                 date=date,
