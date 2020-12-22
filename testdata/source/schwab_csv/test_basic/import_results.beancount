@@ -1,3 +1,24 @@
+;; date: 2018-06-28
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 16, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-0.05 USD",
+;               "date": "2018-06-28",
+;               "key_value_pairs": {
+;                 "desc": "INTEREST 05/30THRU 06/27",
+;                 "schwab_action": "Margin Interest"
+;               },
+;               "source_account": "Assets:Schwab:Intelligent-4321:Cash"
+;             }
+;           ]
+2018-06-28 * "MARGININTEREST - INTEREST 05/30THRU 06/27"
+  Assets:Schwab:Intelligent-4321:Cash  -0.05 USD
+    date: 2018-06-28
+    schwab_action: "Margin Interest"
+    source_desc: "INTEREST 05/30THRU 06/27"
+  Expenses:FIXME                        0.05 USD
+
 ;; date: 2019-06-11
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 15, "type": "text/csv"}
 
@@ -62,6 +83,83 @@
     schwab_action: "Pr Yr Cash Div"
     source_desc: "VANECK VECTORS J.P. MORGAN EM LOCAL CURRENCYBOND ETF"
   Income:Dividend:Schwab:EMLC          -51.77 USD
+
+;; date: 2020-03-17
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 17, "type": "text/csv"}
+
+; features: []
+2020-03-17 * "BUYOPT - PUT SMALL CAP INDEX $32 EXP 04/01/20"
+  Assets:Schwab:Intelligent-4321:SMAL040120203200P         1 SMAL040120203200P {12.53 USD}
+    date: 2020-03-17
+    schwab_action: "Buy to Open"
+    source_desc: "PUT SMALL CAP INDEX $32 EXP 04/01/20"
+  Assets:Schwab:Intelligent-4321:Cash               -1253.65 USD
+    date: 2020-03-17
+    schwab_action: "Buy to Open"
+    source_desc: "PUT SMALL CAP INDEX $32 EXP 04/01/20"
+  Expenses:Brokerage-Fees:Schwab                        0.65 USD
+
+;; date: 2020-03-18
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 18, "type": "text/csv"}
+
+; features: []
+2020-03-18 * "SELLOPT - PUT SMALL CAP INDEX $32 EXP 04/01/20"
+  Assets:Schwab:Intelligent-4321:SMAL040120203200P       -1 SMAL040120203200P {} @ 15.66 USD
+    date: 2020-03-18
+    schwab_action: "Sell to Close"
+    source_desc: "PUT SMALL CAP INDEX $32 EXP 04/01/20"
+  Income:Capital-Gains:Schwab:SMAL040120203200P
+  Assets:Schwab:Intelligent-4321:Cash               1565.32 USD
+    date: 2020-03-18
+    schwab_action: "Sell to Close"
+    source_desc: "PUT SMALL CAP INDEX $32 EXP 04/01/20"
+  Expenses:Brokerage-Fees:Schwab                       0.68 USD
+
+;; date: 2020-03-27
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 19, "type": "text/csv"}
+
+; features: []
+2020-03-27 * "SELLOPT - PUT SMALL CAP INDEX $10 EXP 06/19/20"
+  Assets:Schwab:Intelligent-4321:SMAL061920201000P      -1 SMAL061920201000P {} @ 8.48 USD
+    date: 2020-03-27
+    schwab_action: "Sell to Open"
+    source_desc: "PUT SMALL CAP INDEX $10 EXP 06/19/20"
+  Income:Capital-Gains:Schwab:SMAL061920201000P
+  Assets:Schwab:Intelligent-4321:Cash               847.33 USD
+    date: 2020-03-27
+    schwab_action: "Sell to Open"
+    source_desc: "PUT SMALL CAP INDEX $10 EXP 06/19/20"
+  Expenses:Brokerage-Fees:Schwab                      0.67 USD
+
+;; date: 2020-03-30
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 21, "type": "text/csv"}
+
+; features: []
+2020-03-30 * "BUYOPT - CALL SMALL CAP INDEX $83 EXP 04/03/20"
+  Assets:Schwab:Intelligent-4321:SMAL040320208300C       2 SMAL040320208300C {0.49 USD}
+    date: 2020-03-30
+    schwab_action: "Buy to Open"
+    source_desc: "CALL SMALL CAP INDEX $83 EXP 04/03/20"
+  Assets:Schwab:Intelligent-4321:Cash               -99.34 USD
+    date: 2020-03-30
+    schwab_action: "Buy to Open"
+    source_desc: "CALL SMALL CAP INDEX $83 EXP 04/03/20"
+  Expenses:Brokerage-Fees:Schwab                      1.34 USD
+
+;; date: 2020-06-12
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 20, "type": "text/csv"}
+
+; features: []
+2020-06-12 * "BUYOPT - PUT SMALL CAP INDEX $10 EXP 06/19/20"
+  Assets:Schwab:Intelligent-4321:SMAL061920201000P      1 SMAL061920201000P {0.06 USD}
+    date: 2020-06-12
+    schwab_action: "Buy to Close"
+    source_desc: "PUT SMALL CAP INDEX $10 EXP 06/19/20"
+  Assets:Schwab:Intelligent-4321:Cash               -6.65 USD
+    date: 2020-06-12
+    schwab_action: "Buy to Close"
+    source_desc: "PUT SMALL CAP INDEX $10 EXP 06/19/20"
+  Expenses:Brokerage-Fees:Schwab                     0.65 USD
 
 ;; date: 2020-08-24
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 10, "type": "text/csv"}
@@ -283,6 +381,11 @@
 ;; date: 2020-11-15
 ;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 13, "type": "text/csv"}
 
+2020-11-15 balance Assets:Schwab:Intelligent-4321:SMAL040120203200P 1 SMAL040120203200P
+
+;; date: 2020-11-15
+;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 14, "type": "text/csv"}
+
 2020-11-15 balance Assets:Schwab:Intelligent-4321:Cash             2000.00 USD
 
 ;; date: 2020-11-15
@@ -294,3 +397,8 @@
 ;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 12, "type": "text/csv"}
 
 2020-11-15 price SCHA                                78.97 USD
+
+;; date: 2020-11-15
+;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 13, "type": "text/csv"}
+
+2020-11-15 price SMAL040120203200P                   12.53 USD
