@@ -42,7 +42,7 @@ class ImporterSource(DescriptionBasedSource):
         self.account = account
 
         # get _FileMemo object for each file
-        files = [get_file(f) for f in
+        files = [get_file(os.path.abspath(f)) for f in
                     filter(os.path.isfile,
                  glob(os.path.join(directory, '**', '*'), recursive=True)
                            )
