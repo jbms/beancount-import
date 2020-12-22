@@ -402,3 +402,18 @@
 ;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 13, "type": "text/csv"}
 
 2020-11-15 price SMAL040120203200P                   12.53 USD
+
+;; date: 2020-12-21
+;; info: {"filename": "<testdata>/test_basic/positions/Intelligent-Positions-2020-11-30.CSV", "line": 4, "type": "text/csv"}
+
+2020-12-21 balance Assets:Schwab:Intelligent-4321:SCHA             110 SCHA
+
+;; date: 2020-12-21
+;; info: {"filename": "<testdata>/test_basic/positions/Intelligent-Positions-2020-11-30.CSV", "line": 5, "type": "text/csv"}
+
+2020-12-21 balance Assets:Schwab:Intelligent-4321:Cash             2953.34 USD
+
+;; date: 2020-12-21
+;; info: {"filename": "<testdata>/test_basic/positions/Intelligent-Positions-2020-11-30.CSV", "line": 4, "type": "text/csv"}
+
+2020-12-21 price SCHA                                88.71 USD

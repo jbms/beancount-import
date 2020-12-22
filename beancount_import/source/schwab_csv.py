@@ -937,7 +937,7 @@ def _load_transactions(filename: str) -> List[RawEntry]:
 
 
 POSITIONS_TITLE_RE = re.compile(
-    r'"Positions for All-Accounts as of (?P<time>.+), (?P<date>.+)"'
+    r'"Positions for (account )?(?P<account>.+) as of (?P<time>.+), (?P<date>.+)"'
 )
 POSITIONS_ACCT_RE = re.compile(r'"(?P<account>.+)"')
 
@@ -952,13 +952,21 @@ def _load_positions(filename: str) -> Sequence[RawPosition]:
         title = csvfile.readline()
         match = POSITIONS_TITLE_RE.match(title)
         assert match, title
+        groups = match.groupdict()
         date = _convert_date(match.groupdict()["date"])
+        if groups["account"] == "All-Accounts":
+            expect_account_headers = True
+            looking_for_account = True
+            account = None
+        else:
+            expect_account_headers = False
+            looking_for_account = False
+            account = groups["account"]
+            line_count += 1
 
-        account = None
-        looking_for_account = True
         for line in csvfile:
             if not line.strip():
-                looking_for_account = True
+                looking_for_account = expect_account_headers
                 empty_lines += 1
                 continue
             if looking_for_account:
