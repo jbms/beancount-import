@@ -193,7 +193,7 @@ def get_posting_weight(posting: Posting) -> Optional[Amount]:
             return Amount(posting.cost.number * posting.units.number,
                           posting.cost.currency)
         return None
-    elif posting.price is not None:
+    elif posting.price is not None and posting.price.number is not MISSING:
         return amount_mul(posting.price, posting.units.number)
     return posting.units
 
