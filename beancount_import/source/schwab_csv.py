@@ -908,6 +908,9 @@ def _load_transactions(filename: str) -> List[RawEntry]:
             if row["Date"] == "Transactions Total":
                 found_total_line = True
                 continue
+            # If there are no transactions, Schwab includes a row with just ""
+            if row["Date"] == "":
+                continue
             assert not found_total_line
             date = _convert_date(row["Date"])
             action = SchwabAction(row["Action"])
