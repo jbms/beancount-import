@@ -1,0 +1,12 @@
+Transactions  for Checking account EAC as of 12/23/2020 16:00:10 ET
+"Date","Type","Check #","Description","Withdrawal (-)","Deposit (+)","RunningBalance"
+"Pending Transactions are not reflected within this sort criterion."
+"Posted Transactions""11/13/2020","TRANSFER","","Funds Transfer to Brokerage -9999","$10,500.00","","$50.01"
+"11/13/2020","ACH","","JPMorgan Chase Ext Trnsfr","","$10,500.00","$10,550.01"
+"10/27/2020","ACH","","JPMorgan Chase Auth Debit","$1.10","","$2,550.00"
+"10/27/2020","ACH","","JPMorgan Chase Auth Crdt","","$1.56","$2,550.55"
+"10/26/2020","ACH","","Electronic Deposit","","$2,500.00","$11,550.00"
+"01/31/2020","INTADJUST","","Interest Paid","","$0.09","$1133.94"
+"01/12/2020","VISA","","COMPASS VENDING   BURNABY BC #000000190","$6.14","","$1133.85"
+"01/10/2020","ATM","","ATM AT SOME BANK","$16.69","","$1139.99"
+"11/22/2019","CHECK","1002","Check Paid #1002","$1,234.11","","$1,111.81"
