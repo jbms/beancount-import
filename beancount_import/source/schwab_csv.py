@@ -1074,6 +1074,11 @@ class SchwabSource(DescriptionBasedSource):
             source_desc,
         )
 
+    def is_posting_cleared(self, posting: Posting):
+        if posting.meta is None:
+            return False
+        return "source_desc" in posting.meta and "schwab_action" in posting.meta
+
 
 def _load_transactions(filename: str) -> List[Union[RawBrokerageEntry, RawBankEntry]]:
     expected_brokerage_field_names = [
