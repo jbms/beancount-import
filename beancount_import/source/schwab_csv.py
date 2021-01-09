@@ -184,6 +184,8 @@ class RawBankEntry:
             filename=self.filename,
             line=self.line,
         )
+        if self.amount is None:
+            return None
         if self.entry_type == BankingEntryType.INTADJUST:
             return NonBrokerageBankInterest(
                interest_account=interest_account,
