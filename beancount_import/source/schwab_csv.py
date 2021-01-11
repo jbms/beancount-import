@@ -1074,6 +1074,11 @@ class SchwabSource(DescriptionBasedSource):
             source_desc,
         )
 
+    # This source is authoritative for the Schwab accounts you download CSVs
+    # for. That allows Uncleared postings to be called out on the WebUI until
+    # they appear in the Schwab history. An example would be initiating a
+    # 2 day transfer from a bank. That transaction will debit on your bank
+    # several days before it appears on your Schwab history.
     def is_posting_cleared(self, posting: Posting):
         if posting.meta is None:
             return False
@@ -1092,7 +1097,7 @@ def _load_transactions(filename: str) -> List[Union[RawBrokerageEntry, RawBankEn
         "Amount",
         "",
     ]
-    expected_checking_field_names = [
+    expected_banking_field_names = [
         "Date",
         "Type",
         "Check #",
@@ -1111,7 +1116,7 @@ def _load_transactions(filename: str) -> List[Union[RawBrokerageEntry, RawBankEn
         reader = csv.DictReader(csvfile)
         if reader.fieldnames == expected_brokerage_field_names:
             entries = _load_brokerage_transactions(reader, account, filename)
-        elif reader.fieldnames == expected_checking_field_names:
+        elif reader.fieldnames == expected_banking_field_names:
             entries = _load_banking_transactions(reader, account, filename)
         else:
             raise RuntimeError(f"Unexpected header {reader.fieldnames}")
