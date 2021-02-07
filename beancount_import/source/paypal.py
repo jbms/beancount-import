@@ -619,6 +619,10 @@ class PaypalSource(LinkBasedSource, Source):
             self.log_status('paypal: processing %s' % (path, ))
             with open(path, 'r', encoding='utf-8', newline='\n') as f:
                 txn = json.load(f)
+            # some old unfinished transactions do not contain "date" entries.
+            # skip them to avoid validation errors.
+            if "date" not in txn:
+                continue
             jsonschema.validate(txn, transaction_schema)
             import_result = self._make_import_result(
                     txn_id=txn_id, data=txn, json_path=path)
