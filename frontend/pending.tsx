@@ -21,39 +21,32 @@ const PendingEntryListElement = styled(PendingVirtualListComponent)`
 `;
 
 const PendingEntryElement = styled<
-  { selected: boolean; highlighted: boolean },
+  { selected: boolean; highlighted: boolean, isOdd: boolean },
   "div"
 >("div")`
-  border: 1px solid transparent;
-  margin-top: 0;
-  margin-bottom: 0;
-  border: 1px solid ${props => (props.highlighted ? "black" : "transparent")};
+  border: 1px solid ${props =>
+    props.highlighted ? "black" : "transparent"};
+  ${props => (props.selected ? "border-color: blue;" : "")}
   position: relative;
-  margin-left: 7px;
-  padding: 2px;
-  :before {
-    content: " ";
-    position: absolute;
-    left: -5px;
-    right: 0px;
-    bottom: 0px;
-    top: 0px;
-    z-index: -1;
-    border-left: 4px solid ${p => (p.selected ? "blue" : "transparent")};
-  }
+  font-family: "Helvetica Neue", HelveticaNeue, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  background-color: ${props =>
+    props.isOdd ? "transparent" : "rgba(0, 0, 0, 0.05)"};
+  padding: 12px 6px;
 `;
 
 const PendingEntryFormattedElement = styled.div`
-  font-family: monospace;
+  font-family: Source Code Pro, Courier New, Courier, monospace;
   white-space: pre;
+  font-size: 13px;
+  margin: 0 0 8px;
 `;
 
-const PendingEntrySourceNameElement = styled.span`
-  font-weight: bold;
+const PendingEntrySourceNameElement = styled.div`
+  margin: 0 0 8px;
 `;
 
-const PendingEntrySourceFilenameElement = styled.span`
-  margin-left: 1em;
+const PendingEntrySourceFilenameElement = styled.div`
 `;
 
 export class PendingEntryHighlightState {
@@ -103,19 +96,22 @@ class PendingEntryComponent extends React.PureComponent<{
         onClick={this.handleSelect}
         selected={this.props.selected}
         highlighted={this.props.highlighted}
+        isOdd={this.props.index % 2 === 0}
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}
       >
-        <PendingEntrySourceNameElement>{source}</PendingEntrySourceNameElement>
-        {filename && (
-          <PendingEntrySourceFilenameElement>
-            {filename}
-            {lineno != undefined && `:${lineno}`}
-          </PendingEntrySourceFilenameElement>
-        )}
         <PendingEntryFormattedElement>
           {entry.formatted.trim()}
         </PendingEntryFormattedElement>
+        <PendingEntrySourceNameElement>
+          <em>Source:</em> {source}
+        </PendingEntrySourceNameElement>
+        {filename && (
+          <PendingEntrySourceFilenameElement>
+            <em>File:</em> {filename}
+            {lineno != undefined && `:${lineno}`}
+          </PendingEntrySourceFilenameElement>
+        )}
       </PendingEntryElement>
     );
   }

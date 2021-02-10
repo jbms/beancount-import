@@ -305,7 +305,7 @@ class AppComponent
                       ? "Candidates not available due to unsaved local edits to journal."
                       : undefined}
                     {!hasCandidates ? "No pending entries." : undefined}
-                  </AppTabPanel>
+                  </AppTabPanel>                  
                   <AppTabPanel>
                     <UnclearedPostingsComponent
                       listState={this.unclearedListState}
@@ -383,8 +383,14 @@ class AppComponent
   };
 }
 
+const link = document.createElement('link');
+link.setAttribute('href', 'https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+link.setAttribute('rel', 'stylesheet');
+document.body.appendChild(link);
+
 const root = document.createElement("div");
 document.body.appendChild(root);
+
 
 ReactDOM.render(
   <AppComponent serverConnection={new ServerConnection()} />,
