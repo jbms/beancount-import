@@ -18,35 +18,53 @@ const PendingEntryListElement = styled(PendingVirtualListComponent)`
   overflow-y: scroll;
   flex: 1;
   flex-basis: 0px;
+  background-color: var(--color-primary-bg);
 `;
 
 const PendingEntryElement = styled<
-  { selected: boolean; highlighted: boolean, isOdd: boolean },
+  { selected: boolean; highlighted: boolean; },
   "div"
 >("div")`
-  border: 1px solid ${props =>
-    props.highlighted ? "black" : "transparent"};
-  ${props => (props.selected ? "border-color: blue;" : "")}
-  position: relative;
-  font-family: "Helvetica Neue", HelveticaNeue, Helvetica, Arial, sans-serif;
-  font-size: 12px;
-  background-color: ${props =>
-    props.isOdd ? "transparent" : "rgba(0, 0, 0, 0.05)"};
+  cursor: pointer;
+  font-family: var(--font-fam-sans);
+  font-size: var(--font-size-sans-small);
   padding: 12px 6px;
+  border-bottom: 1px solid #ccc;
+  ${props => (props.highlighted && 
+    `
+    background-color: var(--color-pending-highlight-bg);
+    color: var(--color-pending-highlight-text);
+    `
+  )};
+  ${props => (props.selected && 
+    `
+    background-color: var(--color-pending-select-bg);
+    color: white;
+    `
+  )};
 `;
 
+// background-color: ${props => (props.selected ? "transparent" : "rgba(0, 0, 0, 0.1)")};
+
 const PendingEntryFormattedElement = styled.div`
-  font-family: Source Code Pro, Courier New, Courier, monospace;
+  font-family: var(--font-fam-mono);
+  font-size: var(--font-size-mono-reg);
   white-space: pre;
-  font-size: 13px;
-  margin: 0 0 8px;
 `;
 
 const PendingEntrySourceNameElement = styled.div`
-  margin: 0 0 8px;
+  border-top: 1px solid #fff;
+  margin: 6px 0 2px;
+  padding: 6px 0 0px;
+  white-space: nowrap;
 `;
 
 const PendingEntrySourceFilenameElement = styled.div`
+  white-space: nowrap;
+`;
+
+const PendingEntryInfoElement = styled.div`
+  text-align: center;
 `;
 
 export class PendingEntryHighlightState {
@@ -96,17 +114,18 @@ class PendingEntryComponent extends React.PureComponent<{
         onClick={this.handleSelect}
         selected={this.props.selected}
         highlighted={this.props.highlighted}
-        isOdd={this.props.index % 2 === 0}
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}
       >
         <PendingEntryFormattedElement>
           {entry.formatted.trim()}
         </PendingEntryFormattedElement>
-        <PendingEntrySourceNameElement>
-          <em>Source:</em> {source}
-        </PendingEntrySourceNameElement>
-        {filename && (
+        {this.props.selected && (
+          <PendingEntrySourceNameElement>
+            <em>Source:</em> {source}
+          </PendingEntrySourceNameElement>
+        )}
+        {this.props.selected && filename && (
           <PendingEntrySourceFilenameElement>
             <em>File:</em> {filename}
             {lineno != undefined && `:${lineno}`}

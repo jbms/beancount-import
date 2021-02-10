@@ -24,7 +24,7 @@ import { SourceDataComponent } from "./source_data";
 
 import commonPrefix from "common-prefix";
 
-import "react-tabs/style/react-tabs.css";
+import "./styles.css";
 
 import styled from "styled-components";
 import { VirtualListScrollState } from "./virtual_list";
@@ -384,7 +384,7 @@ class AppComponent
 }
 
 const link = document.createElement('link');
-link.setAttribute('href', 'https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+link.setAttribute('href', 'https://fonts.googleapis.com/css2?family=Inconsolata&family=Open+Sans&display=swap');
 link.setAttribute('rel', 'stylesheet');
 document.body.appendChild(link);
 
