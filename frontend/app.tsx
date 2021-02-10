@@ -88,16 +88,16 @@ const AppTabPanel = styled(TabPanel).attrs({ selectedClassName: "" })`
 `;
 
 enum TabKeys {
-  errors,
-  invalid,
+  candidates,
   uncleared,
-  candidates
+  invalid,
+  errors,
 }
 
 enum DataTabKeys {
   pending,
   journal,
-  source
+  source,
 }
 
 function enumValueFor<U>(
@@ -257,24 +257,12 @@ class AppComponent
         <CommonJournalPrefixContext.Provider value={commonJournalPrefix}>
           <AppRootElement>
             <SplitContainer>
-              <SplitChild style={{ flexDirection: "column" }}>
+              <SplitChild style={{ flexDirection: "column", order: 1 }}>
                 <AppTabs
                   onSelect={this.handleSelectTab}
                   selectedIndex={this.state.selectedTab}
                 >
                   <TabList>
-                    <Tab>
-                      Errors
-                      {getOptionalCount(this.state.errors)}
-                    </Tab>
-                    <Tab>
-                      Invalid
-                      {getOptionalCount(this.state.invalid)}
-                    </Tab>
-                    <Tab>
-                      Uncleared
-                      {getOptionalCount(this.state.uncleared)}
-                    </Tab>
                     <Tab>
                       Candidates
                       {this.state.candidates != null &&
@@ -282,20 +270,19 @@ class AppComponent
                         ? ` (${this.state.candidates.candidates.length})`
                         : undefined}
                     </Tab>
+                    <Tab>
+                      Uncleared
+                      {getOptionalCount(this.state.uncleared)}
+                    </Tab>
+                    <Tab>
+                      Invalid
+                      {getOptionalCount(this.state.invalid)}
+                    </Tab>
+                    <Tab>
+                      Errors
+                      {getOptionalCount(this.state.errors)}
+                    </Tab>
                   </TabList>
-                  <AppTabPanel>
-                    <JournalErrorsComponent listState={this.errorListState} />
-                  </AppTabPanel>
-                  <AppTabPanel>
-                    <InvalidReferencesComponent
-                      listState={this.invalidListState}
-                    />
-                  </AppTabPanel>
-                  <AppTabPanel>
-                    <UnclearedPostingsComponent
-                      listState={this.unclearedListState}
-                    />
-                  </AppTabPanel>
                   <AppTabPanel>
                     {hasCandidates && !this.state.journalDirty ? (
                       <CandidatesComponent
@@ -318,6 +305,19 @@ class AppComponent
                       ? "Candidates not available due to unsaved local edits to journal."
                       : undefined}
                     {!hasCandidates ? "No pending entries." : undefined}
+                  </AppTabPanel>
+                  <AppTabPanel>
+                    <UnclearedPostingsComponent
+                      listState={this.unclearedListState}
+                    />
+                  </AppTabPanel>
+                  <AppTabPanel>
+                    <InvalidReferencesComponent
+                      listState={this.invalidListState}
+                    />
+                  </AppTabPanel>
+                  <AppTabPanel>
+                    <JournalErrorsComponent listState={this.errorListState} />
                   </AppTabPanel>
                 </AppTabs>
               </SplitChild>
