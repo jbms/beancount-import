@@ -18,7 +18,6 @@ const PendingEntryListElement = styled(PendingVirtualListComponent)`
   overflow-y: scroll;
   flex: 1;
   flex-basis: 0px;
-  background-color: var(--color-primary-bg);
   padding: 8px 0;
 `;
 

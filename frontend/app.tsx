@@ -90,7 +90,7 @@ const AppTabPanel = styled(TabPanel).attrs({ selectedClassName: "" })`
 const StatusBar = styled.div`
   padding: 4px;
   border-top: 1px solid var(--color-main-accent);
-  background-color: var(--color-primary-bg);
+  background-color: var(--color-main-bg);
 `;
 
 enum TabKeys {

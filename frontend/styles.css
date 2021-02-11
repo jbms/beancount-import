@@ -6,12 +6,10 @@
   --font-size-sans-small: 12px;
   --font-size-mono-reg: 15px;
 
-  --color-main-bg: #ddd;
+  --color-main-bg: #fff;
   --color-main-text: black;
   --color-main-text-on-select: white;
   --color-main-accent: rgba(0, 0, 0, 0.5);
-
-  --color-primary-bg: #fff;
 
   --color-pending-highlight-bg: #eee;
   --color-pending-highlight-text: var(--color-main-text);
@@ -21,22 +19,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-main-bg: #0d131a;
-    --color-main-text: white;
-    --color-main-text-on-select: white;
+    --color-main-bg:  #0f171f;
+    --color-main-text: rgba(255, 255, 255, 0.87);
+    --color-main-text-on-select: rgba(255, 255, 255, 0.87);
     --color-main-accent: rgba(255, 255, 255, 0.5);
 
-    --color-primary-bg: #1b2735;
+    --color-pending-highlight-bg: #182431;
 
-    --color-pending-highlight-bg: #213040;
-
-    --color-pending-select-bg: #324c66;
+    --color-pending-select-bg:  #213040;
   }
 }
 
 body {
   color: var(--color-main-text);
-  background-color: var(--color-primary-bg);
+  background-color: var(--color-main-bg);
   font-family: var(--font-fam-sans);
   font-size: var(--font-size-sans-reg);
 }
@@ -64,27 +60,6 @@ body {
   cursor: default;
   border-bottom: 4px solid var(--color-main-text-on-select);
   font-weight: 500;
-}
-
-.react-tabs__tab--disabled {
-  color: GrayText;
-  cursor: default;
-}
-
-.react-tabs__tab:focus {
-  box-shadow: 0 0 5px hsl(208, 99%, 50%);
-  border-color: hsl(208, 99%, 50%);
-  outline: none;
-}
-
-.react-tabs__tab:focus:after {
-  content: "";
-  position: absolute;
-  height: 5px;
-  left: -4px;
-  right: -4px;
-  bottom: -5px;
-  background: var(--color-primary-bg);
 }
 
 .react-tabs__tab-panel {
