@@ -70,4 +70,41 @@ body {
   display: block;
 }
 
+.action-button__group {
+  margin: 8px 4px;
+  display: inline-block;
+}
 
+.action-button__group:first-of-type {
+  margin-left: 0;
+}
+
+.action-button__group:last-of-type {
+  margin-right: 0;
+}
+
+.action-button {
+  border: 1px solid var(--color-main-accent);
+  background-color: var(--color-main-bg);
+  color: var(--color-main-text);
+  padding: 12px;
+  cursor: pointer;
+  border-right: none;
+}
+
+.action-button:first-of-type {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  
+}
+
+.action-button:last-of-type {
+  border-right: 1px solid var(--color-main-accent);
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.action-button:hover, .action-button:focus {
+  background-color: var(--color-pending-highlight-bg);
+  color: var(--color-pending-highlight-text);
+}
