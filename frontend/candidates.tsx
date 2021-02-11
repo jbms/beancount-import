@@ -379,7 +379,11 @@ export class CandidatesComponent extends React.PureComponent<
             </button>
           </div>
           <div className="action-button__group">
-            <button onClick={this.retrain} className="action-button">
+            <button
+              onClick={this.retrain}
+              title="Retrain classifier, keyboard shortcut: t"
+              className="action-button"
+            >
               Retrain
             </button>
           </div>
@@ -444,7 +448,7 @@ export class CandidatesComponent extends React.PureComponent<
             </button>
             <button
               onClick={this.handleIgnore}
-              title="Add the selected candidate to the ignore file."
+              title="Add the selected candidate to the ignore file, keyboard shortcut: i"
               className="action-button"
             >
               Ignore
