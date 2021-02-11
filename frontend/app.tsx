@@ -263,7 +263,45 @@ class AppComponent
         <CommonJournalPrefixContext.Provider value={commonJournalPrefix}>
           <AppRootElement>
             <SplitContainer>
-              <SplitChild style={{ flexDirection: "column", order: 1 }}>
+            <SplitChild>
+                <AppTabs
+                  onSelect={this.handleSelectDataTab}
+                  selectedIndex={this.state.selectedDataTab}
+                >
+                  <TabList>
+                    <Tab>
+                      Pending
+                      {getOptionalCount(this.state.pending)}
+                    </Tab>
+                    <Tab>Editor</Tab>
+                    <Tab>Source data</Tab>
+                  </TabList>
+                  <AppTabPanel>
+                    {this.state.pending != null && (
+                      <PendingEntriesComponent
+                        selectedIndex={this.state.pending_index!}
+                        listState={this.pendingListState}
+                        highlightState={this.pendingHighlightState}
+                        onSelect={this.handleSelectPending}
+                      />
+                    )}
+                  </AppTabPanel>
+                  <AppTabPanel forceRender={true}>
+                    <EditorComponent
+                      ref={this.editorRef}
+                      commonJournalPrefix={commonJournalPrefix}
+                      serverConnection={this.props.serverConnection}
+                      dirtyStateDidChange={this.dirtyStateDidChange}
+                    />
+                  </AppTabPanel>
+                  <AppTabPanel>
+                    <SourceDataComponent
+                      candidateSelectionState={this.candidateSelectionState}
+                    />
+                  </AppTabPanel>
+                </AppTabs>
+              </SplitChild>
+              <SplitChild style={{ flexDirection: "column" }}>
                 <AppTabs
                   onSelect={this.handleSelectTab}
                   selectedIndex={this.state.selectedTab}
@@ -327,45 +365,7 @@ class AppComponent
                   </AppTabPanel>
                 </AppTabs>
               </SplitChild>
-              <SplitChild>
-                <AppTabs
-                  onSelect={this.handleSelectDataTab}
-                  selectedIndex={this.state.selectedDataTab}
-                >
-                  <TabList>
-                    <Tab>
-                      Pending
-                      {getOptionalCount(this.state.pending)}
-                    </Tab>
-                    <Tab>Editor</Tab>
-                    <Tab>Source data</Tab>
-                  </TabList>
-                  <AppTabPanel>
-                    {this.state.pending != null && (
-                      <PendingEntriesComponent
-                        selectedIndex={this.state.pending_index!}
-                        listState={this.pendingListState}
-                        highlightState={this.pendingHighlightState}
-                        onSelect={this.handleSelectPending}
-                      />
-                    )}
-                  </AppTabPanel>
-                  <AppTabPanel forceRender={true}>
-                    <EditorComponent
-                      ref={this.editorRef}
-                      commonJournalPrefix={commonJournalPrefix}
-                      serverConnection={this.props.serverConnection}
-                      dirtyStateDidChange={this.dirtyStateDidChange}
-                    />
-                  </AppTabPanel>
-                  <AppTabPanel>
-                    <SourceDataComponent
-                      candidateSelectionState={this.candidateSelectionState}
-                    />
-                  </AppTabPanel>
-                </AppTabs>
-              </SplitChild>
-            </SplitContainer>
+              </SplitContainer>
             <StatusBar>{this.state.message || ""}</StatusBar>
           </AppRootElement>
         </CommonJournalPrefixContext.Provider>
