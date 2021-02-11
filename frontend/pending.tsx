@@ -27,8 +27,8 @@ const PendingEntryElement = styled<
 >("div")`
   cursor: pointer;
   font-size: var(--font-size-sans-small);
-  padding: 12px 9px;
-  border-bottom: 1px solid #ccc;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--color-main-accent);
   min-width: 100%;
   box-sizing: border-box;
   ${props => (props.highlighted && 

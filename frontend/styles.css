@@ -1,6 +1,6 @@
 :root {
-  --font-fam-sans: Roboto, "Helvetica Neue", HelveticaNeue, Helvetica,
-    Arial, sans-serif;
+  --font-fam-sans: Roboto, "Helvetica Neue", HelveticaNeue, Helvetica, Arial,
+    sans-serif;
   --font-fam-mono: "Inconsolata", "Courier New", Courier, monospace;
   --font-size-sans-reg: 14px;
   --font-size-sans-small: 12px;
@@ -15,18 +15,40 @@
   --color-pending-highlight-text: var(--color-main-text);
 
   --color-pending-select-bg: #468;
+
+  --color-line-change-delete: hsla(0, 100%, 26%, 1);
+  --color-line-change-add: hsla(143, 85%, 27%, 1);
+
+  --color-bg-group-1: hsla(0, 100%, 83%, 0.6);
+  --color-bg-group-2: hsla(120, 100%, 83%, 0.6);
+  --color-bg-group-3: hsla(180, 100%, 83%, 0.6);
+  --color-bg-group-4: hsla(300, 100%, 83%, 0.6);
+  --color-bg-group-5: hsla(180, 100%, 83%, 0.6);
+  --color-bg-group-6: hsla(60, 100%, 83%, 0.6);
+  --color-bg-group-7: hsla(343, 100%, 83%, 0.6);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-main-bg:  #0f171f;
+    --color-main-bg: #0f171f;
     --color-main-text: rgba(255, 255, 255, 0.87);
     --color-main-text-on-select: rgba(255, 255, 255, 0.87);
     --color-main-accent: rgba(255, 255, 255, 0.5);
 
     --color-pending-highlight-bg: #182431;
 
-    --color-pending-select-bg:  #213040;
+    --color-pending-select-bg: #213040;
+
+    --color-line-change-delete: hsl(0, 100%, 76%, 0.87);
+    --color-line-change-add: hsla(143, 100%, 76%, .87);
+
+    --color-bg-group-1: hsla(0, 100%, 60%, 0.4);
+    --color-bg-group-2: hsla(120, 100%, 60%, 0.4);
+    --color-bg-group-3: hsla(180, 100%, 60%, 0.4);
+    --color-bg-group-4: hsla(300, 100%, 60%, 0.4);
+    --color-bg-group-5: hsla(180, 100%, 60%, 0.4);
+    --color-bg-group-6: hsla(60, 100%, 60%, 0.4);
+    --color-bg-group-7: hsla(343, 100%, 60%, 0.4);
   }
 }
 
@@ -95,7 +117,6 @@ body {
 .action-button:first-of-type {
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
-  
 }
 
 .action-button:last-of-type {
@@ -104,7 +125,8 @@ body {
   border-bottom-right-radius: 5px;
 }
 
-.action-button:hover, .action-button:focus {
+.action-button:hover,
+.action-button:focus {
   background-color: var(--color-pending-highlight-bg);
   color: var(--color-pending-highlight-text);
 }

@@ -31,13 +31,13 @@ interface CandidateComponentProps {
 }
 
 const groupBackgroundColors = [
-  "#faa",
-  "#afa",
-  "#aff",
-  "#faf",
-  "#aff",
-  "#ffa",
-  "#f8a"
+  "var(--color-bg-group-1)",
+  "var(--color-bg-group-2)",
+  "var(--color-bg-group-3)",
+  "var(--color-bg-group-4)",
+  "var(--color-bg-group-5)",
+  "var(--color-bg-group-6)",
+  "var(--color-bg-group-7)"
 ];
 
 const AccountSubstitutionBackground = styled<{ groupNumber: number }, "div">(
@@ -73,14 +73,14 @@ const lineChangeElements = new Map([
   [
     LineChangeType.delete,
     styled.div`
-      color: red;
+      color: var(--color-line-change-delete);
     `
   ],
   [LineChangeType.context, styled.div``],
   [
     LineChangeType.insert,
     styled.div`
-      color: green;
+      color: var(--color-line-change-add);
     `
   ]
 ]);
