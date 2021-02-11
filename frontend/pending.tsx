@@ -19,6 +19,7 @@ const PendingEntryListElement = styled(PendingVirtualListComponent)`
   flex: 1;
   flex-basis: 0px;
   background-color: var(--color-primary-bg);
+  padding: 8px 0;
 `;
 
 const PendingEntryElement = styled<
@@ -26,10 +27,11 @@ const PendingEntryElement = styled<
   "div"
 >("div")`
   cursor: pointer;
-  font-family: var(--font-fam-sans);
   font-size: var(--font-size-sans-small);
-  padding: 12px 6px;
+  padding: 12px 9px;
   border-bottom: 1px solid #ccc;
+  min-width: 100%;
+  box-sizing: border-box;
   ${props => (props.highlighted && 
     `
     background-color: var(--color-pending-highlight-bg);
@@ -39,7 +41,7 @@ const PendingEntryElement = styled<
   ${props => (props.selected && 
     `
     background-color: var(--color-pending-select-bg);
-    color: white;
+    color: var(--color-main-text-on-select);
     `
   )};
 `;

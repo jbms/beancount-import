@@ -87,6 +87,12 @@ const AppTabPanel = styled(TabPanel).attrs({ selectedClassName: "" })`
   flex: 1;
 `;
 
+const StatusBar = styled.div`
+  padding: 4px;
+  border-top: 1px solid var(--color-main-accent);
+  background-color: var(--color-primary-bg);
+`;
+
 enum TabKeys {
   candidates,
   uncleared,
@@ -360,7 +366,7 @@ class AppComponent
                 </AppTabs>
               </SplitChild>
             </SplitContainer>
-            <div>{this.state.message || ""}</div>
+            <StatusBar>{this.state.message || ""}</StatusBar>
           </AppRootElement>
         </CommonJournalPrefixContext.Provider>
       </AssociatedDataViewContext.Provider>
@@ -384,7 +390,7 @@ class AppComponent
 }
 
 const link = document.createElement('link');
-link.setAttribute('href', 'https://fonts.googleapis.com/css2?family=Inconsolata&family=Open+Sans&display=swap');
+link.setAttribute('href', 'https://fonts.googleapis.com/css2?family=Inconsolata&family=Roboto:wght@400;500&display=swap');
 link.setAttribute('rel', 'stylesheet');
 document.body.appendChild(link);
 

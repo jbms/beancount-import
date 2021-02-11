@@ -547,7 +547,7 @@ export class VirtualList extends React.PureComponent<VirtualListProps> {
                 top: 0,
                 left: 0,
                 height: totalSpecifiedHeight,
-                width: 1
+                width: 1,
               }}
               ref={this.spacerRef}
             />
@@ -556,7 +556,8 @@ export class VirtualList extends React.PureComponent<VirtualListProps> {
                 style={{
                   position: "absolute",
                   left: 0,
-                  bottom: `calc(100% - ${renderAnchorPixel}px)`
+                  bottom: `calc(100% - ${renderAnchorPixel}px)`,
+                  right: 0,
                 }}
                 ref={this.topChildrenRef}
               >
@@ -570,7 +571,8 @@ export class VirtualList extends React.PureComponent<VirtualListProps> {
                 style={{
                   position: "absolute",
                   left: 0,
-                  top: renderAnchorPixel
+                  top: renderAnchorPixel,
+                  right: 0,
                 }}
                 ref={this.bottomChildrenRef}
               >
