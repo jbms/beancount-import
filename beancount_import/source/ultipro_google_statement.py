@@ -297,8 +297,9 @@ def parse(text: str) -> ParseResult:
 def parse_filename(path: str):
     PDFTOTEXT_ENV='PDFTOTEXT_BINARY'
     pdftotext='pdftotext'
-    if os.getenv(PDFTOTEXT_ENV):
-        pdftotext=os.getenv(PDFTOTEXT_ENV)
+    replacement_pdftotext = os.getenv(PDFTOTEXT_ENV)
+    if replacement_pdftotext is not None:
+        pdftotext=replacement_pdftotext
     text = subprocess.check_output([pdftotext, '-raw', path, '-']).decode()
     return parse(text)
 
