@@ -28,7 +28,7 @@ appears in your Schwab CSV downloads. For example:
          schwab_account: "Brokerage XXXX-1234"
 
 You can also optionally specify accounts to be used for recording dividends, capital
-gains, fees, and taxes:
+gains, interest, fees, and taxes:
 
     2015-11-09 open Assets:Investments:Schwab:Brokerage-1234
          schwab_account: "Brokerage XXXX-1234"
@@ -60,7 +60,8 @@ download non-overlapping CSV statements.
 
 * Not all Schwab "actions" (transaction types) are supported. There's no reference for all
 the possible actions, and Schwab could add new ones any time. If your CSV includes an
-unsupported action, you'll get a `ValueError: 'Foo' is not a valid BrokerageAction`. Please
+unsupported action, you'll get a `ValueError: 'Foo' is not a valid BrokerageAction` or
+`ValueError: 'Foo' is not a valid BankingEntryType` for banking files. Please
 file an issue (and ideally a pull request!) to add support for that action.
 
 """
@@ -156,14 +157,11 @@ class BankingEntryType(enum.Enum):
 
 
 @dataclass(frozen=True)
-class RawBankEntry:
+class RawEntry:
     account: str
     date: datetime.date
-    entry_type: BankingEntryType
-    check_no: Optional[int]
     description: str
     amount: Optional[Amount]
-    running_balance: Amount
     filename: str
     line: int
 
@@ -172,13 +170,25 @@ class RawBankEntry:
 
     def get_processed_entry(
         self, account: str, account_meta: Meta
-    ) -> Optional[BankTransaction]:
+    ) -> Optional[TransactionEntry]:
+        raise NotImplementedError("subclasses must implement get_processed_entry")
+
+
+@dataclass(frozen=True)
+class RawBankEntry(RawEntry):
+    entry_type: BankingEntryType
+    check_no: Optional[int]
+    running_balance: Amount
+
+    def get_processed_entry(
+        self, account: str, account_meta: Meta
+    ) -> Optional[TransactionEntry]:
         interest_account = self.get_meta_account(account_meta,
                                             INTEREST_INCOME_ACCOUNT_KEY)
-        shared_attrs: SharedAttrsDict = dict(
+        shared_attrs: SharedAttrsDict = SharedAttrsDict(
             account=account,
             date=self.date,
-            entry_type=self.entry_type,
+            action=self.entry_type,
             description=self.description,
             amount=self.amount,
             filename=self.filename,
@@ -187,40 +197,32 @@ class RawBankEntry:
         if self.amount is None:
             return None
         if self.entry_type == BankingEntryType.INTADJUST:
-            return NonBrokerageBankInterest(
+            return BankInterest(
                interest_account=interest_account,
                **shared_attrs,
             )
-        return BankTransaction(
+        return TransactionEntry(
             account=account,
             date=self.date,
-            entry_type=self.entry_type,
+            action=self.entry_type,
             description=self.description,
             amount=self.amount,
             filename=self.filename,
             line=self.line,
         )
 
+
 @dataclass(frozen=True)
-class RawBrokerageEntry:
-    account: str
-    date: datetime.date
+class RawBrokerageEntry(RawEntry):
     action: BrokerageAction
     symbol: str
-    description: str
     quantity: Optional[Decimal]
     price: Optional[Decimal]
     fees: Optional[Decimal]
-    amount: Optional[Amount]
-    filename: str
-    line: int
-
-    def get_meta_account(self, account_meta: Meta, key: str) -> str:
-        return cast(str, account_meta.get(key, FIXME_ACCOUNT))
 
     def get_processed_entry(
         self, account: str, account_meta: Meta
-    ) -> Optional[BrokerageTransaction]:
+    ) -> Optional[TransactionEntry]:
         capital_gains_account = self.get_meta_account(account_meta, CAPITAL_GAINS_ACCOUNT_KEY)
         fees_account = self.get_meta_account(account_meta, FEES_ACCOUNT_KEY)
         interest_account = self.get_meta_account(account_meta, INTEREST_INCOME_ACCOUNT_KEY)
@@ -261,7 +263,7 @@ class RawBrokerageEntry:
                 **shared_attrs,
             )
         if self.action == BrokerageAction.BANK_INTEREST:
-            return BrokerageBankInterest(
+            return BankInterest(
                 interest_account=interest_account,
                 **shared_attrs,
             )
@@ -321,7 +323,7 @@ class RawBrokerageEntry:
 class SharedAttrsDict(TypedDict):
     account: str
     date: datetime.date
-    action: BrokerageAction
+    action: Union[BrokerageAction, BankingEntryType]
     description: str
     amount: Amount
     filename: str
@@ -361,89 +363,10 @@ class DirectiveEntry:
 
 
 @dataclass(frozen=True)
-class BankTransaction(DirectiveEntry):
+class TransactionEntry(DirectiveEntry):
     account: str
     date: datetime.date
-    entry_type: BankingEntryType
-    description: str
-    amount: Amount
-    filename: str
-    line: int
-
-    def get_action(self) -> str:
-        return self.entry_type.value
-
-    def get_directive(self) -> Transaction:
-        return Transaction(
-            meta=None,
-            date=self.date,
-            flag=FLAG_OKAY,
-            payee=None,
-            narration=f"{self.get_narration_prefix()} - {self.description}",
-            tags=EMPTY_SET,
-            links=EMPTY_SET,
-            postings=self.get_postings(),
-        )
-
-    def get_postings(self) -> List[Posting]:
-        return [
-            Posting(
-                account=self.get_primary_account(),
-                units=self.amount,
-                cost=None,
-                price=None,
-                flag=None,
-                meta=self.get_meta(),
-            ),
-            Posting(
-                account=self.get_other_account(),
-                units=self.get_other_units(),
-                cost=None,
-                price=None,
-                flag=None,
-                meta={},
-            ),
-        ]
-
-    def get_primary_account(self) -> str:
-        sub = self.get_sub_account()
-        return f"{self.account}:{sub}" if sub is not None else self.account
-
-    def get_accounts(self) -> List[str]:
-        return [self.get_primary_account()]
-
-    def get_sub_account(self) -> Optional[str]:
-        return None
-
-    def get_other_account(self) -> str:
-        return FIXME_ACCOUNT
-
-    def get_other_units(self) -> Union[Amount, Type[MISSING]]:
-        return -self.amount
-
-    def get_meta(self) -> Meta:
-        return OrderedDict(
-            source_desc=self.description,
-            date=self.date,
-            **{POSTING_META_ACTION_KEY: self.get_action()},
-        )
-
-    def get_narration_prefix(self) -> str:
-        return self.entry_type.value
-
-
-@dataclass(frozen=True)
-class NonBrokerageBankInterest(BankTransaction):
-    interest_account: str
-
-    def get_other_account(self) -> str:
-        return self.interest_account
-
-@dataclass(frozen=True)
-class BrokerageTransaction(DirectiveEntry):
-    account: str
-    date: datetime.date
-    action: BrokerageAction
+    action: Union[BrokerageAction, BankingEntryType]
     description: str
     amount: Amount
     filename: str
@@ -511,11 +434,11 @@ class BrokerageTransaction(DirectiveEntry):
         )
 
     def get_narration_prefix(self) -> str:
-        raise NotImplementedError()
+        return self.action.value
 
 
 @dataclass(frozen=True)
-class Fee(BrokerageTransaction):
+class Fee(TransactionEntry):
     fees_account: str
 
     def get_sub_account(self) -> Optional[str]:
@@ -529,7 +452,7 @@ class Fee(BrokerageTransaction):
 
 
 @dataclass(frozen=True)
-class TaxPaid(BrokerageTransaction):
+class TaxPaid(TransactionEntry):
     taxes_account: str
 
     def get_sub_account(self) -> Optional[str]:
@@ -542,7 +465,7 @@ class TaxPaid(BrokerageTransaction):
         return "INVBANKTRAN"
 
 @dataclass(frozen=True)
-class MarginInterest(BrokerageTransaction):
+class MarginInterest(TransactionEntry):
     def get_sub_account(self) -> Optional[str]:
         return "Cash"
 
@@ -551,7 +474,7 @@ class MarginInterest(BrokerageTransaction):
 
 
 @dataclass(frozen=True)
-class StockPlanActivity(BrokerageTransaction):
+class StockPlanActivity(TransactionEntry):
     symbol: str
 
     def get_cost(self) -> Optional[CostSpec]:
@@ -577,7 +500,7 @@ class StockPlanActivity(BrokerageTransaction):
 
 
 @dataclass(frozen=True)
-class CashDividend(BrokerageTransaction):
+class CashDividend(TransactionEntry):
     symbol: str
     dividend_account: str
 
@@ -592,10 +515,13 @@ class CashDividend(BrokerageTransaction):
 
 
 @dataclass(frozen=True)
-class BrokerageBankInterest(BrokerageTransaction):
+class BankInterest(TransactionEntry):
     interest_account: str
 
     def get_sub_account(self) -> Optional[str]:
+        if self.action == BankingEntryType.INTADJUST:
+            # Checking interest, cash is held in main account
+            return None
         return "Cash"
 
     def get_other_account(self) -> str:
@@ -606,7 +532,7 @@ class BrokerageBankInterest(BrokerageTransaction):
 
 
 @dataclass(frozen=True)
-class Transfer(BrokerageTransaction):
+class Transfer(TransactionEntry):
     def get_sub_account(self) -> Optional[str]:
         if self.amount.currency != CASH_CURRENCY:
             return self.amount.currency
@@ -617,7 +543,7 @@ class Transfer(BrokerageTransaction):
 
 
 @dataclass(frozen=True)
-class Sell(BrokerageTransaction):
+class Sell(TransactionEntry):
     capital_gains_account: str
     fees_account: str
     symbol: str
@@ -698,7 +624,7 @@ class Sell(BrokerageTransaction):
         return [self.get_primary_account(), self.get_other_account()]
 
 @dataclass(frozen=True)
-class Buy(BrokerageTransaction):
+class Buy(TransactionEntry):
     capital_gains_account: str
     fees_account: str
     symbol: str
@@ -851,8 +777,7 @@ class EntryProcessor:
         self.missing_accounts: Set[str] = set()
         self.found_accounts: Set[str] = set()
 
-    def process_entry(self, raw_entry: Union[RawBrokerageEntry, RawBankEntry]) -> \
-            Optional[Union[RawBrokerageEntry, RawBankEntry]]:
+    def process_entry(self, raw_entry: RawEntry) -> Optional[TransactionEntry]:
         account = self.schwab_to_account.get(raw_entry.account)
         if account is None:
             self.missing_accounts.add(raw_entry.account)
@@ -861,8 +786,8 @@ class EntryProcessor:
         return raw_entry.get_processed_entry(account, account_meta)
 
     def process_entries(
-        self, raw_entries: Iterable[Union[RawBrokerageEntry, RawBankEntry]]
-    ) -> Iterator[Union[RawBrokerageEntry, RawBankEntry]]:
+        self, raw_entries: Iterable[RawEntry]
+    ) -> Iterator[TransactionEntry]:
         for raw_entry in raw_entries:
             processed = self.process_entry(raw_entry)
             if processed is not None:
@@ -929,7 +854,7 @@ class SchwabSource(DescriptionBasedSource):
         super().__init__(log_status)
         self.transaction_csv_filename = transaction_csv_filenames
         self.position_csv_filenames = position_csv_filenames
-        self.raw_entries: List[Union[RawBrokerageEntry, RawBankEntry]] = []
+        self.raw_entries: List[RawEntry] = []
         self.raw_positions: List[RawPosition] = []
         for csv_filename in transaction_csv_filenames:
             self.raw_entries.extend(_load_transactions(csv_filename))
@@ -979,7 +904,7 @@ class SchwabSource(DescriptionBasedSource):
 
     def _get_pending_and_invalid_entries(
         self,
-        source_entries: Iterable[BrokerageTransaction],
+        source_entries: Iterable[TransactionEntry],
         balance_entries: Iterable[BalanceEntry],
         price_entries: Iterable[PriceEntry],
         journal_entries: Iterable[Directive],
@@ -1053,10 +978,6 @@ class SchwabSource(DescriptionBasedSource):
             return None
         if not posting.account in account_set:
             return None
-        if not POSTING_META_ACTION_KEY in posting.meta:
-            return None
-        if not POSTING_DATE_KEY in posting.meta:
-            return None
         source_desc = cast(str, posting.meta.get(SOURCE_DESC_KEYS[0], ""))
         if not source_desc:
             return None
@@ -1074,18 +995,8 @@ class SchwabSource(DescriptionBasedSource):
             source_desc,
         )
 
-    # This source is authoritative for the Schwab accounts you download CSVs
-    # for. That allows Uncleared postings to be called out on the WebUI until
-    # they appear in the Schwab history. An example would be initiating a
-    # 2 day transfer from a bank. That transaction will debit on your bank
-    # several days before it appears on your Schwab history.
-    def is_posting_cleared(self, posting: Posting):
-        if posting.meta is None:
-            return False
-        return "source_desc" in posting.meta and "schwab_action" in posting.meta
 
-
-def _load_transactions(filename: str) -> List[Union[RawBrokerageEntry, RawBankEntry]]:
+def _load_transactions(filename: str) -> List[RawEntry]:
     expected_brokerage_field_names = [
         "Date",
         "Action",
@@ -1126,11 +1037,14 @@ def _load_transactions(filename: str) -> List[Union[RawBrokerageEntry, RawBankEn
 
 def _load_banking_transactions(reader: csv.DictReader, account: str, filename):
     entries = []
-    transaction_start_line = 2
-    POSSIBLE_DATE=re.compile(r"[\d/\\]+")
+    transaction_start_line = 1
+    non_posting_patterns = [
+        "Pending Transactions are not reflected within this sort criterion.",
+        "Posted Transactions",
+    ]
     for lno, row in enumerate(reader):
         # First two rows are info messages.
-        if not POSSIBLE_DATE.match(row["Date"]):
+        if row["Date"] in non_posting_patterns:
             transaction_start_line += 1
             continue
         date = _convert_date(row["Date"])
@@ -1180,7 +1094,7 @@ def _load_brokerage_transactions(reader: csv.DictReader, account: str,
         action = BrokerageAction(row["Action"])
         symbol = STRIP_FROM_SYMBOL_RE.sub("", row["Symbol"])
         description = row["Description"]
-        quantity = D(row["Quantity"]) if row["Quantity"] else None
+        quantity = _convert_decimal(row["Quantity"])
         price = _convert_decimal(row["Price"])
         fees = _convert_decimal(row["Fees & Comm"])
         amount = _convert_decimal(row["Amount"])
@@ -1317,7 +1231,7 @@ def _load_positions_csv(
         if symbol == "Cash & Cash Investments":
             symbol = "Cash"
         symbol = STRIP_FROM_SYMBOL_RE.sub("", symbol)
-        quantity = _convert_int(row["Quantity"])
+        quantity = _convert_decimal(row["Quantity"])
         price_d = _convert_decimal(row["Price"])
         price = None if price_d is None else Amount(price_d, currency=CASH_CURRENCY)
         value_d = _convert_decimal(row["Market Value"])

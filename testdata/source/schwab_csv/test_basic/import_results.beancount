@@ -151,7 +151,7 @@
 ;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 10, "type": "text/csv"}
 
 ; features: []
-2020-01-31 * "INTADJUST - Interest Paid"
+2020-01-31 * "INTEREST - Interest Paid"
   Assets:Schwab:Checking   0.09 USD
     date: 2020-01-31
     schwab_action: "INTADJUST"
@@ -520,6 +520,27 @@
     schwab_action: "ACH"
     source_desc: "JPMorgan Chase Ext Trnsfr"
   Expenses:FIXME          -10500.00 USD
+
+;; date: 2020-11-13
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 5, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-10500.00 USD",
+;               "date": "2020-11-13",
+;               "key_value_pairs": {
+;                 "desc": "Funds Transfer to Brokerage -9999",
+;                 "schwab_action": "TRANSFER"
+;               },
+;               "source_account": "Assets:Schwab:Checking"
+;             }
+;           ]
+2020-11-13 * "TRANSFER - Funds Transfer to Brokerage -9999"
+  Assets:Schwab:Checking  -10500.00 USD
+    date: 2020-11-13
+    schwab_action: "TRANSFER"
+    source_desc: "Funds Transfer to Brokerage -9999"
+  Expenses:FIXME           10500.00 USD
 
 ;; date: 2020-11-15
 ;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 5, "type": "text/csv"}

@@ -1,7 +1,8 @@
 Transactions  for Checking account EAC as of 12/23/2020 16:00:10 ET
 "Date","Type","Check #","Description","Withdrawal (-)","Deposit (+)","RunningBalance"
 "Pending Transactions are not reflected within this sort criterion."
-"Posted Transactions""11/13/2020","TRANSFER","","Funds Transfer to Brokerage -9999","$10,500.00","","$50.01"
+"Posted Transactions"
+"11/13/2020","TRANSFER","","Funds Transfer to Brokerage -9999","$10,500.00","","$50.01"
 "11/13/2020","ACH","","JPMorgan Chase Ext Trnsfr","","$10,500.00","$10,550.01"
 "10/27/2020","ACH","","JPMorgan Chase Auth Debit","$1.10","","$2,550.00"
 "10/27/2020","ACH","","JPMorgan Chase Auth Crdt","","$1.56","$2,550.55"
