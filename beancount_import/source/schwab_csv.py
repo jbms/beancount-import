@@ -981,6 +981,7 @@ class SchwabSource(DescriptionBasedSource):
         source_desc = cast(str, posting.meta.get(SOURCE_DESC_KEYS[0], ""))
         if not source_desc:
             return None
+        action = cast(str, posting.meta.get(POSTING_META_ACTION_KEY, ""))
         units = posting.units
         final_units = None
         if isinstance(units, Amount) or units is None:
@@ -989,7 +990,7 @@ class SchwabSource(DescriptionBasedSource):
             assert False, units
         return (
             posting.account,
-            cast(str, posting.meta[POSTING_META_ACTION_KEY]),
+            action,
             cast(datetime.date, posting.meta[POSTING_DATE_KEY]),
             final_units,
             source_desc,
