@@ -4,13 +4,18 @@
 1900-01-01 open Assets:Schwab:Brokerage-1234
     schwab_account: "Brokerage XXXX-1234"
     div_income_account: "Income:Dividend:Schwab"
+    interest_income_account: "Income:Interest:Schwab"
     capital_gains_account: "Income:Capital-Gains:Schwab"
     fees_account: "Expenses:Brokerage-Fees:Schwab"
 1900-01-01 open Assets:Schwab:Brokerage-1234:Cash
 1900-01-01 open Assets:Schwab:Brokerage-1234:FB
+1900-01-01 open Assets:Schwab:Checking
+    schwab_account: "EAC"
+    interest_income_account: "Income:Interest:Schwab"
 1900-01-01 open Assets:Schwab:Intelligent-4321
     schwab_account: "Intelligent XXXX-4321"
     div_income_account: "Income:Dividend:Schwab"
+    interest_income_account: "Income:Interest:Schwab"
     capital_gains_account: "Income:Capital-Gains:Schwab"
     fees_account: "Expenses:Brokerage-Fees:Schwab"
 1900-01-01 open Assets:Schwab:Intelligent-4321:Cash

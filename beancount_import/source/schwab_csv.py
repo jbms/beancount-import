@@ -1,6 +1,6 @@
 """Schwab.com brokerage transaction source.
 
-Imports transactions from Schwab.com brokerage transaction history CSV files.
+Imports transactions from Schwab.com brokerage/banking history CSV files.
 
 To use, first you have to download Schwab CSV data into a directory on your filesystem. If
 you have a structure like this:
@@ -28,11 +28,12 @@ appears in your Schwab CSV downloads. For example:
          schwab_account: "Brokerage XXXX-1234"
 
 You can also optionally specify accounts to be used for recording dividends, capital
-gains, fees, and taxes:
+gains, interest, fees, and taxes:
 
     2015-11-09 open Assets:Investments:Schwab:Brokerage-1234
          schwab_account: "Brokerage XXXX-1234"
          div_income_account: "Income:Dividend:Schwab"
+         interest_income_account: "Income:Interest:Schwab"
          capital_gains_account: "Income:Capital-Gains:Schwab"
          fees_account: "Expenses:Brokerage-Fees:Schwab"
          taxes_account: "Expenses:Taxes"
@@ -59,7 +60,8 @@ download non-overlapping CSV statements.
 
 * Not all Schwab "actions" (transaction types) are supported. There's no reference for all
 the possible actions, and Schwab could add new ones any time. If your CSV includes an
-unsupported action, you'll get a `ValueError: 'Foo' is not a valid SchwabAction`. Please
+unsupported action, you'll get a `ValueError: 'Foo' is not a valid BrokerageAction` or
+`ValueError: 'Foo' is not a valid BankingEntryType` for banking files. Please
 file an issue (and ideally a pull request!) to add support for that action.
 
 """
@@ -116,8 +118,9 @@ from beancount_import.source.description_based_source import (
 )
 from beancount_import.unbook import group_postings_by_meta, unbook_postings
 
+CASH_CURRENCY="USD"
 
-class SchwabAction(enum.Enum):
+class BrokerageAction(enum.Enum):
     CASH_DIVIDEND = "Cash Dividend"
     PRIOR_YEAR_CASH_DIVIDEND = "Pr Yr Cash Div"
     SPECIAL_DIVIDEND = "Special Dividend"
@@ -129,24 +132,35 @@ class SchwabAction(enum.Enum):
     JOURNAL = "Journal"
     STOCK_PLAN_ACTIVITY = "Stock Plan Activity"
     ADR_MGMT_FEE = "ADR Mgmt Fee"
+    SERVICE_FEE = "Service Fee"
     FOREIGN_TAX_PAID = "Foreign Tax Paid"
     MARGIN_INTEREST = "Margin Interest"
     BUY_TO_OPEN = "Buy to Open"
     BUY_TO_CLOSE = "Buy to Close"
     SELL_TO_OPEN = "Sell to Open"
     SELL_TO_CLOSE = "Sell to Close"
+    REINVEST_SHARES = "Reinvest Shares"
+    REINVEST_DIVIDEND = "Reinvest Dividend"
+    QUAL_DIV_REINVEST = "Qual Div Reinvest"
+    WIRE_FUNDS = "Wire Funds"
+    WIRE_FUNDS_RECEIVED = "Wire Funds Received"
+    MISC_CASH_ENTRY = "Misc Cash Entry"
+
+
+class BankingEntryType(enum.Enum):
+    ACH = "ACH"
+    INTADJUST = "INTADJUST"
+    TRANSFER = "TRANSFER"
+    VISA = "VISA"
+    ATM = "ATM"
+    CHECK = "CHECK"
 
 
 @dataclass(frozen=True)
 class RawEntry:
     account: str
     date: datetime.date
-    action: SchwabAction
-    symbol: str
     description: str
-    quantity: Optional[int]
-    price: Optional[Decimal]
-    fees: Optional[Decimal]
     amount: Optional[Amount]
     filename: str
     line: int
@@ -157,18 +171,73 @@ class RawEntry:
     def get_processed_entry(
         self, account: str, account_meta: Meta
     ) -> Optional[TransactionEntry]:
+        raise NotImplementedError("subclasses must implement get_processed_entry")
+
+
+@dataclass(frozen=True)
+class RawBankEntry(RawEntry):
+    entry_type: BankingEntryType
+    check_no: Optional[int]
+    running_balance: Amount
+
+    def get_processed_entry(
+        self, account: str, account_meta: Meta
+    ) -> Optional[TransactionEntry]:
+        interest_account = self.get_meta_account(account_meta,
+                                            INTEREST_INCOME_ACCOUNT_KEY)
+        shared_attrs: SharedAttrsDict = SharedAttrsDict(
+            account=account,
+            date=self.date,
+            action=self.entry_type,
+            description=self.description,
+            amount=self.amount,
+            filename=self.filename,
+            line=self.line,
+        )
+        if self.amount is None:
+            return None
+        if self.entry_type == BankingEntryType.INTADJUST:
+            return BankInterest(
+               interest_account=interest_account,
+               **shared_attrs,
+            )
+        return TransactionEntry(
+            account=account,
+            date=self.date,
+            action=self.entry_type,
+            description=self.description,
+            amount=self.amount,
+            filename=self.filename,
+            line=self.line,
+        )
+
+
+@dataclass(frozen=True)
+class RawBrokerageEntry(RawEntry):
+    action: BrokerageAction
+    symbol: str
+    quantity: Optional[Decimal]
+    price: Optional[Decimal]
+    fees: Optional[Decimal]
+
+    def get_processed_entry(
+        self, account: str, account_meta: Meta
+    ) -> Optional[TransactionEntry]:
         capital_gains_account = self.get_meta_account(account_meta, CAPITAL_GAINS_ACCOUNT_KEY)
         fees_account = self.get_meta_account(account_meta, FEES_ACCOUNT_KEY)
+        interest_account = self.get_meta_account(account_meta, INTEREST_INCOME_ACCOUNT_KEY)
         dividend_account = self.get_meta_account(account_meta, DIV_INCOME_ACCOUNT_KEY)
         taxes_account = self.get_meta_account(account_meta, TAXES_ACCOUNT_KEY)
         amount = self.amount
-        if self.action == SchwabAction.STOCK_PLAN_ACTIVITY:
+        if self.action == BrokerageAction.STOCK_PLAN_ACTIVITY:
             quantity = self.quantity
             assert quantity is not None, quantity
             symbol = self.symbol
             assert symbol, symbol
-            amount = Amount(Decimal(str(quantity)), currency=symbol)
-        assert amount is not None
+            amount = Amount(quantity, currency=symbol)
+        if amount is None and self.quantity is not None:
+            amount = Amount(self.quantity, self.symbol)
+        assert amount is not None, self
         shared_attrs: SharedAttrsDict = dict(
             account=account,
             date=self.date,
@@ -178,27 +247,35 @@ class RawEntry:
             filename=self.filename,
             line=self.line,
         )
-        if self.action == SchwabAction.STOCK_PLAN_ACTIVITY:
+        if self.action == BrokerageAction.STOCK_PLAN_ACTIVITY:
             return StockPlanActivity(symbol=self.symbol, **shared_attrs)
         if self.action in (
-            SchwabAction.CASH_DIVIDEND,
-            SchwabAction.PRIOR_YEAR_CASH_DIVIDEND,
-            SchwabAction.SPECIAL_DIVIDEND,
-            SchwabAction.QUALIFIED_DIVIDEND,
+            BrokerageAction.CASH_DIVIDEND,
+            BrokerageAction.PRIOR_YEAR_CASH_DIVIDEND,
+            BrokerageAction.SPECIAL_DIVIDEND,
+            BrokerageAction.QUALIFIED_DIVIDEND,
+            BrokerageAction.QUAL_DIV_REINVEST,
+            BrokerageAction.REINVEST_DIVIDEND,
         ):
             return CashDividend(
                 symbol=self.symbol,
                 dividend_account=dividend_account,
                 **shared_attrs,
             )
-        if self.action == SchwabAction.BANK_INTEREST:
+        if self.action == BrokerageAction.BANK_INTEREST:
             return BankInterest(
-                dividend_account=dividend_account,
+                interest_account=interest_account,
                 **shared_attrs,
             )
-        if self.action in (SchwabAction.MONEYLINK_TRANSFER, SchwabAction.JOURNAL):
+        if self.action in (BrokerageAction.MONEYLINK_TRANSFER,
+                           BrokerageAction.JOURNAL,
+                           BrokerageAction.WIRE_FUNDS,
+                           BrokerageAction.WIRE_FUNDS_RECEIVED):
             return Transfer(**shared_attrs)
-        if self.action in (SchwabAction.SELL, SchwabAction.SELL_TO_OPEN, SchwabAction.SELL_TO_CLOSE):
+        if self.action in (BrokerageAction.SELL,
+                            BrokerageAction.SELL_TO_OPEN,
+                            BrokerageAction.SELL_TO_CLOSE
+                           ):
             quantity = self.quantity
             assert quantity is not None
             price = self.price
@@ -212,7 +289,11 @@ class RawEntry:
                 fees=self.fees,
                 **shared_attrs,
             )
-        if self.action in (SchwabAction.BUY, SchwabAction.BUY_TO_OPEN, SchwabAction.BUY_TO_CLOSE):
+        if self.action in (BrokerageAction.BUY,
+                           BrokerageAction.BUY_TO_OPEN,
+                           BrokerageAction.BUY_TO_CLOSE,
+                           BrokerageAction.REINVEST_SHARES
+                           ):
             quantity = self.quantity
             assert quantity is not None
             price = self.price
@@ -226,11 +307,15 @@ class RawEntry:
                 fees=self.fees,
                 **shared_attrs,
             )
-        if self.action == SchwabAction.ADR_MGMT_FEE:
+        if self.action in (BrokerageAction.ADR_MGMT_FEE,
+                           BrokerageAction.SERVICE_FEE,
+                           BrokerageAction.MISC_CASH_ENTRY):
+            # MISC_CASH_ENTRY appears to only be used to refund fees.
+            # If that changes, it will need to be re-categorized.
             return Fee(fees_account=fees_account, **shared_attrs)
-        if self.action == SchwabAction.FOREIGN_TAX_PAID:
+        if self.action == BrokerageAction.FOREIGN_TAX_PAID:
             return TaxPaid(taxes_account=taxes_account, **shared_attrs)
-        if self.action == SchwabAction.MARGIN_INTEREST:
+        if self.action == BrokerageAction.MARGIN_INTEREST:
             return MarginInterest(**shared_attrs)
         assert False, self.action
 
@@ -238,7 +323,7 @@ class RawEntry:
 class SharedAttrsDict(TypedDict):
     account: str
     date: datetime.date
-    action: SchwabAction
+    action: Union[BrokerageAction, BankingEntryType]
     description: str
     amount: Amount
     filename: str
@@ -281,7 +366,7 @@ class DirectiveEntry:
 class TransactionEntry(DirectiveEntry):
     account: str
     date: datetime.date
-    action: SchwabAction
+    action: Union[BrokerageAction, BankingEntryType]
     description: str
     amount: Amount
     filename: str
@@ -349,7 +434,7 @@ class TransactionEntry(DirectiveEntry):
         )
 
     def get_narration_prefix(self) -> str:
-        raise NotImplementedError()
+        return self.action.value
 
 
 @dataclass(frozen=True)
@@ -431,25 +516,30 @@ class CashDividend(TransactionEntry):
 
 @dataclass(frozen=True)
 class BankInterest(TransactionEntry):
-    dividend_account: str
+    interest_account: str
 
     def get_sub_account(self) -> Optional[str]:
+        if self.action == BankingEntryType.INTADJUST:
+            # Checking interest, cash is held in main account
+            return None
         return "Cash"
 
     def get_other_account(self) -> str:
-        return self.dividend_account
+        return self.interest_account
 
     def get_narration_prefix(self) -> str:
-        return "INVBANKTRAN"
+        return "INTEREST"
 
 
 @dataclass(frozen=True)
 class Transfer(TransactionEntry):
     def get_sub_account(self) -> Optional[str]:
+        if self.amount.currency != CASH_CURRENCY:
+            return self.amount.currency
         return "Cash"
 
     def get_narration_prefix(self) -> str:
-        return "INVBANKTRAN"
+        return "TRANSFER"
 
 
 @dataclass(frozen=True)
@@ -457,7 +547,7 @@ class Sell(TransactionEntry):
     capital_gains_account: str
     fees_account: str
     symbol: str
-    quantity: int
+    quantity: Decimal
     price: Decimal
     fees: Optional[Decimal]
 
@@ -471,7 +561,7 @@ class Sell(TransactionEntry):
         postings = [
             Posting(
                 account=self.get_primary_account(),
-                units=-Amount(Decimal(str(self.quantity)), currency=self.symbol),
+                units=-Amount(self.quantity, currency=self.symbol),
                 # TODO handle cost basis by parsing cost-basis lots CSV, so we don't end
                 # up getting beancount errors due to ambiguity
                 cost=CostSpec(
@@ -482,7 +572,7 @@ class Sell(TransactionEntry):
                     label=None,
                     merge=None,
                 ),
-                price=Amount(self.price, currency="USD"),
+                price=Amount(self.price, currency=CASH_CURRENCY),
                 flag=None,
                 meta=self.get_meta(),
             ),
@@ -495,7 +585,7 @@ class Sell(TransactionEntry):
                 meta=self.get_meta(),
             ),
         ]
-        if self.action != SchwabAction.SELL_TO_OPEN:
+        if self.action != BrokerageAction.SELL_TO_OPEN:
             # too early to realize gains/losses when opening a short position
             postings.append(
                 Posting(
@@ -512,7 +602,7 @@ class Sell(TransactionEntry):
             postings.append(
                 Posting(
                     account=self.fees_account,
-                    units=Amount(self.fees, currency="USD"),
+                    units=Amount(self.fees, currency=CASH_CURRENCY),
                     cost=None,
                     price=None,
                     flag=None,
@@ -522,7 +612,7 @@ class Sell(TransactionEntry):
         return postings
 
     def get_narration_prefix(self) -> str:
-        if self.action in (SchwabAction.SELL_TO_OPEN, SchwabAction.SELL_TO_CLOSE):
+        if self.action in (BrokerageAction.SELL_TO_OPEN, BrokerageAction.SELL_TO_CLOSE):
             return "SELLOPT"
         else:
             return "SELLSTOCK"
@@ -538,7 +628,7 @@ class Buy(TransactionEntry):
     capital_gains_account: str
     fees_account: str
     symbol: str
-    quantity: int
+    quantity: Decimal
     price: Decimal
     fees: Optional[Decimal]
 
@@ -552,11 +642,11 @@ class Buy(TransactionEntry):
         postings = [
             Posting(
                 account=self.get_primary_account(),
-                units=Amount(Decimal(str(self.quantity)), currency=self.symbol),
+                units=Amount(self.quantity, currency=self.symbol),
                 cost=CostSpec(
                     number_per=self.price,
                     number_total=None,
-                    currency="USD",
+                    currency=CASH_CURRENCY,
                     date=None,
                     label=None,
                     merge=None,
@@ -574,7 +664,7 @@ class Buy(TransactionEntry):
                 meta=self.get_meta(),
             ),
         ]
-        if self.action == SchwabAction.BUY_TO_CLOSE:
+        if self.action == BrokerageAction.BUY_TO_CLOSE:
             # need to record gains when closing a short position
             postings.append(
                 Posting(
@@ -591,7 +681,7 @@ class Buy(TransactionEntry):
             postings.append(
                 Posting(
                     account=self.fees_account,
-                    units=Amount(self.fees, currency="USD"),
+                    units=Amount(self.fees, currency=CASH_CURRENCY),
                     cost=None,
                     price=None,
                     flag=None,
@@ -601,7 +691,7 @@ class Buy(TransactionEntry):
         return postings
 
     def get_narration_prefix(self) -> str:
-        if self.action in (SchwabAction.BUY_TO_OPEN, SchwabAction.BUY_TO_CLOSE):
+        if self.action in (BrokerageAction.BUY_TO_OPEN, BrokerageAction.BUY_TO_CLOSE):
             return "BUYOPT"
         else:
             return "BUYSTOCK"
@@ -618,7 +708,7 @@ class RawPosition:
     date: datetime.date
     account: str
     symbol: str
-    quantity: Optional[int]
+    quantity: Optional[Decimal]
     price: Optional[Amount]
     value: Amount
     filename: str
@@ -719,12 +809,15 @@ class EntryProcessor:
 
 POSTING_META_ACTION_KEY = "schwab_action"
 POSTING_META_ACCOUNT_KEY = "schwab_account"
+INTEREST_INCOME_ACCOUNT_KEY = "interest_income_account"
 DIV_INCOME_ACCOUNT_KEY = "div_income_account"
 FEES_ACCOUNT_KEY = "fees_account"
 CAPITAL_GAINS_ACCOUNT_KEY = "capital_gains_account"
 TAXES_ACCOUNT_KEY = "taxes_account"
 DATE_FORMAT = "%m/%d/%Y"
-TITLE_RE = re.compile(r'"Transactions  for account (?P<account>.+) as of (?P<when>.+)"')
+TITLE_RE = re.compile(r'"?Transactions\s*for (?:Checking )?account '
+                      r'(?P<account>.+) as of '
+                      r'(?P<when>.+)"?')
 OPTION_RE = re.compile(r'\w{1,4} \d\d\/\d\d\/\d\d\d\d \d*\.\d* [PC]')
 STRIP_FROM_SYMBOL_RE = re.compile(r'[^\d\w]')
 
@@ -888,6 +981,7 @@ class SchwabSource(DescriptionBasedSource):
         source_desc = cast(str, posting.meta.get(SOURCE_DESC_KEYS[0], ""))
         if not source_desc:
             return None
+        action = cast(str, posting.meta.get(POSTING_META_ACTION_KEY, ""))
         units = posting.units
         final_units = None
         if isinstance(units, Amount) or units is None:
@@ -896,7 +990,7 @@ class SchwabSource(DescriptionBasedSource):
             assert False, units
         return (
             posting.account,
-            cast(str, posting.meta[POSTING_META_ACTION_KEY]),
+            action,
             cast(datetime.date, posting.meta[POSTING_DATE_KEY]),
             final_units,
             source_desc,
@@ -904,7 +998,7 @@ class SchwabSource(DescriptionBasedSource):
 
 
 def _load_transactions(filename: str) -> List[RawEntry]:
-    expected_field_names = [
+    expected_brokerage_field_names = [
         "Date",
         "Action",
         "Symbol",
@@ -915,6 +1009,15 @@ def _load_transactions(filename: str) -> List[RawEntry]:
         "Amount",
         "",
     ]
+    expected_banking_field_names = [
+        "Date",
+        "Type",
+        "Check #",
+        "Description",
+        "Withdrawal (-)",
+        "Deposit (+)",
+        "RunningBalance",
+    ]
     filename = os.path.abspath(filename)
     entries = []
     with open(filename, "r", encoding="utf-8", newline="") as csvfile:
@@ -923,49 +1026,103 @@ def _load_transactions(filename: str) -> List[RawEntry]:
         assert match, title
         account = match.groupdict()["account"]
         reader = csv.DictReader(csvfile)
-        assert reader.fieldnames == expected_field_names, reader.fieldnames
-        found_total_line = False
-        for lno, row in enumerate(reader):
-            # Final row in CSV is not a real transaction
-            if row["Date"] == "Transactions Total":
-                found_total_line = True
-                continue
-            # If there are no transactions, Schwab includes a row with just ""
-            if row["Date"] == "":
-                continue
-            assert not found_total_line
-            date = _convert_date(row["Date"])
-            action = SchwabAction(row["Action"])
-            symbol = STRIP_FROM_SYMBOL_RE.sub("", row["Symbol"])
-            description = row["Description"]
-            quantity = int(row["Quantity"]) if row["Quantity"] else None
-            price = _convert_decimal(row["Price"])
-            fees = _convert_decimal(row["Fees & Comm"])
-            amount = _convert_decimal(row["Amount"])
-            if OPTION_RE.match(row["Symbol"]) and quantity:
-                # this is an option, sold in lots of 100
-                quantity *= 100
-            entries.append(
-                RawEntry(
-                    account=account,
-                    date=date,
-                    action=action,
-                    symbol=symbol,
-                    description=description,
-                    quantity=quantity,
-                    price=price,
-                    fees=fees,
-                    amount=Amount(amount, currency="USD") if amount else None,
-                    filename=filename,
-                    line=lno + 2,
-                )
-            )
+        if reader.fieldnames == expected_brokerage_field_names:
+            entries = _load_brokerage_transactions(reader, account, filename)
+        elif reader.fieldnames == expected_banking_field_names:
+            entries = _load_banking_transactions(reader, account, filename)
+        else:
+            raise RuntimeError(f"Unexpected header {reader.fieldnames}")
     entries.reverse()
     return entries
 
 
+def _load_banking_transactions(reader: csv.DictReader, account: str, filename):
+    entries = []
+    transaction_start_line = 1
+    non_posting_patterns = [
+        "Pending Transactions are not reflected within this sort criterion.",
+        "Posted Transactions",
+    ]
+    for lno, row in enumerate(reader):
+        # First two rows are info messages.
+        if row["Date"] in non_posting_patterns:
+            transaction_start_line += 1
+            continue
+        date = _convert_date(row["Date"])
+        entry_type = BankingEntryType(row["Type"])
+        check_no = None
+        if row["Check #"] not in (None, ""):
+            check_no = int(row["Check #"])
+        description = row["Description"]
+        withdrawal_amount = _convert_decimal(row["Withdrawal (-)"])
+        deposit_amount = _convert_decimal(row["Deposit (+)"])
+        running_balance = _convert_decimal(row["RunningBalance"])
+        amount_present = withdrawal_amount or deposit_amount
+        amount = D(0)
+        if withdrawal_amount:
+            amount -= withdrawal_amount
+        if deposit_amount:
+            amount += deposit_amount
+        entries.append(
+            RawBankEntry(
+                account=account,
+                date=date,
+                entry_type=entry_type,
+                check_no=check_no,
+                description=description,
+                amount=Amount(amount, currency=CASH_CURRENCY) if amount_present else None,
+                running_balance=running_balance,
+                filename=filename,
+                line=lno + transaction_start_line,
+            )
+        )
+    return entries
+
+
+def _load_brokerage_transactions(reader: csv.DictReader, account: str,
+                                 filename):
+    entries = []
+    found_total_line = False
+    for lno, row in enumerate(reader):
+        # Final row in CSV is not a real transaction
+        if row["Date"] == "Transactions Total":
+            found_total_line = True
+            continue
+        if row["Date"] == "":
+            continue
+        assert not found_total_line
+        date = _convert_date(row["Date"])
+        action = BrokerageAction(row["Action"])
+        symbol = STRIP_FROM_SYMBOL_RE.sub("", row["Symbol"])
+        description = row["Description"]
+        quantity = _convert_decimal(row["Quantity"])
+        price = _convert_decimal(row["Price"])
+        fees = _convert_decimal(row["Fees & Comm"])
+        amount = _convert_decimal(row["Amount"])
+        if OPTION_RE.match(row["Symbol"]) and quantity:
+            # this is an option, sold in lots of 100
+            quantity *= 100
+        entries.append(
+            RawBrokerageEntry(
+                account=account,
+                date=date,
+                action=action,
+                symbol=symbol,
+                description=description,
+                quantity=quantity,
+                price=price,
+                fees=fees,
+                amount=Amount(amount, currency=CASH_CURRENCY) if amount else None,
+                filename=filename,
+                line=lno + 2,
+            )
+        )
+    return entries
+
+
 POSITIONS_TITLE_RE = re.compile(
-    r'"Positions for (account )?(?P<account>.+) as of (?P<time>.+), (?P<date>.+)"'
+    r'"?Positions for (account )?(?P<account>.+) as of (?P<time>.+), '
+    r'(?P<date>[\d\/]+)"?'
 )
 POSITIONS_ACCT_RE = re.compile(r'"(?P<account>.+)"')
 
@@ -1075,12 +1232,12 @@ def _load_positions_csv(
         if symbol == "Cash & Cash Investments":
             symbol = "Cash"
         symbol = STRIP_FROM_SYMBOL_RE.sub("", symbol)
-        quantity = _convert_int(row["Quantity"])
+        quantity = _convert_decimal(row["Quantity"])
         price_d = _convert_decimal(row["Price"])
-        price = None if price_d is None else Amount(price_d, currency="USD")
+        price = None if price_d is None else Amount(price_d, currency=CASH_CURRENCY)
         value_d = _convert_decimal(row["Market Value"])
         assert value_d is not None, row["Market Value"]
-        value = Amount(value_d, currency="USD")
+        value = Amount(value_d, currency=CASH_CURRENCY)
         if OPTION_RE.match(row["Symbol"]) and quantity:
             # this is an option, sold in lots of 100
             quantity *= 100
