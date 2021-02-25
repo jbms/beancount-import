@@ -547,7 +547,8 @@ export class CandidatesComponent extends React.PureComponent<
   private handleKeyDown = (event: KeyboardEvent) => {
     if (
       event.target instanceof HTMLInputElement ||
-      event.target instanceof HTMLTextAreaElement
+      event.target instanceof HTMLTextAreaElement ||
+      event.target instanceof HTMLButtonElement
     ) {
       return;
     }
