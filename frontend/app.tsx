@@ -21,6 +21,7 @@ import { CandidatesComponent, CandidateSelectionState } from "./candidates";
 import { InvalidReferencesComponent } from "./invalid_references";
 import { UnclearedPostingsComponent } from "./uncleared";
 import { SourceDataComponent } from "./source_data";
+import { SettingsComponent } from "./settings";
 
 import commonPrefix from "common-prefix";
 
@@ -88,6 +89,8 @@ const AppTabPanel = styled(TabPanel).attrs({ selectedClassName: "" })`
 `;
 
 const StatusBar = styled.div`
+  display: flex;
+  justify-content: space-between;
   padding: 4px;
   border-top: 1px solid var(--color-main-accent);
   background-color: var(--color-main-bg);
@@ -97,13 +100,13 @@ enum TabKeys {
   candidates,
   uncleared,
   invalid,
-  errors,
+  errors
 }
 
 enum DataTabKeys {
   pending,
   journal,
-  source,
+  source
 }
 
 function enumValueFor<U>(
@@ -120,6 +123,7 @@ interface AppState extends Partial<ServerState> {
   journalDirty: boolean;
   selectedTab: number;
   selectedDataTab: number;
+  settingsOpen: boolean;
 }
 
 class AppComponent
@@ -197,7 +201,8 @@ class AppComponent
   state: AppState = {
     ...this.props.serverConnection.state,
     journalDirty: false,
-    ...this.getSelectedTabsFromUrl()
+    ...this.getSelectedTabsFromUrl(),
+    settingsOpen: false,
   };
 
   selectFile = (
@@ -236,6 +241,13 @@ class AppComponent
     this.setState({ selectedDataTab: index });
   };
 
+  private handleToggleSettings = (open?: boolean) => {
+    this.setState({
+      settingsOpen:
+        typeof open !== "undefined" ? open : !this.state.settingsOpen
+    });
+  };
+
   componentDidUpdate() {
     this.setUrlFromTab(this.state);
   }
@@ -263,7 +275,7 @@ class AppComponent
         <CommonJournalPrefixContext.Provider value={commonJournalPrefix}>
           <AppRootElement>
             <SplitContainer>
-            <SplitChild>
+              <SplitChild>
                 <AppTabs
                   onSelect={this.handleSelectDataTab}
                   selectedIndex={this.state.selectedDataTab}
@@ -349,7 +361,7 @@ class AppComponent
                       ? "Candidates not available due to unsaved local edits to journal."
                       : undefined}
                     {!hasCandidates ? "No pending entries." : undefined}
-                  </AppTabPanel>                  
+                  </AppTabPanel>
                   <AppTabPanel>
                     <UnclearedPostingsComponent
                       listState={this.unclearedListState}
@@ -365,8 +377,14 @@ class AppComponent
                   </AppTabPanel>
                 </AppTabs>
               </SplitChild>
-              </SplitContainer>
-            <StatusBar>{this.state.message || ""}</StatusBar>
+            </SplitContainer>
+            <StatusBar>
+              {this.state.message || ""}
+              <SettingsComponent
+                isOpen={this.state.settingsOpen}
+                onToggle={this.handleToggleSettings}
+              />
+            </StatusBar>
           </AppRootElement>
         </CommonJournalPrefixContext.Provider>
       </AssociatedDataViewContext.Provider>
@@ -389,14 +407,16 @@ class AppComponent
   };
 }
 
-const link = document.createElement('link');
-link.setAttribute('href', 'https://fonts.googleapis.com/css2?family=Inconsolata&family=Roboto:wght@400;500&display=swap');
-link.setAttribute('rel', 'stylesheet');
+const link = document.createElement("link");
+link.setAttribute(
+  "href",
+  "https://fonts.googleapis.com/css2?family=Inconsolata&family=Roboto:wght@400;500&display=swap"
+);
+link.setAttribute("rel", "stylesheet");
 document.body.appendChild(link);
 
 const root = document.createElement("div");
 document.body.appendChild(root);
-
 
 ReactDOM.render(
   <AppComponent serverConnection={new ServerConnection()} />,

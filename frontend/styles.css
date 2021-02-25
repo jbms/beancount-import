@@ -1,4 +1,4 @@
-:root {
+:root, body.theme-light {
   --font-fam-sans: Roboto, "Helvetica Neue", HelveticaNeue, Helvetica, Arial,
     sans-serif;
   --font-fam-mono: "Inconsolata", "Courier New", Courier, monospace;
@@ -11,8 +11,8 @@
   --color-main-text-on-select: white;
   --color-main-accent: rgba(0, 0, 0, 0.5);
 
-  --color-pending-highlight-bg: #eee;
-  --color-pending-highlight-text: var(--color-main-text);
+  --color-link-text: hsl(229, 86%, 42%);
+
 
   --color-pending-select-bg: #468;
 
@@ -35,7 +35,8 @@
     --color-main-text-on-select: rgba(255, 255, 255, 0.87);
     --color-main-accent: rgba(255, 255, 255, 0.5);
 
-    --color-pending-highlight-bg: #182431;
+
+    --color-link-text: hsl(229, 100%, 87%);
 
     --color-pending-select-bg: #213040;
 
@@ -52,11 +53,42 @@
   }
 }
 
+body.theme-dark {
+  --color-main-bg: #0f171f;
+  --color-main-text: rgba(255, 255, 255, 0.87);
+  --color-main-accent: rgba(255, 255, 255, 0.5);
+
+  --color-nav-bg: #213040;
+  --color-nav-text: white;
+
+  --color-link-text: hsl(229, 100%, 87%);
+  
+  --color-hover-bg: #182431;
+  
+  --color-select-bg: hsl(211, 32%, 25%);
+  --color-select-text: rgba(255, 255, 255, 0.87);
+
+  --color-line-change-delete: hsl(0, 100%, 76%, 0.87);
+  --color-line-change-add: hsla(143, 100%, 76%, .87);
+
+  --color-bg-group-1: hsla(0, 100%, 60%, 0.4);
+  --color-bg-group-2: hsla(120, 100%, 60%, 0.4);
+  --color-bg-group-3: hsla(180, 100%, 60%, 0.4);
+  --color-bg-group-4: hsla(300, 100%, 60%, 0.4);
+  --color-bg-group-5: hsla(180, 100%, 60%, 0.4);
+  --color-bg-group-6: hsla(60, 100%, 60%, 0.4);
+  --color-bg-group-7: hsla(343, 100%, 60%, 0.4);
+}
+
 body {
   color: var(--color-main-text);
   background-color: var(--color-main-bg);
   font-family: var(--font-fam-sans);
   font-size: var(--font-size-sans-reg);
+}
+
+a {
+  color: var(--color-link-text);
 }
 
 .react-tabs__tab-list {
