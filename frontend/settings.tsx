@@ -18,9 +18,11 @@ const SettingsComponentInnerContainer = styled.div`
 `;
 
 const SettingsButton = styled.button`
+  font-family: var(--font-fam-sans);
+  font-size: var(--font-size-sans-reg);
   border: 0;
   background-color: transparent;
-  color: inherit;
+  color: var(--color-main-text);
   cursor: pointer;
 `;
 
