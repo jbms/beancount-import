@@ -436,6 +436,13 @@ export class CandidatesComponent extends React.PureComponent<
             </button>
           </div>
           <div className="action-button__group">
+          <button
+              onClick={this.handleConfirm}
+              title="Confirm selected candidate, keyboard shortcut: enter"
+              className="action-button"
+            >
+              Confirm
+            </button>
             <button
               disabled={
                 selectedCandidate.original_transaction_properties == null
@@ -741,5 +748,8 @@ export class CandidatesComponent extends React.PureComponent<
   };
   private handleEditNarration = () => {
     this.editCurrentTransaction("narration");
+  };
+  private handleConfirm = () => {
+    this.acceptCandidate(this.state.selectedCandidateIndex);
   };
 }
