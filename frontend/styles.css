@@ -8,13 +8,18 @@
 
   --color-main-bg: #fff;
   --color-main-text: black;
-  --color-main-text-on-select: white;
   --color-main-accent: rgba(0, 0, 0, 0.5);
 
   --color-link-text: hsl(229, 86%, 42%);
 
-
-  --color-pending-select-bg: #468;
+  --color-nav-bg: hsl(210, 33%, 40%);
+  --color-nav-text: white;
+  
+  --color-hover-bg: hsl(0, 0%, 93%);
+  --color-hover-text: var(--color-main-text);
+  
+  --color-select-bg: hsl(211, 40%, 85%);
+  --color-select-text: black;
 
   --color-line-change-delete: hsla(0, 100%, 26%, 1);
   --color-line-change-add: hsla(143, 85%, 27%, 1);
@@ -32,13 +37,17 @@
   :root {
     --color-main-bg: #0f171f;
     --color-main-text: rgba(255, 255, 255, 0.87);
-    --color-main-text-on-select: rgba(255, 255, 255, 0.87);
     --color-main-accent: rgba(255, 255, 255, 0.5);
 
+    --color-nav-bg: #213040;
+    --color-nav-text: white;
 
     --color-link-text: hsl(229, 100%, 87%);
-
-    --color-pending-select-bg: #213040;
+    
+    --color-hover-bg: #182431;
+    
+    --color-select-bg: hsl(211, 32%, 25%);
+    --color-select-text: rgba(255, 255, 255, 0.87);
 
     --color-line-change-delete: hsl(0, 100%, 76%, 0.87);
     --color-line-change-add: hsla(143, 100%, 76%, .87);
@@ -94,9 +103,9 @@ a {
 .react-tabs__tab-list {
   margin: 0;
   padding: 0;
-  border-bottom: 1px solid var(--color-main-accent);
-  background-color: var(--color-pending-select-bg);
-  color: var(--color-main-text-on-select);
+  border-bottom: 1px solid var(--color-nav-text);
+  background-color: var(--color-nav-bg);
+  color: var(--color-nav-text);
 }
 
 .react-tabs__tab {
@@ -112,7 +121,7 @@ a {
 
 .react-tabs__tab--selected {
   cursor: default;
-  border-bottom: 4px solid var(--color-main-text-on-select);
+  border-bottom: 4px solid var(--color-nav-text);
   font-weight: 500;
 }
 
@@ -159,6 +168,11 @@ a {
 
 .action-button:hover,
 .action-button:focus {
-  background-color: var(--color-pending-highlight-bg);
-  color: var(--color-pending-highlight-text);
+  background-color: var(--color-hover-bg);
+  color: var(--color-hover-text);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: default;
 }

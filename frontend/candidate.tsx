@@ -95,26 +95,26 @@ const CandidateChangesElement = styled<
   { selected: boolean; hover: boolean },
   "div"
 >("div")`
-  font-family: monospace;
+  cursor: pointer;
+  font-family: var(--font-fam-mono);
+  font-size: var(--font-size-mono-reg);
   white-space: pre;
-  border: 1px solid ${props => (props.hover ? "black" : "transparent")};
-  opacity: ${p => (p.selected ? 1.0 : 0.75)};
-  position: relative;
-  padding: 2px;
-  margin-top: 1em;
-  margin-bottom: 1em;
-  margin-left: 7px;
-
-  :before {
-    content: " ";
-    position: absolute;
-    left: -5px;
-    right: 0px;
-    bottom: 0px;
-    top: 0px;
-    z-index: -1;
-    border-left: 4px solid ${p => (p.selected ? "blue" : "transparent")};
-  }
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--color-main-accent);
+  min-width: 100%;
+  box-sizing: border-box;
+  ${props => (props.hover && 
+    `
+    background-color: var(--color-hover-bg);
+    color: var(--color-hover-text);
+    `
+  )};
+  ${props => (props.selected && 
+    `
+    background-color: var(--color-select-bg);
+    color: var(--color-select-text);
+    `
+  )};
 `;
 
 export class CandidateComponent extends React.PureComponent<

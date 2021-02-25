@@ -33,14 +33,14 @@ const PendingEntryElement = styled<
   box-sizing: border-box;
   ${props => (props.highlighted && 
     `
-    background-color: var(--color-pending-highlight-bg);
-    color: var(--color-pending-highlight-text);
+    background-color: var(--color-hover-bg);
+    color: var(--color-hover-text);
     `
   )};
   ${props => (props.selected && 
     `
-    background-color: var(--color-pending-select-bg);
-    color: var(--color-main-text-on-select);
+    background-color: var(--color-select-bg);
+    color: var(--color-select-text);
     `
   )};
 `;
