@@ -202,7 +202,7 @@ class AppComponent
     ...this.props.serverConnection.state,
     journalDirty: false,
     ...this.getSelectedTabsFromUrl(),
-    settingsOpen: false,
+    settingsOpen: false
   };
 
   selectFile = (
@@ -313,7 +313,12 @@ class AppComponent
                   </AppTabPanel>
                 </AppTabs>
               </SplitChild>
-              <SplitChild style={{ flexDirection: "column" }}>
+              <SplitChild
+                style={{
+                  flexDirection: "column",
+                  borderLeft: "1px solid var(--color-nav-bg)"
+                }}
+              >
                 <AppTabs
                   onSelect={this.handleSelectTab}
                   selectedIndex={this.state.selectedTab}

@@ -343,7 +343,7 @@ export class CandidatesComponent extends React.PureComponent<
 
     return (
       <>
-        <div>
+        <div className="action-button-wrapper">
           <div className="action-button__group">
             <button
               disabled={pendingIndex == 0}
@@ -376,15 +376,6 @@ export class CandidatesComponent extends React.PureComponent<
               className="action-button"
             >
               Last
-            </button>
-          </div>
-          <div className="action-button__group">
-            <button
-              onClick={this.retrain}
-              title="Retrain classifier, keyboard shortcut: t"
-              className="action-button"
-            >
-              Retrain
             </button>
           </div>
           <div className="action-button__group">
@@ -459,6 +450,15 @@ export class CandidatesComponent extends React.PureComponent<
               className="action-button"
             >
               Ignore
+            </button>
+          </div>
+          <div className="action-button__group">
+            <button
+              onClick={this.retrain}
+              title="Retrain classifier, keyboard shortcut: t"
+              className="action-button"
+            >
+              Retrain
             </button>
           </div>
         </div>

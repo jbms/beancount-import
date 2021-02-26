@@ -146,11 +146,19 @@ a {
   margin-right: 0;
 }
 
+.action-button-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--color-main-accent);
+}
+
 .action-button {
   border: 1px solid var(--color-main-accent);
   background-color: var(--color-main-bg);
   color: var(--color-main-text);
-  padding: 12px;
+  padding: 8px 6px;
   cursor: pointer;
   border-right: none;
 }
