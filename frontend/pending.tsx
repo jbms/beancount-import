@@ -45,8 +45,6 @@ const PendingEntryElement = styled<
   )};
 `;
 
-// background-color: ${props => (props.selected ? "transparent" : "rgba(0, 0, 0, 0.1)")};
-
 const PendingEntryFormattedElement = styled.div`
   font-family: var(--font-fam-mono);
   font-size: var(--font-size-mono-reg);
