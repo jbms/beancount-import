@@ -44,7 +44,7 @@
 
     --color-link-text: hsl(229, 100%, 87%);
     
-    --color-hover-bg: #182431;
+    --color-hover-bg: hsl(211, 34%, 18%);
     
     --color-select-bg: hsl(211, 32%, 25%);
     --color-select-text: rgba(255, 255, 255, 0.87);
@@ -72,7 +72,7 @@ body.theme-dark {
 
   --color-link-text: hsl(229, 100%, 87%);
   
-  --color-hover-bg: #182431;
+  --color-hover-bg: hsl(211, 34%, 18%);
   
   --color-select-bg: hsl(211, 32%, 25%);
   --color-select-text: rgba(255, 255, 255, 0.87);
