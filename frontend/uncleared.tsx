@@ -37,6 +37,14 @@ const UnclearedPostingFormattedElement = styled.div`
   white-space: pre;
 `;
 
+const UnclearedPostingSource = styled.div`
+  font-size: var(--font-size-sans-small);
+  border-top: 1px solid var(--color-main-accent);
+  margin: 6px 0 2px;
+  padding: 6px 0 0px;
+  white-space: nowrap;
+`;
+
 interface UnclearedPostingsComponentProps {
   listState: ServerVirtualListState<UnclearedPosting>;
 }
@@ -51,6 +59,9 @@ export class UnclearedPostingComponent extends React.PureComponent<
   private dataViewController?: AssociatedDataViewController;
   render() {
     const { entry } = this.props;
+    const filename = entry.transaction.meta && entry.transaction.meta.filename;
+    const lineno = entry.transaction.meta && entry.transaction.meta.lineno;
+    
     const formattedText = entry.transaction_formatted;
     return (
       <AssociatedDataViewContext.Consumer>
@@ -61,6 +72,10 @@ export class UnclearedPostingComponent extends React.PureComponent<
               <UnclearedPostingFormattedElement>
                 {formattedText}
               </UnclearedPostingFormattedElement>
+              {filename && <UnclearedPostingSource>
+                <em>File:</em> {filename}
+                {lineno !== undefined && `:${lineno}`}
+              </UnclearedPostingSource>}
             </UnclearedPostingElement>
           );
         }}
