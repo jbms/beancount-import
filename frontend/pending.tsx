@@ -52,7 +52,7 @@ const PendingEntryFormattedElement = styled.div`
 `;
 
 const PendingEntrySourceNameElement = styled.div`
-  border-top: 1px solid #fff;
+  border-top: 1px solid var(--color-main-accent);
   margin: 6px 0 2px;
   padding: 6px 0 0px;
   white-space: nowrap;

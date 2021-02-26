@@ -16,34 +16,33 @@ class ErrorsVirtualListComponent extends ServerVirtualListComponent<
 > {}
 
 const JournalErrorList = styled(ErrorsVirtualListComponent)`
-  margin: 0;
-  padding-left: 3px;
-  padding-right: 3px;
   overflow-y: scroll;
   flex: 1;
-  flex-basis: 0px;
 `;
 
 const JournalErrorElement = styled.div`
-  margin-top: 0;
-  margin-bottom: 0;
+  cursor: pointer;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--color-main-accent);
+  min-width: 100%;
+  box-sizing: border-box;
 
   :hover {
-    background-color: #ddd;
+    background-color: var(--color-hover-bg);
+    color: var(--color-hover-text);
   }
 `;
 
-const JournalErrorFilename = styled.span`
-  font-weight: bold;
+const JournalErrorMessage = styled.div`
+  line-height: 1.4;
 `;
 
-const JournalErrorLineNumber = styled.span`
-  font-weight: bold;
-`;
-
-const JournalErrorMessage = styled.span`
-  margin-left: 1em;
-  color: red;
+const JournalErrorSource = styled.div`
+  font-size: var(--font-size-sans-small);
+  border-top: 1px solid var(--color-main-accent);
+  margin: 6px 0 2px;
+  padding: 6px 0 0px;
+  white-space: nowrap;
 `;
 
 interface JournalErrorsComponentProps {
@@ -58,23 +57,19 @@ export class JournalErrorComponent extends React.PureComponent<{
   render() {
     const { error, commonJournalPrefix } = this.props;
     const [severity, message, meta] = error;
+    const { filename, lineno } = meta;
     return (
       <JournalErrorElement onClick={this.handleErrorClick}>
-        {meta.filename !== undefined ? (
-          <JournalErrorFilename>
-            {meta.filename.substring(commonJournalPrefix.length)}
-          </JournalErrorFilename>
-        ) : (
-          undefined
-        )}
-        {meta.lineno !== undefined ? (
-          <JournalErrorLineNumber>:{meta.lineno}:</JournalErrorLineNumber>
-        ) : (
-          undefined
-        )}
         <JournalErrorMessage>
-          {severity}: {message}
+          <strong>{severity}</strong>:<br />
+          {message}
         </JournalErrorMessage>
+        {filename && (
+          <JournalErrorSource>
+            <em>File:</em> {filename.substring(commonJournalPrefix.length)}
+            {lineno !== undefined && `:${lineno}`}
+          </JournalErrorSource>
+        )}
       </JournalErrorElement>
     );
   }
