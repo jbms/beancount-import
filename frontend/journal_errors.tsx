@@ -46,57 +46,8 @@ const JournalErrorMessage = styled.span`
   color: red;
 `;
 
-const JournalLineReferenceElement = styled.span`
-  cursor: pointer;
-  :hover {
-    background-color: #ddf;
-  }
-`;
-
 interface JournalErrorsComponentProps {
   listState: ServerVirtualListState<JournalError>;
-}
-
-export class JournalLineReference extends React.PureComponent<{
-  meta: { filename?: string | null; lineno?: number | null };
-}> {
-  render() {
-    const { meta } = this.props;
-    return (
-      <AssociatedDataViewContext.Consumer>
-        {dataViewController => (
-          <CommonJournalPrefixContext.Consumer>
-            {commonJournalPrefix => {
-              return (
-                <JournalLineReferenceElement
-                  onClick={() => this.handleClick(dataViewController)}
-                >
-                  {meta.filename != null ? (
-                    <JournalErrorFilename>
-                      {meta.filename.substring(commonJournalPrefix.length)}
-                    </JournalErrorFilename>
-                  ) : (
-                    undefined
-                  )}
-                  {meta.lineno !== undefined ? (
-                    <JournalErrorLineNumber>
-                      :{meta.lineno}
-                    </JournalErrorLineNumber>
-                  ) : (
-                    undefined
-                  )}
-                </JournalLineReferenceElement>
-              );
-            }}
-          </CommonJournalPrefixContext.Consumer>
-        )}
-      </AssociatedDataViewContext.Consumer>
-    );
-  }
-
-  private handleClick = (dataViewController: AssociatedDataViewController) => {
-    dataViewController.selectFileByMeta(this.props.meta);
-  };
 }
 
 export class JournalErrorComponent extends React.PureComponent<{

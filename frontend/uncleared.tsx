@@ -2,7 +2,7 @@ import * as React from "react";
 import styled from "styled-components";
 import { UnclearedPosting } from "./server_connection";
 import { AssociatedDataViewController, AssociatedDataViewContext } from "./app";
-import { JournalLineReference } from "./journal_errors";
+import { JournalLineReference } from "./invalid_references";
 import { EventSubscription } from "fbemitter";
 import {
   ServerVirtualListComponent,
