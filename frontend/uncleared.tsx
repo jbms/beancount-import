@@ -14,28 +14,26 @@ class UnclearedVirtualListComponent extends ServerVirtualListComponent<
 > {}
 
 const UnclearedPostingsList = styled(UnclearedVirtualListComponent)`
-  margin: 0;
-  padding-left: 3px;
-  padding-right: 3px;
   overflow-y: scroll;
   flex: 1;
-  flex-basis: 0px;
 `;
 
 const UnclearedPostingElement = styled.div`
-  border: 1px solid transparent;
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-top: 3px;
-  padding-bottom: 3px;
+  cursor: pointer;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--color-main-accent);
+  min-width: 100%;
+  box-sizing: border-box;
 
   :hover {
-    border: 1px solid black;
+    background-color: var(--color-hover-bg);
+    color: var(--color-hover-text);
   }
 `;
 
 const UnclearedPostingFormattedElement = styled.div`
-  font-family: monospace;
+  font-family: var(--font-fam-mono);
+  font-size: var(--font-size-mono-reg);
   white-space: pre;
 `;
 
