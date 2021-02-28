@@ -26,4 +26,3 @@ def test_source(name: str):
         },
         replacements=[(testdata_dir, '<testdata>')],
     )
-

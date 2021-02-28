@@ -264,7 +264,7 @@
     source_desc: "SCHWAB US SMALL CAP ETF"
 
 ;; date: 2020-09-15
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 5, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 7, "type": "text/csv"}
 
 ; features: []
 2020-09-15 * "INTEREST - BANK INT 081620-091520 SCHWAB PREMIER BANK"
@@ -400,7 +400,7 @@
   Expenses:FIXME           1.10 USD
 
 ;; date: 2020-11-01
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 4, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 6, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -421,7 +421,7 @@
   Expenses:FIXME
 
 ;; date: 2020-11-05
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 3, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 5, "type": "text/csv"}
 
 ; features: []
 2020-11-05 * "SELLSTOCK - FACEBOOK INC CLASS A"
@@ -459,7 +459,7 @@
   Income:Dividend:Schwab:HYLB          -92.16 USD
 
 ;; date: 2020-11-10
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 2, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 4, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -581,6 +581,28 @@
 ;; info: {"filename": "<testdata>/test_basic/positions/All-Accounts-Positions-2020-11-15.CSV", "line": 13, "type": "text/csv"}
 
 2020-11-15 price SMAL040120203200P                   12.53 USD
+
+;; date: 2020-11-19
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 3, "type": "text/csv"}
+
+; features: []
+2020-11-19 * "PROMOTIONAL AWARD - PROMOTIONAL AWARD"
+  Assets:Schwab:Brokerage-1234:Cash   300.00 USD
+    date: 2020-11-19
+    schwab_action: "Promotional Award"
+    source_desc: "PROMOTIONAL AWARD"
+  Income:Interest:Schwab             -300.00 USD
+
+;; date: 2020-11-20
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 2, "type": "text/csv"}
+
+; features: []
+2020-11-20 * "INCOME - DIV - ISHARES GLOBAL CLEAN ENERGY ETF"
+  Assets:Schwab:Brokerage-1234:Cash   2.11 USD
+    date: 2020-11-20
+    schwab_action: "Pr Yr Special Div"
+    source_desc: "ISHARES GLOBAL CLEAN ENERGY ETF"
+  Income:Dividend:Schwab:ICLN        -2.11 USD
 
 ;; date: 2020-12-21
 ;; info: {"filename": "<testdata>/test_basic/positions/Intelligent-Positions-2020-11-30.CSV", "line": 4, "type": "text/csv"}
