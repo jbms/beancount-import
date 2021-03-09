@@ -291,7 +291,8 @@ class AppComponent
               <SplitChild
                 style={{
                   flexDirection: "column",
-                  borderLeft: "1px solid var(--color-nav-bg)",
+                  borderLeft: !this.state.settingsCandidatesLeft ? "1px solid var(--color-nav-bg)" : "",
+                  borderRight: this.state.settingsCandidatesLeft ? "1px solid var(--color-nav-bg)" : "",
                   order: this.state.settingsCandidatesLeft ? 0 : 1
                 }}
               >
