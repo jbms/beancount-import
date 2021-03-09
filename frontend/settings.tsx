@@ -29,20 +29,30 @@ const SettingsButton = styled.button`
 const Label = styled.label`
   font-weight: bold;
   display: block;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 `;
 
 const ThemeSelectorElm = styled.select`
-  margin-bottom: 6px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  width: 100%;
+`;
+
+const CandidatesPositionElm = styled.select`
+  margin-bottom: 12px;
+  cursor: pointer;
+  width: 100%;
 `;
 
 interface SettingsComponentProps {
   isOpen: boolean;
   onToggle: (open?: boolean) => void;
+  onSettingsChange: (settings: SettingsComponentState) => void;
 }
 
-interface SettingsComponentState {
+export interface SettingsComponentState {
   theme: string;
+  candidatesLeft: boolean;
 }
 
 function applyTheme(theme: string) {
@@ -55,8 +65,6 @@ function applyTheme(theme: string) {
   } else if (theme === "light") {
     window.document.body.classList.add("theme-light");
   }
-
-  window.localStorage.setItem("theme", theme);
 }
 
 export class SettingsComponent extends React.PureComponent<
@@ -64,30 +72,40 @@ export class SettingsComponent extends React.PureComponent<
   SettingsComponentState
 > {
   state: SettingsComponentState = {
-    theme: "auto"
+    theme: "auto",
+    candidatesLeft: true
   };
 
-  private handleChange = ({ target }: React.ChangeEvent<HTMLSelectElement>) => {
+  private handleThemeChange = ({
+    target
+  }: React.ChangeEvent<HTMLSelectElement>) => {
     const theme = target.value;
     this.setState({ theme });
     applyTheme(theme);
+    window.localStorage.setItem("theme", theme);
+  };
+
+  private handleCandidatesPositionChange = ({
+    target
+  }: React.ChangeEvent<HTMLSelectElement>) => {
+    const candidatesLeft = target.value === "true";
+    this.setState({ candidatesLeft }, () => {
+      this.props.onSettingsChange(this.state);
+    });
+    window.localStorage.setItem("candidatesLeft", candidatesLeft.toString());
   };
 
   componentDidMount() {
     const theme = window.localStorage.getItem("theme") || "auto";
-    this.setState({ theme });
+    const candidatesLeft =
+      (window.localStorage.getItem("candidatesLeft") || "true") === "true";
     applyTheme(theme);
+    this.setState({ theme, candidatesLeft }, () => {
+      this.props.onSettingsChange(this.state);
+    });
   }
 
   render() {
-    const ThemeSelector = (
-      <ThemeSelectorElm>
-        <option value="auto">System default</option>
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-      </ThemeSelectorElm>
-    );
-
     return (
       <SettingsComponentRoot>
         <SettingsButton onClick={() => this.props.onToggle()}>
@@ -98,7 +116,7 @@ export class SettingsComponent extends React.PureComponent<
             <Label htmlFor="theme-selector">Theme</Label>
             <ThemeSelectorElm
               id="theme-selector"
-              onChange={this.handleChange}
+              onChange={this.handleThemeChange}
               value={this.state.theme}
             >
               <option value="auto">System default</option>
@@ -106,13 +124,25 @@ export class SettingsComponent extends React.PureComponent<
               <option value="dark">Dark</option>
             </ThemeSelectorElm>
 
+            <Label htmlFor="candidates-position">
+              Candidates Pane Position
+            </Label>
+            <CandidatesPositionElm
+              id="candidates-position"
+              onChange={this.handleCandidatesPositionChange}
+              value={this.state.candidatesLeft.toString()}
+            >
+              <option value="true">Left</option>
+              <option value="false">Right</option>
+            </CandidatesPositionElm>
+
             <p>
               For instructions on how to use beancount-import,{" "}
               <a
                 target="_blank"
                 href="https://github.com/jbms/beancount-import/blob/master/README.md#usage"
               >
-                read the Readme
+                please see the Readme
               </a>
               .
             </p>
