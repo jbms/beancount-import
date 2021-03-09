@@ -263,7 +263,12 @@ class AppComponent
   render() {
     if (this.state.closed) {
       return (
-        <AppRootElement>
+        <AppRootElement
+          style={{
+            textAlign: "center",
+            justifyContent: "center"
+          }}
+        >
           Server connection closed, waiting to reconnect.
         </AppRootElement>
       );
@@ -333,10 +338,19 @@ class AppComponent
                     ) : (
                       undefined
                     )}
-                    {hasCandidates && this.state.journalDirty
-                      ? "Candidates not available due to unsaved local edits to journal."
-                      : undefined}
-                    {!hasCandidates ? "No pending entries." : undefined}
+                    <div
+                      style={{
+                        display: "flex",
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center"
+                      }}
+                    >
+                      {hasCandidates && this.state.journalDirty
+                        ? "Candidates not available due to unsaved local edits to journal."
+                        : undefined}
+                      {!hasCandidates ? "No pending entries." : undefined}
+                    </div>
                   </AppTabPanel>
                   <AppTabPanel>
                     <UnclearedPostingsComponent
