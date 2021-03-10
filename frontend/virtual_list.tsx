@@ -151,7 +151,7 @@ export class VirtualList extends React.PureComponent<VirtualListProps> {
       ].current!;
       const node = ReactDOM.findDOMNode(component) as HTMLElement;
       scrollIntoView(node, {
-        behavior: "instant",
+        behavior: "auto",
         scrollMode: "if-needed",
         block: "nearest"
       });

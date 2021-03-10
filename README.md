@@ -4,7 +4,8 @@ bookkeeping system, as well as merging and reconciling imported transactions wit
 each other and with existing transactions.
 
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
-[![Build Status](https://travis-ci.com/jbms/beancount-import.svg?branch=master)](https://travis-ci.com/jbms/beancount-import)
+[![PyPI](https://img.shields.io/pypi/v/beancount-import)](https://pypi.org/project/beancount-import)
+[![Build](https://github.com/jbms/beancount-import/workflows/Build/badge.svg)](https://github.com/jbms/beancount-import/actions?query=workflow%3ABuild)
 [![Coverage Status](https://coveralls.io/repos/github/jbms/beancount-import/badge.svg?branch=master)](https://coveralls.io/github/jbms/beancount-import?branch=master)
 
 # Key features
@@ -83,6 +84,13 @@ postings that serve several purposes:
    ```shell
    pip install -e .
    ```
+
+   The published PyPI package includes pre-built copy of the frontend and no
+   further building is required.  When installing from the git repository, the
+   frontend is built automatically by the above installation commands, but
+   [Node.js](https://nodejs.org) is required.  If you don't already have it
+   installed, follow the instructions in the [frontend](frontend/README.md)
+   directory to install it.
 
 # Demo
 

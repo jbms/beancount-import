@@ -32,7 +32,7 @@ interface TransactionLineEditorState {
   parseResult?: { value: string; result: TransactionLineParseResult | null };
 }
 
-const LineEditorElement = styled<{ valid: boolean }, "input">("input")`
+const LineEditorElement = styled.input<{ valid: boolean }>`
   color: inherit;
   font-family: inherit;
   font-size: inherit;

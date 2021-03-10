@@ -58,7 +58,7 @@ const InputElement = styled.input.attrs({
   font-size: var(--font-size-mono-reg);
 `;
 
-const InputHintElement = InputElement.extend.attrs({ disabled: true })`
+const InputHintElement = styled(InputElement).attrs({ disabled: true })`
   position: absolute;
   height: 100%;
   top: 0px;
@@ -66,7 +66,7 @@ const InputHintElement = InputElement.extend.attrs({ disabled: true })`
   color: var(--color-main-accent);
 `;
 
-const CompletionItem = styled<{ highlighted: boolean }, "div">("div")`
+const CompletionItem = styled.div<{ highlighted: boolean }>`
   font-family: var(--font-fam-mono);
   font-size: var(--font-size-mono-reg);
   cursor: pointer;
@@ -149,17 +149,16 @@ export class AccountInputComponent extends React.PureComponent<
   }
 
   private handleInputBlur = () => {
-    const inputElement = this.ref.current!;
+    const inputElement = this.ref.current;
     // setTimeout is needed for Firefox.  Otherwise, calling focus() has no effect.
-    setTimeout(() => inputElement.focus(), 0);
+    setTimeout(() => inputElement?.focus(), 0);
   };
 
   private renderInput = (props: any) => {
-    const { ref, ...otherProps } = props;
     return (
       <InputWrapperElement>
         <InputHintElement value={this.state.hint} />
-        <InputElement innerRef={ref} {...otherProps} />
+        <InputElement {...props} />
       </InputWrapperElement>
     );
   };
@@ -180,9 +179,9 @@ export class AccountInputComponent extends React.PureComponent<
   }
 
   componentDidMount() {
-    const autoComplete = this.ref.current!;
-    autoComplete.focus();
-    autoComplete.select();
+    const autoComplete = this.ref.current;
+    autoComplete?.focus();
+    autoComplete?.select();
   }
   private renderMenu = (items: any[], value: string, styles: any) => {
     return <CompletionMenu children={items} />;
@@ -201,9 +200,7 @@ export class AccountInputComponent extends React.PureComponent<
   ) => {
     this.setState(state => this.getStateUpdateForValue(state, value));
     const autoComplete = this.ref.current;
-    if (autoComplete != null) {
-      autoComplete.setState({ highlightedIndex: null });
-    }
+    autoComplete?.setState({ highlightedIndex: null });
   };
   private handleSelect = (value: string) => {
     this.setState(state => this.getStateUpdateForValue(state, value));

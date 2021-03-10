@@ -7,10 +7,8 @@ const UsedTransactionList = styled.div`
   border-bottom: 1px solid var(--color-main-accent);
 `;
 
-const UsedTransactionElement = styled<
-  { selected: boolean; hover: boolean },
-  "div"
->("div")`
+const UsedTransactionElement = styled.div<
+  { selected: boolean; hover: boolean }>`
   font-family: var(--font-fam-mono);
   background-color: var(--color-main-bg);
   color: var(--color-main-text);
@@ -33,7 +31,7 @@ const UsedTransactionElement = styled<
   )};
 `;
 
-const UsedTransactionCheckbox = styled<{disabled: boolean}, 'input'>('input')`
+const UsedTransactionCheckbox = styled.input<{disabled: boolean}>`
   width: 16px;
   height: 16px;
   vertical-align: middle;

@@ -40,14 +40,12 @@ const groupBackgroundColors = [
   "var(--color-bg-group-7)"
 ];
 
-const AccountSubstitutionBackground = styled<{ groupNumber: number }, "div">(
-  "div"
-)`
+const AccountSubstitutionBackground = styled.div<{ groupNumber: number }>`
   background-color: ${p =>
     groupBackgroundColors[p.groupNumber % groupBackgroundColors.length]};
 `;
 
-const AccountSubstitutionElement = styled<{ active: boolean }, "div">("div")`
+const AccountSubstitutionElement = styled.div<{ active: boolean }>`
   display: inline;
   position: relative;
   cursor: pointer;
@@ -91,10 +89,8 @@ const lineChangePrefix: { [index: string]: string } = {
   "1": "+"
 };
 
-const CandidateChangesElement = styled<
-  { selected: boolean; hover: boolean },
-  "div"
->("div")`
+const CandidateChangesElement = styled.div<
+  { selected: boolean; hover: boolean }>`
   cursor: pointer;
   font-family: var(--font-fam-mono);
   font-size: var(--font-size-mono-reg);

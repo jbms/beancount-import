@@ -64,7 +64,7 @@ export class ServerVirtualListComponent<T> extends React.PureComponent<
   metadataSubscription?: EventSubscription;
 
   static getDerivedStateFromProps(
-    props: ServerVirtualListComponentProps<any>
+    props: Readonly<ServerVirtualListComponentProps<any>>
   ): Partial<ServerVirtualListComponentState> {
     const { metadata } = props.listState;
     if (metadata !== undefined) {

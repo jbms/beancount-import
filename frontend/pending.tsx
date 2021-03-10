@@ -21,10 +21,8 @@ const PendingEntryListElement = styled(PendingVirtualListComponent)`
   padding: 8px 0;
 `;
 
-const PendingEntryElement = styled<
-  { selected: boolean; highlighted: boolean; },
-  "div"
->("div")`
+const PendingEntryElement = styled.div<
+  { selected: boolean; highlighted: boolean; }>`
   cursor: pointer;
   font-size: var(--font-size-sans-small);
   padding: 12px 8px;

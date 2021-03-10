@@ -3,7 +3,9 @@
 .mypy_cache
 *.egg-info
 frontend/node_modules
-beancount_import/frontend_dist
+beancount_import/frontend_dist/*.js
+beancount_import/frontend_dist/*.css
+beancount_import/frontend_dist/*.map
 .tox
 .coverage
 htmlcov/
