@@ -18,18 +18,26 @@ interface AccountInputComponentState {
   hint: string;
 }
 
+const InputLabelElement = styled.label`
+  display: flex;
+  flex-direction: row;
+  padding: 4px;
+  line-height: 22px;
+  vertical-align: middle;
+  background-color: var(--color-main-bg);
+  box-sizing: border-box;
+  font-size: var(--font-size-sans-reg);
+  border-top: 1px solid var(--color-main-accent);
+`;
+
 const InputWrapperElement = styled.div`
   display: flex;
   flex: 1;
   position: relative;
   outline: 0px;
-  border: 1px solid blue;
+  border: 1px solid var(--color-main-accent);
   margin: 0px;
-  padding: 0px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 0;
+  padding: 2px 8px;
 `;
 
 const InputElement = styled.input.attrs({
@@ -37,40 +45,54 @@ const InputElement = styled.input.attrs({
   spellCheck: false
 })`
   position: relative;
-  top: 0;
-  left: 0;
   outline: 0;
   width: 100%;
   border: 0;
   margin: 0;
   padding: 0;
+  /* transparent so the HintElement can "shine through" for autocompletion */
   background-color: transparent;
+  color: var(--color-main-text);
   box-shadow: none;
-  font-family: monospace;
-  font-size: medium;
+  font-family: var(--font-fam-mono);
+  font-size: var(--font-size-mono-reg);
 `;
 
 const InputHintElement = InputElement.extend.attrs({ disabled: true })`
   position: absolute;
-  color: #aaa;
   height: 100%;
+  top: 0px;
+  left: 8px;
+  color: var(--color-main-accent);
 `;
 
 const CompletionItem = styled<{ highlighted: boolean }, "div">("div")`
-  font-family: monospace;
-  background: ${p => (p.highlighted ? "lightblue" : "white")};
-  cursor: default;
+  font-family: var(--font-fam-mono);
+  font-size: var(--font-size-mono-reg);
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px 8px;
+  ${props =>
+    props.highlighted &&
+    `
+    background-color: var(--color-select-bg);
+    color: var(--color-select-text);
+    
+    `};
 `;
 
 const CompletionMenu = styled.div`
   margin-bottom: -1px;
+  margin-left: -0px;
   position: absolute;
   bottom: 100%;
   max-height: 50vh;
   overflow: auto;
-  padding: 0;
-  background-color: white;
-  border: 1px solid black;
+  padding: 0px;
+  background-color: var(--color-main-bg);
+  border: 1px solid var(--color-main-accent);
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
 `;
 
 export class AccountInputComponent extends React.PureComponent<
@@ -97,8 +119,7 @@ export class AccountInputComponent extends React.PureComponent<
   private ref = React.createRef<Autocomplete>();
   render() {
     return (
-      <label
-        style={{ display: "flex", flexDirection: "row" }}
+      <InputLabelElement
         onKeyDownCapture={this.handleKeyDown}
         onBlur={this.handleInputBlur}
       >
@@ -123,7 +144,7 @@ export class AccountInputComponent extends React.PureComponent<
           renderMenu={this.renderMenu}
           renderInput={this.renderInput}
         />
-      </label>
+      </InputLabelElement>
     );
   }
 
@@ -164,17 +185,7 @@ export class AccountInputComponent extends React.PureComponent<
     autoComplete.select();
   }
   private renderMenu = (items: any[], value: string, styles: any) => {
-    return (
-      <CompletionMenu
-        style={{
-          position: "absolute",
-          bottom: "100%",
-          maxHeight: "50vh",
-          overflow: "auto"
-        }}
-        children={items}
-      />
-    );
+    return <CompletionMenu children={items} />;
   };
   private renderItem = (item: string, isHighlighted: boolean, styles: any) => {
     return (

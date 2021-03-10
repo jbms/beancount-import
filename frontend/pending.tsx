@@ -18,42 +18,52 @@ const PendingEntryListElement = styled(PendingVirtualListComponent)`
   overflow-y: scroll;
   flex: 1;
   flex-basis: 0px;
+  padding: 8px 0;
 `;
 
 const PendingEntryElement = styled<
-  { selected: boolean; highlighted: boolean },
+  { selected: boolean; highlighted: boolean; },
   "div"
 >("div")`
-  border: 1px solid transparent;
-  margin-top: 0;
-  margin-bottom: 0;
-  border: 1px solid ${props => (props.highlighted ? "black" : "transparent")};
-  position: relative;
-  margin-left: 7px;
-  padding: 2px;
-  :before {
-    content: " ";
-    position: absolute;
-    left: -5px;
-    right: 0px;
-    bottom: 0px;
-    top: 0px;
-    z-index: -1;
-    border-left: 4px solid ${p => (p.selected ? "blue" : "transparent")};
-  }
+  cursor: pointer;
+  font-size: var(--font-size-sans-small);
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--color-main-accent);
+  min-width: 100%;
+  box-sizing: border-box;
+  ${props => (props.highlighted && 
+    `
+    background-color: var(--color-hover-bg);
+    color: var(--color-hover-text);
+    `
+  )};
+  ${props => (props.selected && 
+    `
+    background-color: var(--color-select-bg);
+    color: var(--color-select-text);
+    `
+  )};
 `;
 
 const PendingEntryFormattedElement = styled.div`
-  font-family: monospace;
+  font-family: var(--font-fam-mono);
+  font-size: var(--font-size-mono-reg);
   white-space: pre;
 `;
 
-const PendingEntrySourceNameElement = styled.span`
-  font-weight: bold;
+const PendingEntrySourceNameElement = styled.div`
+  border-top: 1px solid var(--color-main-accent);
+  margin: 6px 0 2px;
+  padding: 6px 0 0px;
+  white-space: nowrap;
 `;
 
-const PendingEntrySourceFilenameElement = styled.span`
-  margin-left: 1em;
+const PendingEntrySourceFilenameElement = styled.div`
+  white-space: nowrap;
+`;
+
+const PendingEntryInfoElement = styled.div`
+  text-align: center;
 `;
 
 export class PendingEntryHighlightState {
@@ -106,16 +116,20 @@ class PendingEntryComponent extends React.PureComponent<{
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}
       >
-        <PendingEntrySourceNameElement>{source}</PendingEntrySourceNameElement>
-        {filename && (
-          <PendingEntrySourceFilenameElement>
-            {filename}
-            {lineno != undefined && `:${lineno}`}
-          </PendingEntrySourceFilenameElement>
-        )}
         <PendingEntryFormattedElement>
           {entry.formatted.trim()}
         </PendingEntryFormattedElement>
+        {this.props.selected && (
+          <PendingEntrySourceNameElement>
+            <em>Source:</em> {source}
+          </PendingEntrySourceNameElement>
+        )}
+        {this.props.selected && filename && (
+          <PendingEntrySourceFilenameElement>
+            <em>File:</em> {filename}
+            {lineno != undefined && `:${lineno}`}
+          </PendingEntrySourceFilenameElement>
+        )}
       </PendingEntryElement>
     );
   }

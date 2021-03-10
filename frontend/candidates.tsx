@@ -342,85 +342,125 @@ export class CandidatesComponent extends React.PureComponent<
     }
 
     return (
-      <React.Fragment>
-        <div>
+      <>
+        <div className="action-button-wrapper">
+          <div className="action-button__group">
+            <button
+              disabled={pendingIndex == 0}
+              onClick={this.skipToFirst}
+              title="Skip to first pending entry"
+              className="action-button"
+            >
+              First
+            </button>
+            <button
+              disabled={pendingIndex == 0}
+              onClick={this.skipToPrior}
+              title="Skip to previous pending entry, keyboard shortcut: ["
+              className="action-button"
+            >
+              Previous
+            </button>
+            <button
+              disabled={pendingIndex + 1 >= numPending}
+              onClick={this.skipToNext}
+              title="Skip to next pending entry, keyboard shortcut: ]"
+              className="action-button"
+            >
+              Next
+            </button>
+            <button
+              disabled={pendingIndex + 1 >= numPending}
+              onClick={this.skipToNext}
+              title="Skip to last pending entry"
+              className="action-button"
+            >
+              Last
+            </button>
+          </div>
+          <div className="action-button__group">
+            <button
+              disabled={!hasAccountSubstitutions}
+              onClick={this.changeSelectedCandidateAllAccounts}
+              title="Change all unknown accounts to the same value, keyboard shortcut: a"
+              className="action-button"
+            >
+              Account
+            </button>
+            <button
+              disabled={!hasAccountSubstitutions}
+              onClick={this.fixme}
+              title="Reset all unknown accounts of the selected candidate to FIXME accounts, keyboard shortcut: f"
+              className="action-button"
+            >
+              Fixme
+            </button>
+            <button
+              disabled={
+                selectedCandidate.original_transaction_properties == null
+              }
+              onClick={this.handleEditNarration}
+              title="Add link to selected candidate, keyboard shortcut: n"
+              className="action-button"
+            >
+              Narration
+            </button>
+            <button
+              disabled={
+                selectedCandidate.original_transaction_properties == null
+              }
+              onClick={this.handleAddLink}
+              title="Add link to selected candidate, keyboard shortcut: ^"
+              className="action-button"
+            >
+              Link
+            </button>
+            <button
+              disabled={
+                selectedCandidate.original_transaction_properties == null
+              }
+              onClick={this.handleAddTag}
+              title="Add link to selected candidate, keyboard shortcut: #"
+              className="action-button"
+            >
+              Tag
+            </button>
+          </div>
+          <div className="action-button__group">
           <button
-            disabled={pendingIndex == 0}
-            onClick={this.skipToFirst}
-            title="Skip to first pending entry"
-          >
-            ⏮
-          </button>
-          <button
-            disabled={pendingIndex == 0}
-            onClick={this.skipToPrior}
-            title="Skip to previous pending entry, keyboard shortcut: ["
-          >
-            ⏪
-          </button>
-          <button
-            disabled={pendingIndex + 1 >= numPending}
-            onClick={this.skipToNext}
-            title="Skip to next pending entry, keyboard shortcut: ]"
-          >
-            ⏩
-          </button>
-          <button
-            disabled={pendingIndex + 1 >= numPending}
-            onClick={this.skipToNext}
-            title="Skip to last pending entry"
-          >
-            ⏭
-          </button>
-          <button onClick={this.retrain}>Retrain</button>
-          <button
-            disabled={!hasAccountSubstitutions}
-            onClick={this.changeSelectedCandidateAllAccounts}
-            title="Change all unknown accounts to the same value, keyboard shortcut: a"
-          >
-            Change account
-          </button>
-          <button
-            disabled={!hasAccountSubstitutions}
-            onClick={this.fixme}
-            title="Reset all unknown accounts of the selected candidate to FIXME accounts, keyboard shortcut: f"
-          >
-            Fixme later
-          </button>
-          <button
-            disabled={selectedCandidate.original_transaction_properties == null}
-            onClick={this.handleEditNarration}
-            title="Add link to selected candidate, keyboard shortcut: n"
-          >
-            Narration
-          </button>
-          <button
-            disabled={selectedCandidate.original_transaction_properties == null}
-            onClick={this.handleAddLink}
-            title="Add link to selected candidate, keyboard shortcut: ^"
-          >
-            ^
-          </button>
-          <button
-            disabled={selectedCandidate.original_transaction_properties == null}
-            onClick={this.handleAddTag}
-            title="Add link to selected candidate, keyboard shortcut: #"
-          >
-            #
-          </button>
-          <button
-            disabled={selectedCandidate.original_transaction_properties == null}
-            onClick={this.handleRevert}
-            title="Revert changes to selected candidate"
-          >
-            Revert
-          </button>
-          <button
-            onClick={this.handleIgnore}
-            title="Add the selected candidate to the ignore file."
-          >
-            Ignore
-          </button>
+              onClick={this.handleConfirm}
+              title="Confirm selected candidate, keyboard shortcut: enter"
+              className="action-button"
+            >
+              Confirm
+            </button>
+            <button
+              disabled={
+                selectedCandidate.original_transaction_properties == null
+              }
+              onClick={this.handleRevert}
+              title="Revert changes to selected candidate"
+              className="action-button"
+            >
+              Revert
+            </button>
+            <button
+              onClick={this.handleIgnore}
+              title="Add the selected candidate to the ignore file, keyboard shortcut: i"
+              className="action-button"
+            >
+              Ignore
+            </button>
+          </div>
+          <div className="action-button__group">
+            <button
+              onClick={this.retrain}
+              title="Retrain classifier, keyboard shortcut: t"
+              className="action-button"
+            >
+              Retrain
+            </button>
+          </div>
         </div>
         <UsedTransactionsComponent
           usedTransactions={this.props.candidates.used_transactions}
@@ -469,7 +509,7 @@ export class CandidatesComponent extends React.PureComponent<
           })}
         </CandidateListElement>
         {accountInputComponent}
-      </React.Fragment>
+      </>
     );
   }
 
@@ -507,7 +547,8 @@ export class CandidatesComponent extends React.PureComponent<
   private handleKeyDown = (event: KeyboardEvent) => {
     if (
       event.target instanceof HTMLInputElement ||
-      event.target instanceof HTMLTextAreaElement
+      event.target instanceof HTMLTextAreaElement ||
+      event.target instanceof HTMLButtonElement
     ) {
       return;
     }
@@ -708,5 +749,8 @@ export class CandidatesComponent extends React.PureComponent<
   };
   private handleEditNarration = () => {
     this.editCurrentTransaction("narration");
+  };
+  private handleConfirm = () => {
+    this.acceptCandidate(this.state.selectedCandidateIndex);
   };
 }

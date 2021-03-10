@@ -1,12 +1,15 @@
 import * as React from "react";
 import styled from "styled-components";
 import { InvalidReference } from "./server_connection";
-import { AssociatedDataViewController } from "./app";
-import { JournalLineReference } from "./journal_errors";
 import {
   ServerVirtualListComponent,
   ServerVirtualListState
 } from "./server_virtual_list";
+import {
+  AssociatedDataViewController,
+  AssociatedDataViewContext,
+  CommonJournalPrefixContext
+} from "./app";
 
 class InvalidReferenceVirtualListComponent extends ServerVirtualListComponent<
   InvalidReference
@@ -55,6 +58,55 @@ interface InvalidReferencesComponentProps {
 
 interface InvalidReferenceComponentProps {
   entry: InvalidReference;
+}
+
+const JournalLineReferenceElement = styled.span`
+  cursor: pointer;
+  :hover {
+    background-color: #ddf;
+  }
+`;
+
+export class JournalLineReference extends React.PureComponent<{
+  meta: { filename?: string | null; lineno?: number | null };
+}> {
+  render() {
+    const { meta } = this.props;
+    return (
+      <AssociatedDataViewContext.Consumer>
+        {dataViewController => (
+          <CommonJournalPrefixContext.Consumer>
+            {commonJournalPrefix => {
+              return (
+                <JournalLineReferenceElement
+                  onClick={() => this.handleClick(dataViewController)}
+                >
+                  {meta.filename != null ? (
+                    <JournalErrorFilename>
+                      {meta.filename.substring(commonJournalPrefix.length)}
+                    </JournalErrorFilename>
+                  ) : (
+                    undefined
+                  )}
+                  {meta.lineno !== undefined ? (
+                    <JournalErrorLineNumber>
+                      :{meta.lineno}
+                    </JournalErrorLineNumber>
+                  ) : (
+                    undefined
+                  )}
+                </JournalLineReferenceElement>
+              );
+            }}
+          </CommonJournalPrefixContext.Consumer>
+        )}
+      </AssociatedDataViewContext.Consumer>
+    );
+  }
+
+  private handleClick = (dataViewController: AssociatedDataViewController) => {
+    dataViewController.selectFileByMeta(this.props.meta);
+  };
 }
 
 export class InvalidReferenceComponent extends React.PureComponent<
