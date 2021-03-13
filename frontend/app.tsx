@@ -88,6 +88,13 @@ const AppTabPanel = styled(TabPanel).attrs({ selectedClassName: "" })`
   flex: 1;
 `;
 
+const CandidatesUnavailable = styled.div`
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;
+
 const StatusBar = styled.div`
   display: flex;
   justify-content: space-between;
@@ -339,19 +346,10 @@ class AppComponent
                     ) : (
                       undefined
                     )}
-                    <div
-                      style={{
-                        display: "flex",
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center"
-                      }}
-                    >
-                      {hasCandidates && this.state.journalDirty
-                        ? "Candidates not available due to unsaved local edits to journal."
-                        : undefined}
-                      {!hasCandidates ? "No pending entries." : undefined}
-                    </div>
+                    {hasCandidates && this.state.journalDirty
+                      ? <CandidatesUnavailable>Candidates not available due to unsaved local edits to journal.</CandidatesUnavailable>
+                      : undefined}
+                    {!hasCandidates ? <CandidatesUnavailable>"No pending entries."</CandidatesUnavailable> : undefined}
                   </AppTabPanel>
                   <AppTabPanel>
                     <UnclearedPostingsComponent
