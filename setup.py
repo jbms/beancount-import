@@ -152,7 +152,6 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/jbms/beancount-import',
-    version='1.3.3',
     author='Jeremy Maitin-Shepard',
     author_email="jeremy@jeremyms.com",
     license='GPLv2',
