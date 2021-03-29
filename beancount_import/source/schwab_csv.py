@@ -14,9 +14,27 @@ you have a structure like this:
 And you download your transaction history CSV into `transactions/` and your positions
 statement CSV into `positions/`, then you could specify your beancount-import source like
 this:
+
     dict(module="beancount_import.source.schwab_csv",
-         transaction_csv_filenames=glob.glob("data/schwab/transactions/*.CSV"),
-         position_csv_filenames=glob.glob("data/schwab/positions/*.CSV"),
+         transaction_csv_filenames=glob.glob("data/schwab/transactions/*.csv"),
+         position_csv_filenames=glob.glob("data/schwab/positions/*.csv"),
+    )
+
+The importer can also optionally make use of Schwab's lot details CSV downloads in order
+to correctly fill in cost-basis on stock sales, even for sales of stock from multiple
+lots. For this to work reliably, you should ensure that you download the lot details
+regularly (ideally at least once between each transaction involving a given commodity).
+Downloading lot details CSV by hand could be quite tedious; the
+[finance-dl](https://github.com/jbms/finance-dl) package is recommended.
+
+To use lot details, add a `lots_csv_filenames` key to your beancount-import source.
+Finance-dl will place lot details under `positions/lots/` with one directory per date
+downloaded and one file per commodity. So your source spec might look like this:
+
+    dict(module="beancount_import.source.schwab_csv",
+         transaction_csv_filenames=glob.glob("data/schwab/transactions/*.csv"),
+         position_csv_filenames=glob.glob("data/schwab/positions/*.csv"),
+         lots_csv_filenames=glob.glob("data/schwab/positions/lots/*/*.csv"),
     )
 
 This importer also makes use of certain metadata keys on your accounts. In order to label
