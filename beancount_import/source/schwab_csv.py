@@ -82,6 +82,15 @@ unsupported action, you'll get a `ValueError: 'Foo' is not a valid BrokerageActi
 `ValueError: 'Foo' is not a valid BankingEntryType` for banking files. Please
 file an issue (and ideally a pull request!) to add support for that action.
 
+* If you have multiple transactions involving a commodity between two downloads of lot
+details (particularly two different sales), the importer may not be able to infer the lots
+involved in each sale. In this case it will fall back to empty cost-basis on the sale and
+you may have to fill it in manually in order to avoid ambiguity errors from beancount.
+
+* The lot details logic assumes that if you have lot details for any commodity at a given
+point in time, you have downloaded lot details for all commodities. If lot details are
+missing for a commodity, it will assume that's because you no longer hold that commodity.
+
 """
 from __future__ import annotations
 
