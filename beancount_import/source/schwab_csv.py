@@ -83,11 +83,13 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    Mapping,
     Optional,
     Sequence,
     Set,
     Tuple,
     Type,
+    TypeVar,
     Union,
     cast,
 )
@@ -169,7 +171,7 @@ class RawEntry:
         return cast(str, account_meta.get(key, FIXME_ACCOUNT))
 
     def get_processed_entry(
-        self, account: str, account_meta: Meta
+        self, account: str, account_meta: Meta, lots: LotsDB
     ) -> Optional[TransactionEntry]:
         raise NotImplementedError("subclasses must implement get_processed_entry")
 
@@ -181,7 +183,7 @@ class RawBankEntry(RawEntry):
     running_balance: Amount
 
     def get_processed_entry(
-        self, account: str, account_meta: Meta
+        self, account: str, account_meta: Meta, lots: LotsDB
     ) -> Optional[TransactionEntry]:
         interest_account = self.get_meta_account(account_meta,
                                             INTEREST_INCOME_ACCOUNT_KEY)
@@ -221,7 +223,7 @@ class RawBrokerageEntry(RawEntry):
     fees: Optional[Decimal]
 
     def get_processed_entry(
-        self, account: str, account_meta: Meta
+        self, account: str, account_meta: Meta, lots: LotsDB
     ) -> Optional[TransactionEntry]:
         capital_gains_account = self.get_meta_account(account_meta, CAPITAL_GAINS_ACCOUNT_KEY)
         fees_account = self.get_meta_account(account_meta, FEES_ACCOUNT_KEY)
@@ -248,7 +250,9 @@ class RawBrokerageEntry(RawEntry):
             line=self.line,
         )
         if self.action == BrokerageAction.STOCK_PLAN_ACTIVITY:
-            return StockPlanActivity(symbol=self.symbol, **shared_attrs)
+            acct = account_meta["schwab_account"]
+            cost = lots.get_cost(acct, self.symbol, self.date)
+            return StockPlanActivity(symbol=self.symbol, cost=cost, **shared_attrs)
         if self.action in (
             BrokerageAction.CASH_DIVIDEND,
             BrokerageAction.PRIOR_YEAR_CASH_DIVIDEND,
@@ -280,6 +284,8 @@ class RawBrokerageEntry(RawEntry):
             assert quantity is not None
             price = self.price
             assert price is not None
+            acct = account_meta["schwab_account"]
+            lot_info = lots.get_sale_lots(acct, self.symbol, self.date, int(quantity))
             return Sell(
                 capital_gains_account=capital_gains_account,
                 fees_account=fees_account,
@@ -287,6 +293,7 @@ class RawBrokerageEntry(RawEntry):
                 price=price,
                 quantity=quantity,
                 fees=self.fees,
+                lots=lot_info,
                 **shared_attrs,
             )
         if self.action in (BrokerageAction.BUY,
@@ -318,6 +325,18 @@ class RawBrokerageEntry(RawEntry):
         if self.action == BrokerageAction.MARGIN_INTEREST:
             return MarginInterest(**shared_attrs)
         assert False, self.action
+
+
+@dataclass(frozen=True)
+class RawLot:
+    """A single cost-basis lot of a single holding from Lot Details CSV."""
+    symbol: str
+    account: str
+    asof: datetime.datetime
+    opened: datetime.datetime
+    quantity: int
+    price: Decimal
+    cost: Decimal
 
 
 class SharedAttrsDict(TypedDict):
@@ -476,14 +495,19 @@ class MarginInterest(TransactionEntry):
 @dataclass(frozen=True)
 class StockPlanActivity(TransactionEntry):
     symbol: str
+    cost: Optional[Decimal]
 
     def get_cost(self) -> Optional[CostSpec]:
-        # TODO need a real cost here, not included in transactions CSV, probably need to
-        # fill it in from parsing cost-basis lots CSV post-transaction.
+        cost = self.cost
+        if cost is None:
+            cost = Decimal("1")
+            currency = "FIXME"
+        else:
+            currency = CASH_CURRENCY
         return CostSpec(
-            number_per=Decimal("1"),
+            number_per=cost,
             number_total=None,
-            currency="FIXME",
+            currency=currency,
             date=None,
             label=None,
             merge=None,
@@ -550,6 +574,7 @@ class Sell(TransactionEntry):
     quantity: Decimal
     price: Decimal
     fees: Optional[Decimal]
+    lots: Mapping[Decimal, int]
 
     def get_sub_account(self) -> Optional[str]:
         return self.symbol
@@ -558,16 +583,19 @@ class Sell(TransactionEntry):
         return f"{self.account}:Cash"
 
     def get_postings(self) -> List[Posting]:
+        lots = [(cost, D(qty)) for cost, qty in self.lots.items()]
+        cost_currency = CASH_CURRENCY
+        if not lots:
+            lots = [(MISSING, self.quantity)]
+            cost_currency = MISSING
         postings = [
             Posting(
                 account=self.get_primary_account(),
-                units=-Amount(self.quantity, currency=self.symbol),
-                # TODO handle cost basis by parsing cost-basis lots CSV, so we don't end
-                # up getting beancount errors due to ambiguity
+                units=-Amount(lot_qty, currency=self.symbol),
                 cost=CostSpec(
-                    number_per=MISSING,
+                    number_per=lot_cost,
                     number_total=None,
-                    currency=MISSING,
+                    currency=cost_currency,
                     date=None,
                     label=None,
                     merge=None,
@@ -575,7 +603,10 @@ class Sell(TransactionEntry):
                 price=Amount(self.price, currency=CASH_CURRENCY),
                 flag=None,
                 meta=self.get_meta(),
-            ),
+            )
+            for lot_cost, lot_qty in lots
+        ]
+        postings.append(
             Posting(
                 account=self.get_other_account(),
                 units=self.amount,
@@ -583,8 +614,8 @@ class Sell(TransactionEntry):
                 price=None,
                 flag=None,
                 meta=self.get_meta(),
-            ),
-        ]
+            )
+        )
         if self.action != BrokerageAction.SELL_TO_OPEN:
             # too early to realize gains/losses when opening a short position
             postings.append(
@@ -768,12 +799,13 @@ class BalanceEntry(DirectiveEntry):
 
 
 class EntryProcessor:
-    def __init__(self, journal: JournalEditor) -> None:
+    def __init__(self, journal: JournalEditor, lots: LotsDB) -> None:
         (
             self.account_to_schwab,
             self.schwab_to_account,
         ) = get_account_mapping(journal.accounts, POSTING_META_ACCOUNT_KEY)
         self.journal = journal
+        self.lots = lots
         self.missing_accounts: Set[str] = set()
         self.found_accounts: Set[str] = set()
 
@@ -783,7 +815,7 @@ class EntryProcessor:
             self.missing_accounts.add(raw_entry.account)
             return None
         account_meta = self.journal.accounts[account].meta
-        return raw_entry.get_processed_entry(account, account_meta)
+        return raw_entry.get_processed_entry(account, account_meta, self.lots)
 
     def process_entries(
         self, raw_entries: Iterable[RawEntry]
@@ -814,7 +846,6 @@ DIV_INCOME_ACCOUNT_KEY = "div_income_account"
 FEES_ACCOUNT_KEY = "fees_account"
 CAPITAL_GAINS_ACCOUNT_KEY = "capital_gains_account"
 TAXES_ACCOUNT_KEY = "taxes_account"
-DATE_FORMAT = "%m/%d/%Y"
 TITLE_RE = re.compile(r'"?Transactions\s*for (?:Checking )?account '
                       r'(?P<account>.+) as of '
                       r'(?P<when>.+)"?')
@@ -825,6 +856,7 @@ STRIP_FROM_SYMBOL_RE = re.compile(r'[^\d\w]')
 class SchwabSourceSpecDict(TypedDict):
     transaction_csv_filenames: Sequence[str]
     position_csv_filenames: Sequence[str]
+    lots_csv_filenames: Optional[Sequence[str]]
 
 
 LogStatusCallable = Callable[[str], None]
@@ -839,6 +871,7 @@ PriceKey = Tuple[str, datetime.date, Amount]
 
 
 def load(spec: SchwabSourceSpecDict, log_status: LogStatusCallable):
+    spec.setdefault("lots_csv_filenames", [])
     return SchwabSource(**spec, log_status=log_status)
 
 
@@ -849,17 +882,22 @@ class SchwabSource(DescriptionBasedSource):
         self,
         transaction_csv_filenames: Sequence[str],
         position_csv_filenames: Sequence[str],
+        lots_csv_filenames: Optional[Sequence[str]],
         log_status: LogStatusCallable,
     ) -> None:
         super().__init__(log_status)
         self.transaction_csv_filename = transaction_csv_filenames
         self.position_csv_filenames = position_csv_filenames
+        self.lots_csv_filenames = lots_csv_filenames or []
         self.raw_entries: List[RawEntry] = []
         self.raw_positions: List[RawPosition] = []
         for csv_filename in transaction_csv_filenames:
             self.raw_entries.extend(_load_transactions(csv_filename))
         for csv_filename in position_csv_filenames:
             self.raw_positions.extend(_load_positions(csv_filename))
+        self.lots = LotsDB()
+        for csv_filename in self.lots_csv_filenames:
+            self.lots.load(_load_lots_csv(csv_filename))
 
     def get_example_key_value_pairs(self, transaction: Transaction, posting: Posting) -> Dict[str, Union[str, Sequence[str]]]:
         base = super().get_example_key_value_pairs(transaction, posting)
@@ -870,7 +908,7 @@ class SchwabSource(DescriptionBasedSource):
 
     def prepare(self, journal: JournalEditor, results: SourceResults) -> None:
 
-        processor = EntryProcessor(journal)
+        processor = EntryProcessor(journal, self.lots)
         account_set = set(processor.account_to_schwab.keys())
         base_accounts = tuple(f"{a}:" for a in account_set)
         account_set.update(a for a in journal.accounts if a.startswith(base_accounts))
@@ -996,6 +1034,129 @@ class SchwabSource(DescriptionBasedSource):
             source_desc,
         )
 
+
+class LotsDB:
+    """In-memory database of historical lot information.
+
+    Can answer these queries:
+        - Cost basis of the shares of symbol X in acct Y acquired on date Z?
+        - Cost bases of the N shares of symbol X sold from acct Y on date Z?
+
+    """
+    def __init__(self) -> None:
+        self.holdings: Dict[Tuple[str, str], HoldingLotsDB] = {}
+        self.asof_datetimes: Set[datetime.datetime] = set()
+
+    def load(self, raw_lots: Iterable[RawLot]) -> None:
+        for raw_lot in raw_lots:
+            self.asof_datetimes.add(raw_lot.asof)
+            db = self._get_db(raw_lot.account, raw_lot.symbol)
+            db.add(raw_lot)
+        self.zero_fill()
+
+    def zero_fill(self):
+        """Fill zero quantities for all holdings without a quantity on an asof date."""
+        for db in self.holdings.values():
+            db.zero_fill(self.asof_datetimes)
+
+    def convert_account(self, acct: str) -> str:
+        # Transactions and positions CSV use accounts in the form "Brokerage XXXX-1234",
+        # but Lots CSV uses just "XXXX-1234"
+        return acct.split()[-1]
+
+    def get_cost(
+        self, account: str, symbol: str, date: datetime.date,
+    ) -> Optional[Decimal]:
+        """Get cost of lot of `symbol` opened most recently before `date`.
+
+        Return None if it can't be determined given lot info in db.
+        """
+        db = self.holdings.get((self.convert_account(account), symbol))
+        return db.get_cost(date) if db else None
+
+    def get_sale_lots(
+        self, account: str, symbol: str, date: datetime.date, quantity_sold: int,
+    ) -> Mapping[Decimal, int]:
+        """Get costs of lots of `symbol` from which `quantity_sold` were sold on `date`.
+
+        Key of returned mapping is lot cost, value is quantity sold from that lot.
+        `quantity_sold` may have come from multiple lots in which case returned mapping
+        will have multiple entries.
+
+        If the total quantity we have recorded as sold from the holding in that time
+        period doesn't match `quantity_sold`, return empty dict; we don't want to guess in
+        the face of ambiguity.
+
+        The assumption here is that we will download lot details at least once between
+        every sale of a given holding, so things should match up exactly; if they don't,
+        we revert to unknown cost.
+        """
+        db = self.holdings.get((self.convert_account(account), symbol))
+        return db.get_sale_lots(date, quantity_sold) if db else {}
+
+    def _get_db(self, account: str, symbol: str) -> HoldingLotsDB:
+        key = (account, symbol)
+        db = self.holdings.get(key)
+        if db is None:
+            db = self.holdings[key] = HoldingLotsDB(*key)
+        return db
+
+
+class HoldingLotsDB:
+    """Historical information for lots of a single holding in a single account."""
+    def __init__(self, account: str, symbol: str) -> None:
+        self.account = account
+        self.symbol = symbol
+        # We uniquely identify a lot by (opened, cost). (Schwab will track separate
+        # lots opened at the same moment with the same cost, but they don't give us any
+        # unique key to distinguish these by, so the best we can do is collapse them, and
+        # that's good enough for our query needs anyway, since all we ever want to get out
+        # is a cost.) So this dict maps (opened, cost) to a per-lot dict mapping as-of
+        # datetime to quantity of shares in the lot at that point in time.
+        self.lots: Dict[Tuple[datetime.datetime, Decimal], Dict[datetime.datetime, int]] = {}
+
+    def add(self, raw_lot: RawLot) -> None:
+        assert raw_lot.account == self.account, raw_lot.account
+        assert raw_lot.symbol == self.symbol, raw_lot.symbol
+        lot = self.lots.setdefault((raw_lot.opened, raw_lot.cost), {})
+        lot[raw_lot.asof] = lot.get(raw_lot.asof, 0) + raw_lot.quantity
+
+    def zero_fill(self, asof_datetimes: Set[datetime.datetime]) -> None:
+        for dt in asof_datetimes:
+            for lot in self.lots.values():
+                lot.setdefault(dt, 0)
+
+    def get_cost(self, date: datetime.date) -> Optional[Decimal]:
+        ret = None
+        for opened, cost in sorted(self.lots.keys()):
+            if opened.date() > date:
+                break
+            ret = cost
+        return ret
+
+    def get_sale_lots(self, date: datetime.date, quantity_sold: int) -> Mapping[Decimal, int]:
+        ret: Dict[Decimal, int] = {}
+        for (opened, cost), quantities in self.lots.items():
+            last_qty = None
+            last_asof = None
+            for asof, qty in sorted(quantities.items()):
+                if last_asof and (last_asof.date() < date < asof.date()):
+                    # the given date falls in this interval
+                    sold = last_qty - qty
+                    if sold > quantity_sold:
+                        # Too many sold; return empty dict
+                        return {}
+                    if sold:
+                        quantity_sold -= sold
+                        ret[cost] = sold
+                    break
+                last_qty = qty
+                last_asof = asof
+
+        # We weren't able to account for all of `quantity_sold`; return empty dict
+        if quantity_sold:
+            return {}
+        return ret
 
 def _load_transactions(filename: str) -> List[RawEntry]:
     expected_brokerage_field_names = [
@@ -1256,6 +1417,64 @@ def _load_positions_csv(
     return entries
 
 
+LOT_DETAILS_TITLE_RE = re.compile(
+    r'"(?P<symbol>[A-Z]+) Lot Details for (?P<account>.+) as of (?P<datetime>.+)"'
+)
+
+
+def _load_lots_csv(filename: str) -> Sequence[RawLot]:
+    expected_field_names = [
+        "Open Date",
+        "Quantity",
+        "Price",
+        "Cost/Share",
+        "Market Value",
+        "Cost Basis",
+        "Gain/Loss $",
+        "Gain/Loss %",
+        "Holding Period",
+        "",
+    ]
+    filename = os.path.abspath(filename)
+    entries: List[RawLot] = []
+    lines: List[str] = []
+    with open(filename, "r", encoding="utf-8", newline="") as csvfile:
+        title = csvfile.readline()
+        match = LOT_DETAILS_TITLE_RE.match(title)
+        assert match, title
+        groups = match.groupdict()
+        symbol = groups["symbol"]
+        account = groups["account"]
+        asof = _convert_title_datetime(match.groupdict()["datetime"])
+        empty = csvfile.readline()
+        assert not empty.strip(), empty
+        reader = csv.DictReader(csvfile)
+        assert reader.fieldnames == expected_field_names, reader.fieldnames
+        for row in reader:
+            if row["Open Date"] == "Total":
+                break
+            entries.append(
+                RawLot(
+                    account=account,
+                    symbol=symbol,
+                    asof=asof,
+                    opened=_convert_datetime(row["Open Date"]),
+                    quantity=none_throws(_convert_int(row["Quantity"])),
+                    price=none_throws(_convert_decimal(row["Price"])),
+                    cost=none_throws(_convert_decimal(row["Cost/Share"])),
+                )
+            )
+    return entries
+
+
+T = TypeVar("T")
+
+
+def none_throws(x: Optional[T]) -> T:
+    assert x is not None
+    return x
+
+
 def _convert_int(raw: str) -> Optional[int]:
     if raw in ("", "--"):
         return None
@@ -1268,6 +1487,20 @@ def _convert_decimal(raw: str) -> Optional[Decimal]:
     return D(raw.replace("$", ""))
 
 
+DATE_FORMAT = "%m/%d/%Y"
+TITLE_DATETIME_FORMAT = f"%I:%M %p ET, {DATE_FORMAT}"
+DATETIME_FORMAT = f"{DATE_FORMAT} %H:%M:%S"
+
+
 def _convert_date(raw: str) -> datetime.date:
     raw = raw.split(" as of ")[-1]
     return datetime.datetime.strptime(raw, DATE_FORMAT).date()
+
+
+def _convert_title_datetime(raw: str) -> datetime.datetime:
+    return datetime.datetime.strptime(raw, TITLE_DATETIME_FORMAT)
+
+
+def _convert_datetime(raw: str) -> datetime.datetime:
+    return datetime.datetime.strptime(raw, DATETIME_FORMAT)
+
