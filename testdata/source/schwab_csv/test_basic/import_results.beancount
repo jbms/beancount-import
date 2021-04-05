@@ -417,6 +417,7 @@
   Assets:Schwab:Brokerage-1234:FB  300 FB {1 FIXME}
     date: 2020-11-01
     schwab_action: "Stock Plan Activity"
+    schwab_amount: "300 FB"
     source_desc: "FACEBOOK INC CLASS A"
   Expenses:FIXME
 
