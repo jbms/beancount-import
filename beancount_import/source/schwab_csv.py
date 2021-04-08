@@ -180,6 +180,7 @@ class BrokerageAction(enum.Enum):
     SECURITY_TRANSFER = "Security Transfer"
     EXPIRED = "Expired"
     STOCK_MERGER = "Stock Merger"
+    BOND_INTEREST = "Bond Interest"
 
 
 class BankingEntryType(enum.Enum):
@@ -311,6 +312,12 @@ class RawBrokerageEntry(RawEntry):
             )
         if self.action == BrokerageAction.PROMOTIONAL_AWARD:
             return PromotionalAward(
+                interest_account=interest_account,
+                **shared_attrs,
+            )
+        if self.action == BrokerageAction.BOND_INTEREST:
+            return BondInterest(
+                symbol=self.symbol,
                 interest_account=interest_account,
                 **shared_attrs,
             )
@@ -611,6 +618,20 @@ class CashDividend(TransactionEntry):
 
     def get_narration_prefix(self) -> str:
         return "INCOME - DIV"
+
+@dataclass(frozen=True)
+class BondInterest(TransactionEntry):
+    symbol: str
+    interest_account: str
+
+    def get_sub_account(self) -> Optional[str]:
+        return "Cash"
+
+    def get_other_account(self) -> str:
+        return f"{self.interest_account}:{self.symbol}"
+
+    def get_narration_prefix(self) -> str:
+        return "BOND INTEREST"
 
 
 @dataclass(frozen=True)

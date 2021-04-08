@@ -702,6 +702,17 @@
     source_desc: "Incoming Wire Transfer"
   Expenses:FIXME          -20000.00 USD
 
+;; date: 2021-02-15
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 10, "type": "text/csv"}
+
+; features: []
+2021-02-15 * "BOND INTEREST - US TREASURY 1.375%08/50UST BOND DUE 08/15/50"
+  Assets:Schwab:Brokerage-1234:Cash   6.87 USD
+    date: 2021-02-15
+    schwab_action: "Bond Interest"
+    source_desc: "US TREASURY 1.375%08/50UST BOND DUE 08/15/50"
+  Income:Interest:Schwab:912810SP4   -6.87 USD
+
 ;; date: 2021-02-16
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 22, "type": "text/csv"}
 
@@ -745,7 +756,7 @@
   Expenses:FIXME                        10 GOOG
 
 ;; date: 2021-03-25
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 11, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 12, "type": "text/csv"}
 
 ; features: []
 2021-03-25 * "STOCKMERGER - QUQUZETA CORP - SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
