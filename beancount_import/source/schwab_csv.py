@@ -179,6 +179,7 @@ class BrokerageAction(enum.Enum):
     JOURNALED_SHARES = "Journaled Shares"
     SECURITY_TRANSFER = "Security Transfer"
     EXPIRED = "Expired"
+    STOCK_MERGER = "Stock Merger"
 
 
 class BankingEntryType(enum.Enum):
@@ -254,6 +255,9 @@ class RawBrokerageEntry(RawEntry):
     quantity: Optional[Decimal]
     price: Optional[Decimal]
     fees: Optional[Decimal]
+    merger_symbol: Optional[str]
+    merger_quantity: Optional[Decimal]
+    merger_description: Optional[str]
 
     def get_processed_entry(
         self, account: str, account_meta: Meta, lots: LotsDB
@@ -377,6 +381,13 @@ class RawBrokerageEntry(RawEntry):
             )
             # an expiring long option means it is sold at the end => the posting has a negative 'quantity'
             return Buy(**shared_attrs) if self.quantity > 0 else Sell(lots=lot_info, **shared_attrs)
+
+        if self.action == BrokerageAction.STOCK_MERGER:
+            assert self.quantity is not None
+            return Merger(account=account, fees_account=fees_account, symbol=self.symbol, quantity=self.quantity, price=self.price,
+                          amount=self.amount, merger_symbol=self.merger_symbol, merger_quantity=self.merger_quantity,
+                          date=self.date, action=self.action, description=self.description, fees=self.fees, filename=self.filename,
+                          merger_description=self.merger_description, line=self.line)
 
         if self.action in (BrokerageAction.ADR_MGMT_FEE,
                            BrokerageAction.SERVICE_FEE,
@@ -818,6 +829,78 @@ class Buy(TransactionEntry):
     def get_accounts(self) -> List[str]:
         return [self.get_primary_account(), self.get_other_account()]
 
+
+@dataclass(frozen=True)
+class Merger(TransactionEntry):
+    fees_account: str
+    symbol: str
+    quantity: Decimal
+    price: Decimal
+    merger_symbol: Decimal
+    merger_quantity: Decimal
+    merger_description: str
+    fees: Optional[Decimal]
+
+    def get_sub_account(self) -> Optional[str]:
+        return self.symbol
+
+    def get_other_account(self) -> str:
+        return f"{self.account}:{self.merger_symbol}"
+
+    def get_postings(self) -> List[Posting]:
+        postings = [
+            Posting(
+                account=self.get_primary_account(),
+                units=Amount(self.quantity, currency=self.symbol),
+                cost=CostSpec(
+                    number_per=self.price,
+                    number_total=None,
+                    currency=CASH_CURRENCY,
+                    date=None,
+                    # at the moment requires manually choosing the lot
+                    label="FIXME",
+                    merge=None,
+                ),
+                price=None,
+                flag=None,
+                meta=self.get_meta(),
+            ),
+            Posting(
+                account=self.get_other_account(),
+                units=Amount(self.merger_quantity, currency=self.merger_symbol),
+                cost=CostSpec(
+                    number_per=None,
+                    number_total=None,
+                    currency=CASH_CURRENCY,
+                    date=None,
+                    label="merger",
+                    merge=None
+                ),
+                price=None,
+                flag=None,
+                meta=self.get_meta(),
+            ),
+        ]
+        fees = self.fees
+        # Mergers should not have fees, but just in case
+        if fees is not None:
+            postings.append(
+                Posting(
+                    account=self.fees_account,
+                    units=Amount(self.fees, currency=CASH_CURRENCY),
+                    cost=None,
+                    price=None,
+                    flag=None,
+                    meta={},
+                )
+            )
+        return postings
+
+    def get_narration_prefix(self) -> str:
+        return f"STOCKMERGER - {self.merger_description}"
+
+    def get_accounts(self) -> List[str]:
+        return [self.get_primary_account(), self.get_other_account()]
 
 @dataclass(frozen=True)
 class RawPosition:
@@ -1329,6 +1412,7 @@ def _load_brokerage_transactions(reader: csv.DictReader, account: str,
                                  filename):
     entries = []
     found_total_line = False
+    merger_symbol, merger_quantity, merger_desc = None, None, None
     for lno, row in enumerate(reader):
         # Final row in CSV is not a real transaction
         if row["Date"] == "Transactions Total":
@@ -1348,6 +1432,12 @@ def _load_brokerage_transactions(reader: csv.DictReader, account: str,
         if OPTION_RE.match(row["Symbol"]) and quantity:
             # this is an option, sold in lots of 100
             quantity *= 100
+        if action == BrokerageAction.STOCK_MERGER and merger_symbol is None:
+            # special logic: next CSV line is the second posting related to the merger
+            merger_symbol = symbol
+            merger_quantity = quantity
+            merger_desc = description
+            continue
         entries.append(
             RawBrokerageEntry(
                 account=account,
@@ -1359,10 +1449,17 @@ def _load_brokerage_transactions(reader: csv.DictReader, account: str,
                 price=price,
                 fees=fees,
                 amount=Amount(amount, currency=CASH_CURRENCY) if amount else None,
+                merger_symbol=merger_symbol,
+                merger_quantity=merger_quantity,
+                merger_description=merger_desc,
                 filename=filename,
                 line=lno + 2,
             )
         )
+        if merger_symbol is not None:
+            merger_symbol = None
+            merger_quantity = None
+            merger_desc = None
     return entries
 
 

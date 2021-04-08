@@ -743,3 +743,17 @@
     schwab_action: "Security Transfer"
     source_desc: "ALPHABET INC. CLASS C"
   Expenses:FIXME                        10 GOOG
+
+;; date: 2021-03-25
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 11, "type": "text/csv"}
+
+; features: []
+2021-03-25 * "STOCKMERGER - QUQUZETA CORP - SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
+  Assets:Schwab:Brokerage-1234:SPAC1  -100 SPAC1 {"FIXME"}
+    date: 2021-03-25
+    schwab_action: "Stock Merger"
+    source_desc: "SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
+  Assets:Schwab:Brokerage-1234:QQZ     100 QQZ {"merger"}
+    date: 2021-03-25
+    schwab_action: "Stock Merger"
+    source_desc: "SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"

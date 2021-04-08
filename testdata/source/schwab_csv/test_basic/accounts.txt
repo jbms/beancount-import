@@ -1,9 +1,11 @@
 Assets:Schwab:Brokerage-1234
 Assets:Schwab:Brokerage-1234:Cash
 Assets:Schwab:Brokerage-1234:FB
+Assets:Schwab:Brokerage-1234:QQZ
 Assets:Schwab:Brokerage-1234:SMAL0331202012400P
 Assets:Schwab:Brokerage-1234:SMAL0331202018400C
 Assets:Schwab:Brokerage-1234:SMAL033120208400P
+Assets:Schwab:Brokerage-1234:SPAC1
 Assets:Schwab:Brokerage-1234:SPY0331202028400P
 Assets:Schwab:Checking
 Assets:Schwab:Intelligent-4321
