@@ -150,38 +150,40 @@ from beancount_import.unbook import group_postings_by_meta, unbook_postings
 CASH_CURRENCY="USD"
 
 class BrokerageAction(enum.Enum):
+    ADR_MGMT_FEE = "ADR Mgmt Fee"
+    BANK_INTEREST = "Bank Interest"
+    BOND_INTEREST = "Bond Interest"
+    BUY = "Buy"
+    BUY_TO_CLOSE = "Buy to Close"
+    BUY_TO_OPEN = "Buy to Open"
     CASH_DIVIDEND = "Cash Dividend"
+    EXPIRED = "Expired"
+    FOREIGN_TAX_PAID = "Foreign Tax Paid"
+    JOURNAL = "Journal"
+    JOURNALED_SHARES = "Journaled Shares"
+    LONG_TERM_CAP_GAIN = "Long Term Cap Gain"
+    MARGIN_INTEREST = "Margin Interest"
+    MISC_CASH_ENTRY = "Misc Cash Entry"
+    MONEYLINK_TRANSFER = "MoneyLink Transfer"
     PRIOR_YEAR_CASH_DIVIDEND = "Pr Yr Cash Div"
     PRIOR_YEAR_SPECIAL_DIVIDEND = "Pr Yr Special Div"
-    SPECIAL_DIVIDEND = "Special Dividend"
-    QUALIFIED_DIVIDEND = "Qualified Dividend"
-    BUY = "Buy"
-    SELL = "Sell"
-    MONEYLINK_TRANSFER = "MoneyLink Transfer"
-    BANK_INTEREST = "Bank Interest"
-    JOURNAL = "Journal"
-    STOCK_PLAN_ACTIVITY = "Stock Plan Activity"
-    ADR_MGMT_FEE = "ADR Mgmt Fee"
-    SERVICE_FEE = "Service Fee"
-    FOREIGN_TAX_PAID = "Foreign Tax Paid"
-    MARGIN_INTEREST = "Margin Interest"
-    BUY_TO_OPEN = "Buy to Open"
-    BUY_TO_CLOSE = "Buy to Close"
-    SELL_TO_OPEN = "Sell to Open"
-    SELL_TO_CLOSE = "Sell to Close"
-    REINVEST_SHARES = "Reinvest Shares"
-    REINVEST_DIVIDEND = "Reinvest Dividend"
+    PROMOTIONAL_AWARD = "Promotional Award"
     QUAL_DIV_REINVEST = "Qual Div Reinvest"
+    QUALIFIED_DIVIDEND = "Qualified Dividend"
+    REINVEST_DIVIDEND = "Reinvest Dividend"
+    REINVEST_SHARES = "Reinvest Shares"
+    SECURITY_TRANSFER = "Security Transfer"
+    SELL = "Sell"
+    SELL_TO_CLOSE = "Sell to Close"
+    SELL_TO_OPEN = "Sell to Open"
+    SERVICE_FEE = "Service Fee"
+    SHORT_TERM_CAP_GAIN = "Short Term Cap Gain"
+    SPECIAL_DIVIDEND = "Special Dividend"
+    STOCK_MERGER = "Stock Merger"
+    STOCK_PLAN_ACTIVITY = "Stock Plan Activity"
+    STOCK_SPLIT = "Stock Split"
     WIRE_FUNDS = "Wire Funds"
     WIRE_FUNDS_RECEIVED = "Wire Funds Received"
-    MISC_CASH_ENTRY = "Misc Cash Entry"
-    PROMOTIONAL_AWARD = "Promotional Award"
-    JOURNALED_SHARES = "Journaled Shares"
-    SECURITY_TRANSFER = "Security Transfer"
-    EXPIRED = "Expired"
-    STOCK_MERGER = "Stock Merger"
-    BOND_INTEREST = "Bond Interest"
-
 
 class BankingEntryType(enum.Enum):
     ACH = "ACH"
@@ -192,6 +194,11 @@ class BankingEntryType(enum.Enum):
     VISA = "VISA"
     WIRE = "WIRE"
 
+@dataclass(frozen=True)
+class MergerSpecification:
+    symbol: str
+    quantity: Optional[Decimal]
+    description: str
 
 @dataclass(frozen=True)
 class RawEntry:
@@ -256,9 +263,7 @@ class RawBrokerageEntry(RawEntry):
     quantity: Optional[Decimal]
     price: Optional[Decimal]
     fees: Optional[Decimal]
-    merger_symbol: Optional[str]
-    merger_quantity: Optional[Decimal]
-    merger_description: Optional[str]
+    merger_spec: Optional[MergerSpecification]
 
     def get_processed_entry(
         self, account: str, account_meta: Meta, lots: LotsDB
@@ -275,6 +280,9 @@ class RawBrokerageEntry(RawEntry):
             symbol = self.symbol
             assert symbol, symbol
             amount = Amount(quantity, currency=symbol)
+        if self.action == BrokerageAction.EXPIRED:
+            # could expire/settle to non-zero value, otherwise turn the None to zero
+            amount = Amount(Decimal(0), currency=CASH_CURRENCY) if self.amount is None else self.amount
         if amount is None and self.quantity is not None:
             amount = Amount(self.quantity, self.symbol)
         assert amount is not None, self
@@ -287,6 +295,19 @@ class RawBrokerageEntry(RawEntry):
             filename=self.filename,
             line=self.line,
         )
+        if self.action == BrokerageAction.STOCK_MERGER:
+            assert self.quantity is not None
+            assert self.merger_spec is not None
+            assert self.merger_spec.quantity is not None
+            return Merger(
+                    fees_account=fees_account,
+                    symbol=self.symbol,
+                    quantity=self.quantity,
+                    price=self.price,
+                    fees=self.fees,
+                    merger_spec=self.merger_spec,
+                    **shared_attrs
+            )
         if self.action == BrokerageAction.STOCK_PLAN_ACTIVITY:
             acct = account_meta["schwab_account"]
             cost = lots.get_cost(acct, self.symbol, self.date)
@@ -366,35 +387,8 @@ class RawBrokerageEntry(RawEntry):
                 fees=self.fees,
                 **shared_attrs,
             )
-        if self.action is BrokerageAction.EXPIRED:
-            assert self.quantity is not None
-            amount = Amount(Decimal(0), currency=CASH_CURRENCY) if self.amount is None else self.amount
-            price = Decimal(0) if self.price is None else self.price
-            lot_info = lots.get_sale_lots(account_meta["schwab_account"], self.symbol, self.date, self.quantity)
-            shared_attrs: SharedAttrsDict = dict(
-                capital_gains_account=capital_gains_account,
-                fees_account=fees_account,
-                account=account,
-                date=self.date,
-                action=self.action,
-                description=self.description,
-                quantity=self.quantity,
-                symbol=self.symbol,
-                price=price,
-                fees=self.fees,
-                amount=amount,
-                filename=self.filename,
-                line=self.line,
-            )
-            # an expiring long option means it is sold at the end => the posting has a negative 'quantity'
-            return Buy(**shared_attrs) if self.quantity > 0 else Sell(lots=lot_info, **shared_attrs)
-
-        if self.action == BrokerageAction.STOCK_MERGER:
-            assert self.quantity is not None
-            return Merger(account=account, fees_account=fees_account, symbol=self.symbol, quantity=self.quantity, price=self.price,
-                          amount=self.amount, merger_symbol=self.merger_symbol, merger_quantity=self.merger_quantity,
-                          date=self.date, action=self.action, description=self.description, fees=self.fees, filename=self.filename,
-                          merger_description=self.merger_description, line=self.line)
+        if self.action in (BrokerageAction.SHORT_TERM_CAP_GAIN, BrokerageAction.LONG_TERM_CAP_GAIN):
+            return FundGainsDistribution(symbol=self.symbol, capital_gains_account=capital_gains_account, **shared_attrs)
 
         if self.action in (BrokerageAction.ADR_MGMT_FEE,
                            BrokerageAction.SERVICE_FEE,
@@ -406,6 +400,32 @@ class RawBrokerageEntry(RawEntry):
             return TaxPaid(taxes_account=taxes_account, **shared_attrs)
         if self.action == BrokerageAction.MARGIN_INTEREST:
             return MarginInterest(**shared_attrs)
+        if self.action == BrokerageAction.EXPIRED:
+            assert self.quantity is not None
+            price = Decimal(0) if self.price is None else self.price
+            lot_info = lots.get_sale_lots(account_meta["schwab_account"], self.symbol, self.date, self.quantity)
+            if self.quantity > 0:
+                # an expiring long option means it is sold at the end => the posting has a negative 'quantity'
+                return Buy(
+                        capital_gains_account=capital_gains_account,
+                        fees_account=fees_account,
+                        symbol=self.symbol,
+                        quantity=self.quantity,
+                        price=price,
+                        fees=self.fees,
+                        **shared_attrs
+                        )
+            else:
+                return Sell(
+                        capital_gains_account=capital_gains_account,
+                        fees_account=fees_account,
+                        symbol=self.symbol,
+                        quantity=self.quantity,
+                        price=price,
+                        fees=self.fees,
+                        lots=lot_info,
+                        **shared_attrs
+                        )
         assert False, self.action
 
 
@@ -667,6 +687,23 @@ class PromotionalAward(TransactionEntry):
     def get_narration_prefix(self) -> str:
         return "PROMOTIONAL AWARD"
 
+@dataclass(frozen=True)
+class FundGainsDistribution(TransactionEntry):
+    """
+    ETFs and Mutual Funds can have distributions of capital gains
+    generated by internal activity.
+    """
+    symbol: str
+    capital_gains_account: str
+
+    def get_sub_account(self) -> Optional[str]:
+        return "Cash"
+
+    def get_other_account(self) -> str:
+        return f"{self.capital_gains_account}:{self.symbol}"
+
+    def get_narration_prefix(self) -> str:
+        return "INCOME - CAP GAINS"
 
 @dataclass(frozen=True)
 class Transfer(TransactionEntry):
@@ -856,17 +893,15 @@ class Merger(TransactionEntry):
     fees_account: str
     symbol: str
     quantity: Decimal
-    price: Decimal
-    merger_symbol: Decimal
-    merger_quantity: Decimal
-    merger_description: str
+    price: Optional[Decimal]
+    merger_spec: MergerSpecification
     fees: Optional[Decimal]
 
     def get_sub_account(self) -> Optional[str]:
         return self.symbol
 
     def get_other_account(self) -> str:
-        return f"{self.account}:{self.merger_symbol}"
+        return f"{self.account}:{self.merger_spec.symbol}"
 
     def get_postings(self) -> List[Posting]:
         postings = [
@@ -879,7 +914,7 @@ class Merger(TransactionEntry):
                     currency=CASH_CURRENCY,
                     date=None,
                     # at the moment requires manually choosing the lot
-                    label="FIXME",
+                    label=None,
                     merge=None,
                 ),
                 price=None,
@@ -888,7 +923,7 @@ class Merger(TransactionEntry):
             ),
             Posting(
                 account=self.get_other_account(),
-                units=Amount(self.merger_quantity, currency=self.merger_symbol),
+                units=Amount(self.merger_spec.quantity, currency=self.merger_spec.symbol),
                 cost=CostSpec(
                     number_per=None,
                     number_total=None,
@@ -918,7 +953,7 @@ class Merger(TransactionEntry):
         return postings
 
     def get_narration_prefix(self) -> str:
-        return f"STOCKMERGER - {self.merger_description}"
+        return f"STOCKMERGER - {self.merger_spec.description}"
 
     def get_accounts(self) -> List[str]:
         return [self.get_primary_account(), self.get_other_account()]
@@ -1392,6 +1427,7 @@ def _load_banking_transactions(reader: csv.DictReader, account: str, filename):
     non_posting_patterns = [
         "Pending Transactions are not reflected within this sort criterion.",
         "Posted Transactions",
+        "There were no transactions for the search criteria you selected."
     ]
     for lno, row in enumerate(reader):
         # First two rows are info messages.
@@ -1433,7 +1469,7 @@ def _load_brokerage_transactions(reader: csv.DictReader, account: str,
                                  filename):
     entries = []
     found_total_line = False
-    merger_symbol, merger_quantity, merger_desc = None, None, None
+    merger_spec = None
     for lno, row in enumerate(reader):
         # Final row in CSV is not a real transaction
         if row["Date"] == "Transactions Total":
@@ -1453,11 +1489,9 @@ def _load_brokerage_transactions(reader: csv.DictReader, account: str,
         if OPTION_RE.match(row["Symbol"]) and quantity:
             # this is an option, sold in lots of 100
             quantity *= 100
-        if action == BrokerageAction.STOCK_MERGER and merger_symbol is None:
+        if action == BrokerageAction.STOCK_MERGER and merger_spec is None:
             # special logic: next CSV line is the second posting related to the merger
-            merger_symbol = symbol
-            merger_quantity = quantity
-            merger_desc = description
+            merger_spec = MergerSpecification(symbol, quantity, description)
             continue
         entries.append(
             RawBrokerageEntry(
@@ -1470,17 +1504,12 @@ def _load_brokerage_transactions(reader: csv.DictReader, account: str,
                 price=price,
                 fees=fees,
                 amount=Amount(amount, currency=CASH_CURRENCY) if amount else None,
-                merger_symbol=merger_symbol,
-                merger_quantity=merger_quantity,
-                merger_description=merger_desc,
+                merger_spec=merger_spec,
                 filename=filename,
                 line=lno + 2,
             )
         )
-        if merger_symbol is not None:
-            merger_symbol = None
-            merger_quantity = None
-            merger_desc = None
+        merger_spec = None
     return entries
 
 

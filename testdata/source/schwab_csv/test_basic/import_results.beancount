@@ -220,7 +220,7 @@
   Expenses:Brokerage-Fees:Schwab                      1.34 USD
 
 ;; date: 2020-03-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 9, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 11, "type": "text/csv"}
 
 ; features: []
 2020-03-31 * "BUYOPT - EXPIRED - PUT SMALL CAP INDEX $124 EXP 03/31/21"
@@ -236,7 +236,7 @@
   Expenses:Brokerage-Fees:Schwab                      10 USD
 
 ;; date: 2020-03-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 8, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 10, "type": "text/csv"}
 
 ; features: []
 2020-03-31 * "BUYOPT - EXPIRED - CALL SMALL CAP INDEX $184 EXP 03/31/21"
@@ -251,7 +251,7 @@
   Income:Capital-Gains:Schwab:SMAL0331202018400C
 
 ;; date: 2020-03-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 7, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 9, "type": "text/csv"}
 
 ; features: []
 2020-03-31 * "SELLOPT - EXPIRED - PUT SMALL CAP INDEX $84 EXP 03/31/21"
@@ -267,7 +267,7 @@
   Expenses:Brokerage-Fees:Schwab                     5 USD
 
 ;; date: 2020-03-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 6, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 8, "type": "text/csv"}
 
 ; features: []
 2020-03-31 * "SELLOPT - EXPIRED - PUT SPDR S&P 500 $284 EXP 03/31/21"
@@ -681,6 +681,28 @@
 
 2020-12-21 price SCHA                                88.71 USD
 
+;; date: 2020-12-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 13, "type": "text/csv"}
+
+; features: []
+2020-12-31 * "INCOME - CAP GAINS - ARK INNOVATION ETF"
+  Assets:Schwab:Brokerage-1234:Cash   100 USD
+    date: 2020-12-31
+    schwab_action: "Long Term Cap Gain"
+    source_desc: "ARK INNOVATION ETF"
+  Income:Capital-Gains:Schwab:ARKK   -100 USD
+
+;; date: 2020-12-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 12, "type": "text/csv"}
+
+; features: []
+2020-12-31 * "INCOME - CAP GAINS - ARK INNOVATION ETF"
+  Assets:Schwab:Brokerage-1234:Cash   1000 USD
+    date: 2020-12-31
+    schwab_action: "Short Term Cap Gain"
+    source_desc: "ARK INNOVATION ETF"
+  Income:Capital-Gains:Schwab:ARKK   -1000 USD
+
 ;; date: 2021-02-01
 ;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 5, "type": "text/csv"}
 
@@ -703,7 +725,7 @@
   Expenses:FIXME          -20000.00 USD
 
 ;; date: 2021-02-15
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 10, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 14, "type": "text/csv"}
 
 ; features: []
 2021-02-15 * "BOND INTEREST - US TREASURY 1.375%08/50UST BOND DUE 08/15/50"
@@ -756,11 +778,11 @@
   Expenses:FIXME                        10 GOOG
 
 ;; date: 2021-03-25
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 12, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 16, "type": "text/csv"}
 
 ; features: []
 2021-03-25 * "STOCKMERGER - QUQUZETA CORP - SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
-  Assets:Schwab:Brokerage-1234:SPAC1  -100 SPAC1 {"FIXME"}
+  Assets:Schwab:Brokerage-1234:SPAC1  -100 SPAC1 {}
     date: 2021-03-25
     schwab_action: "Stock Merger"
     source_desc: "SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
