@@ -219,6 +219,68 @@
     source_desc: "CALL SMALL CAP INDEX $83 EXP 04/03/20"
   Expenses:Brokerage-Fees:Schwab                      1.34 USD
 
+;; date: 2020-03-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 9, "type": "text/csv"}
+
+; features: []
+2020-03-31 * "BUYOPT - EXPIRED - PUT SMALL CAP INDEX $124 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:SMAL0331202012400P    100 SMAL0331202012400P {23 USD}
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SMALL CAP INDEX $124 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:Cash                -2290 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SMALL CAP INDEX $124 EXP 03/31/21"
+  Income:Capital-Gains:Schwab:SMAL0331202012400P
+  Expenses:Brokerage-Fees:Schwab                      10 USD
+
+;; date: 2020-03-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 8, "type": "text/csv"}
+
+; features: []
+2020-03-31 * "BUYOPT - EXPIRED - CALL SMALL CAP INDEX $184 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:SMAL0331202018400C  100 SMAL0331202018400C {0 USD}
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "CALL SMALL CAP INDEX $184 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:Cash                  0 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "CALL SMALL CAP INDEX $184 EXP 03/31/21"
+  Income:Capital-Gains:Schwab:SMAL0331202018400C
+
+;; date: 2020-03-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 7, "type": "text/csv"}
+
+; features: []
+2020-03-31 * "SELLOPT - EXPIRED - PUT SMALL CAP INDEX $84 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:SMAL033120208400P   100 SMAL033120208400P {} @ 1.1 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SMALL CAP INDEX $84 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:Cash               1095 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SMALL CAP INDEX $84 EXP 03/31/21"
+  Income:Capital-Gains:Schwab:SMAL033120208400P
+  Expenses:Brokerage-Fees:Schwab                     5 USD
+
+;; date: 2020-03-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 6, "type": "text/csv"}
+
+; features: []
+2020-03-31 * "SELLOPT - EXPIRED - PUT SPDR S&P 500 $284 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:SPY0331202028400P  100 SPY0331202028400P {} @ 0 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SPDR S&P 500 $284 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:Cash                 0 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SPDR S&P 500 $284 EXP 03/31/21"
+  Income:Capital-Gains:Schwab:SPY0331202028400P
+
 ;; date: 2020-06-12
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 20, "type": "text/csv"}
 

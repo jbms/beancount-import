@@ -6,4 +6,8 @@
 "11/05/2020","Sell","FB","FACEBOOK INC CLASS A","100","$261.50","$6.06","$26143.94",
 "11/01/2020","Stock Plan Activity","FB","FACEBOOK INC CLASS A","300","","","",
 "09/16/2020 as of 09/15/2020","Bank Interest","","BANK INT 081620-091520 SCHWAB PREMIER BANK","","","","$0.05",
+"04/01/2020 as of 03/31/2020","Expired","SPY 03/31/2020 284.00 P","PUT SPDR S&P 500 $284 EXP 03/31/21","-1","","","",
+"04/01/2020 as of 03/31/2020","Expired","SMAL 03/31/2020 84.00 P","PUT SMALL CAP INDEX $84 EXP 03/31/21","-1","$1.1","$5","$1095",
+"04/01/2020 as of 03/31/2020","Expired","SMAL 03/31/2020 184.00 C","CALL SMALL CAP INDEX $184 EXP 03/31/21","1","","","",
+"04/01/2020 as of 03/31/2020","Expired","SMAL 03/31/2020 124.00 P","PUT SMALL CAP INDEX $124 EXP 03/31/21","1","$23","$10","-$2290",
 Transactions Total,"","","","","","",$0.00

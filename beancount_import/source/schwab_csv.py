@@ -178,6 +178,7 @@ class BrokerageAction(enum.Enum):
     PROMOTIONAL_AWARD = "Promotional Award"
     JOURNALED_SHARES = "Journaled Shares"
     SECURITY_TRANSFER = "Security Transfer"
+    EXPIRED = "Expired"
 
 
 class BankingEntryType(enum.Enum):
@@ -354,6 +355,29 @@ class RawBrokerageEntry(RawEntry):
                 fees=self.fees,
                 **shared_attrs,
             )
+        if self.action is BrokerageAction.EXPIRED:
+            assert self.quantity is not None
+            amount = Amount(Decimal(0), currency=CASH_CURRENCY) if self.amount is None else self.amount
+            price = Decimal(0) if self.price is None else self.price
+            lot_info = lots.get_sale_lots(account_meta["schwab_account"], self.symbol, self.date, self.quantity)
+            shared_attrs: SharedAttrsDict = dict(
+                capital_gains_account=capital_gains_account,
+                fees_account=fees_account,
+                account=account,
+                date=self.date,
+                action=self.action,
+                description=self.description,
+                quantity=self.quantity,
+                symbol=self.symbol,
+                price=price,
+                fees=self.fees,
+                amount=amount,
+                filename=self.filename,
+                line=self.line,
+            )
+            # an expiring long option means it is sold at the end => the posting has a negative 'quantity'
+            return Buy(**shared_attrs) if self.quantity > 0 else Sell(lots=lot_info, **shared_attrs)
+
         if self.action in (BrokerageAction.ADR_MGMT_FEE,
                            BrokerageAction.SERVICE_FEE,
                            BrokerageAction.MISC_CASH_ENTRY):
@@ -702,6 +726,8 @@ class Sell(TransactionEntry):
     def get_narration_prefix(self) -> str:
         if self.action in (BrokerageAction.SELL_TO_OPEN, BrokerageAction.SELL_TO_CLOSE):
             return "SELLOPT"
+        elif self.action == BrokerageAction.EXPIRED:
+            return "SELLOPT - EXPIRED"
         else:
             return "SELLSTOCK"
 
@@ -752,7 +778,7 @@ class Buy(TransactionEntry):
                 meta=self.get_meta(),
             ),
         ]
-        if self.action == BrokerageAction.BUY_TO_CLOSE:
+        if self.action in (BrokerageAction.BUY_TO_CLOSE, BrokerageAction.EXPIRED):
             # need to record gains when closing a short position
             postings.append(
                 Posting(
@@ -781,6 +807,8 @@ class Buy(TransactionEntry):
     def get_narration_prefix(self) -> str:
         if self.action in (BrokerageAction.BUY_TO_OPEN, BrokerageAction.BUY_TO_CLOSE):
             return "BUYOPT"
+        elif self.action == BrokerageAction.EXPIRED:
+            return "BUYOPT - EXPIRED"
         else:
             return "BUYSTOCK"
 
