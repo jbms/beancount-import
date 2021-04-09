@@ -63,7 +63,7 @@
   Income:Dividend:Schwab:NOK           -6.32 USD
 
 ;; date: 2019-11-22
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 13, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 14, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -106,7 +106,7 @@
   Income:Dividend:Schwab:EMLC          -51.77 USD
 
 ;; date: 2020-01-10
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 12, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 13, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -127,7 +127,7 @@
   Expenses:FIXME           16.69 USD
 
 ;; date: 2020-01-12
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 11, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 12, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -148,7 +148,7 @@
   Expenses:FIXME           6.14 USD
 
 ;; date: 2020-01-31
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 10, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 11, "type": "text/csv"}
 
 ; features: []
 2020-01-31 * "INTEREST - Interest Paid"
@@ -337,7 +337,7 @@
   Income:Capital-Gains:Schwab:SCHA
 
 ;; date: 2020-10-26
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 9, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 10, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -358,7 +358,7 @@
   Expenses:FIXME          -2500.00 USD
 
 ;; date: 2020-10-27
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 8, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 9, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -379,7 +379,7 @@
   Expenses:FIXME          -1.56 USD
 
 ;; date: 2020-10-27
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 7, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 8, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -502,7 +502,7 @@
   Expenses:FIXME                       -123.45 USD
 
 ;; date: 2020-11-13
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 6, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 7, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -523,7 +523,7 @@
   Expenses:FIXME          -10500.00 USD
 
 ;; date: 2020-11-13
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 5, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 6, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -597,6 +597,27 @@
 ;; info: {"filename": "<testdata>/test_basic/positions/Intelligent-Positions-2020-11-30.CSV", "line": 4, "type": "text/csv"}
 
 2020-12-21 price SCHA                                88.71 USD
+
+;; date: 2021-02-01
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 5, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "20000.00 USD",
+;               "date": "2021-02-01",
+;               "key_value_pairs": {
+;                 "desc": "Incoming Wire Transfer",
+;                 "schwab_action": "WIRE"
+;               },
+;               "source_account": "Assets:Schwab:Checking"
+;             }
+;           ]
+2021-02-01 * "WIRE - Incoming Wire Transfer"
+  Assets:Schwab:Checking   20000.00 USD
+    date: 2021-02-01
+    schwab_action: "WIRE"
+    source_desc: "Incoming Wire Transfer"
+  Expenses:FIXME          -20000.00 USD
 
 ;; date: 2021-02-16
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 22, "type": "text/csv"}
