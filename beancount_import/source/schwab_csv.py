@@ -147,7 +147,6 @@ class BrokerageAction(enum.Enum):
     MISC_CASH_ENTRY = "Misc Cash Entry"
     JOURNALED_SHARES = "Journaled Shares"
     SECURITY_TRANSFER = "Security Transfer"
-    EXERCISE = "Exchange or Exercise"
 
 
 class BankingEntryType(enum.Enum):

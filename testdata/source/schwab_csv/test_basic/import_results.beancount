@@ -597,3 +597,47 @@
 ;; info: {"filename": "<testdata>/test_basic/positions/Intelligent-Positions-2020-11-30.CSV", "line": 4, "type": "text/csv"}
 
 2020-12-21 price SCHA                                88.71 USD
+
+;; date: 2021-02-16
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 22, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-12.3456 GOOG",
+;               "date": "2021-02-16",
+;               "key_value_pairs": {
+;                 "desc": "ALPHABET INC. CLASS C",
+;                 "schwab_action": "Journaled Shares"
+;               },
+;               "source_account": "Assets:Schwab:Intelligent-4321:GOOG"
+;             }
+;           ]
+2021-02-16 * "TRANSFER - ALPHABET INC. CLASS C"
+  Assets:Schwab:Intelligent-4321:GOOG  -12.3456 GOOG
+    date: 2021-02-16
+    schwab_action: "Journaled Shares"
+    schwab_amount: "-12.3456 GOOG"
+    source_desc: "ALPHABET INC. CLASS C"
+  Expenses:FIXME                        12.3456 GOOG
+
+;; date: 2021-03-22
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 23, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-10 GOOG",
+;               "date": "2021-03-22",
+;               "key_value_pairs": {
+;                 "desc": "ALPHABET INC. CLASS C",
+;                 "schwab_action": "Security Transfer"
+;               },
+;               "source_account": "Assets:Schwab:Intelligent-4321:GOOG"
+;             }
+;           ]
+2021-03-22 * "TRANSFER - ALPHABET INC. CLASS C"
+  Assets:Schwab:Intelligent-4321:GOOG  -10 GOOG
+    date: 2021-03-22
+    schwab_action: "Security Transfer"
+    schwab_amount: "-10 GOOG"
+    source_desc: "ALPHABET INC. CLASS C"
+  Expenses:FIXME                        10 GOOG
