@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "Web frontend for beancount-import",
   "scripts": {
-    "build": "esbuild --bundle app.tsx --sourcemap --minify --outdir=../beancount_import/frontend_dist --define:global=window '--define:process.env.NODE_ENV=\"production\"'",
-    "builddev": "esbuild --bundle app.tsx  --sourcemap --outdir=../beancount_import/frontend_dist --define:global=window '--define:process.env.NODE_ENV=\"development\"'",
+    "build": "esbuild --bundle app.tsx --sourcemap --minify --outdir=../beancount_import/frontend_dist --define:global=window \"--define:process.env.NODE_ENV='production'\"",
+    "builddev": "esbuild --bundle app.tsx  --sourcemap --outdir=../beancount_import/frontend_dist --define:global=window \"--define:process.env.NODE_ENV='development'\"",
     "builddev:watch": "npm run builddev -- --watch",
     "tsc": "tsc --noEmit",
     "format": "prettier --write **/*.ts **/*.tsx",
