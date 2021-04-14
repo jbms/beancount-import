@@ -749,6 +749,11 @@ class ParsedOfxStatement(object):
             commodity = commodities_by_cusip.get(unique_id)
             if commodity is not None:
                 return commodity
+            if unique_id not in securities_map:
+                results.add_error(
+                    'Missing id for security %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
+                    % (unique_id, ))
+                return None
             sec = securities_map[unique_id]
             ticker = sec.ticker
             if ticker is None:
