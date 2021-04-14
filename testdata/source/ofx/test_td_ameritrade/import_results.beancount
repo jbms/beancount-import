@@ -1,6 +1,11 @@
 ;; date: 2017-12-03
 ;; info: {"filename": "<testdata>/td_ameritrade.ofx", "type": "application/x-ofx"}
 
+2017-12-03 balance Assets:Investment:TD-Ameritrade:Cash            0 USD
+
+;; date: 2017-12-03
+;; info: {"filename": "<testdata>/td_ameritrade.ofx", "type": "application/x-ofx"}
+
 2017-12-03 balance Assets:Investment:TD-Ameritrade:AMZN            1 AMZN
 
 ;; date: 2017-12-03
