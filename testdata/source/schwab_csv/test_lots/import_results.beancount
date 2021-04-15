@@ -114,11 +114,11 @@
     date: 2020-10-19
     schwab_action: "Sell"
     source_desc: "SCHWAB US SMALL CAP ETF"
-  Assets:Schwab:Intelligent-4321:SCHA      -10 SCHA {72.56 USD} @ 74.23 USD
+  Assets:Schwab:Intelligent-4321:SCHA     -9.5 SCHA {72.56 USD} @ 74.23 USD
     date: 2020-10-19
     schwab_action: "Sell"
     source_desc: "SCHWAB US SMALL CAP ETF"
-  Assets:Schwab:Intelligent-4321:Cash  1484.60 USD
+  Assets:Schwab:Intelligent-4321:Cash  1447.49 USD
     date: 2020-10-19
     schwab_action: "Sell"
     source_desc: "SCHWAB US SMALL CAP ETF"
@@ -127,7 +127,7 @@
 ;; date: 2020-10-25
 ;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-10-25.CSV", "line": 4, "type": "text/csv"}
 
-2020-10-25 balance Assets:Schwab:Intelligent-4321:SCHA             10 SCHA
+2020-10-25 balance Assets:Schwab:Intelligent-4321:SCHA             10.5 SCHA
 
 ;; date: 2020-10-25
 ;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-10-25.CSV", "line": 5, "type": "text/csv"}

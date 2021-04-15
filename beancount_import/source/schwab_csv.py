@@ -312,7 +312,7 @@ class RawBrokerageEntry(RawEntry):
             price = self.price
             assert price is not None
             acct = account_meta["schwab_account"]
-            lot_info = lots.get_sale_lots(acct, self.symbol, self.date, int(quantity))
+            lot_info = lots.get_sale_lots(acct, self.symbol, self.date, quantity)
             return Sell(
                 capital_gains_account=capital_gains_account,
                 fees_account=fees_account,
@@ -361,7 +361,7 @@ class RawLot:
     account: str
     asof: datetime.datetime
     opened: datetime.datetime
-    quantity: int
+    quantity: Decimal
     price: Decimal
     cost: Decimal
 
@@ -601,7 +601,7 @@ class Sell(TransactionEntry):
     quantity: Decimal
     price: Decimal
     fees: Optional[Decimal]
-    lots: Mapping[Decimal, int]
+    lots: Mapping[Decimal, Decimal]
 
     def get_sub_account(self) -> Optional[str]:
         return self.symbol
@@ -610,7 +610,7 @@ class Sell(TransactionEntry):
         return f"{self.account}:Cash"
 
     def get_postings(self) -> List[Posting]:
-        lots = [(cost, D(qty)) for cost, qty in self.lots.items()]
+        lots = list(self.lots.items())
         cost_currency = CASH_CURRENCY
         if not lots:
             lots = [(MISSING, self.quantity)]
@@ -1102,8 +1102,8 @@ class LotsDB:
         return db.get_cost(date) if db else None
 
     def get_sale_lots(
-        self, account: str, symbol: str, date: datetime.date, quantity_sold: int,
-    ) -> Mapping[Decimal, int]:
+        self, account: str, symbol: str, date: datetime.date, quantity_sold: Decimal,
+    ) -> Mapping[Decimal, Decimal]:
         """Get costs of lots of `symbol` from which `quantity_sold` were sold on `date`.
 
         Key of returned mapping is lot cost, value is quantity sold from that lot.
@@ -1140,7 +1140,7 @@ class HoldingLotsDB:
         # that's good enough for our query needs anyway, since all we ever want to get out
         # is a cost.) So this dict maps (opened, cost) to a per-lot dict mapping as-of
         # datetime to quantity of shares in the lot at that point in time.
-        self.lots: Dict[Tuple[datetime.datetime, Decimal], Dict[datetime.datetime, int]] = {}
+        self.lots: Dict[Tuple[datetime.datetime, Decimal], Dict[datetime.datetime, Decimal]] = {}
 
     def add(self, raw_lot: RawLot) -> None:
         assert raw_lot.account == self.account, raw_lot.account
@@ -1151,7 +1151,7 @@ class HoldingLotsDB:
     def zero_fill(self, asof_datetimes: Set[datetime.datetime]) -> None:
         for dt in asof_datetimes:
             for lot in self.lots.values():
-                lot.setdefault(dt, 0)
+                lot.setdefault(dt, Decimal("0"))
 
     def get_cost(self, date: datetime.date) -> Optional[Decimal]:
         ret = None
@@ -1161,8 +1161,8 @@ class HoldingLotsDB:
             ret = cost
         return ret
 
-    def get_sale_lots(self, date: datetime.date, quantity_sold: int) -> Mapping[Decimal, int]:
-        ret: Dict[Decimal, int] = {}
+    def get_sale_lots(self, date: datetime.date, quantity_sold: Decimal) -> Mapping[Decimal, Decimal]:
+        ret: Dict[Decimal, Decimal] = {}
         for (opened, cost), quantities in self.lots.items():
             last_qty = None
             last_asof = None
@@ -1486,7 +1486,7 @@ def _load_lots_csv(filename: str) -> Sequence[RawLot]:
                     symbol=symbol,
                     asof=asof,
                     opened=_convert_datetime(row["Open Date"]),
-                    quantity=none_throws(_convert_int(row["Quantity"])),
+                    quantity=none_throws(_convert_decimal(row["Quantity"])),
                     price=none_throws(_convert_decimal(row["Price"])),
                     cost=none_throws(_convert_decimal(row["Cost/Share"])),
                 )

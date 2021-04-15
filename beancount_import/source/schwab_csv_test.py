@@ -45,7 +45,7 @@ def lot(
     account: str = "XX-12",
     asof: int = 1,
     opened: int = 1,
-    quantity: int = 1,
+    quantity: str = "1",
     price: str = "1.0",
     cost: str = "1.0",
 ) -> RawLot:
@@ -54,7 +54,7 @@ def lot(
         account=account,
         asof=dt(asof),
         opened=dt(opened),
-        quantity=quantity,
+        quantity=D(quantity),
         price=D(price),
         cost=D(cost),
     )
@@ -90,73 +90,73 @@ class TestLotsDB:
 
     def test_sale_lots(self, db) -> None:
         db.load([
-            lot(asof=1, cost="1.1", quantity=10),
-            lot(asof=3, cost="1.1", quantity=7),
+            lot(asof=1, cost="1.1", quantity="10"),
+            lot(asof=3, cost="1.1", quantity="7"),
         ])
-        assert db.get_sale_lots("Brokerage XX-12", "XX", d(2), 3) == {D("1.1"): 3}
+        assert db.get_sale_lots("Brokerage XX-12", "XX", d(2), D("3")) == {D("1.1"): D("3")}
 
     def test_sale_lots_no_record(self, db) -> None:
-        assert db.get_sale_lots("Brokerage XX-12", "XX", d(2), 3) == {}
+        assert db.get_sale_lots("Brokerage XX-12", "XX", d(2), D("3")) == {}
 
     def test_sale_lots_wrong_symbol(self, db) -> None:
         db.load([
-            lot(asof=1, cost="1.1", quantity=10),
-            lot(asof=3, cost="1.1", quantity=7),
+            lot(asof=1, cost="1.1", quantity="10"),
+            lot(asof=3, cost="1.1", quantity="7"),
         ])
-        assert db.get_sale_lots("Brokerage XX-12", "YY", d(2), 3) == {}
+        assert db.get_sale_lots("Brokerage XX-12", "YY", d(2), D("3")) == {}
 
     def test_sale_lots_too_early(self, db) -> None:
         db.load([
-            lot(asof=2, cost="1.1", quantity=10),
-            lot(asof=3, cost="1.1", quantity=7),
+            lot(asof=2, cost="1.1", quantity="10"),
+            lot(asof=3, cost="1.1", quantity="7"),
         ])
-        assert db.get_sale_lots("Brokerage XX-12", "XX", d(1), 3) == {}
+        assert db.get_sale_lots("Brokerage XX-12", "XX", d(1), D("3")) == {}
 
     def test_sale_lots_too_late(self, db) -> None:
         db.load([
-            lot(asof=1, cost="1.1", quantity=10),
-            lot(asof=3, cost="1.1", quantity=7),
+            lot(asof=1, cost="1.1", quantity="10"),
+            lot(asof=3, cost="1.1", quantity="7"),
         ])
-        assert db.get_sale_lots("Brokerage XX-12", "XX", d(4), 3) == {}
+        assert db.get_sale_lots("Brokerage XX-12", "XX", d(4), D("3")) == {}
 
     def test_sale_lots_insufficient_sold(self, db) -> None:
         db.load([
-            lot(asof=1, cost="1.1", quantity=10),
-            lot(asof=3, cost="1.1", quantity=7),
+            lot(asof=1, cost="1.1", quantity="10"),
+            lot(asof=3, cost="1.1", quantity="7"),
         ])
-        assert db.get_sale_lots("Brokerage XX-12", "XX", d(2), 4) == {}
+        assert db.get_sale_lots("Brokerage XX-12", "XX", d(2), D("4")) == {}
 
     def test_sale_lots_additional_sold(self, db) -> None:
         db.load([
-            lot(asof=1, cost="1.1", quantity=10),
-            lot(asof=3, cost="1.1", quantity=7),
+            lot(asof=1, cost="1.1", quantity="10"),
+            lot(asof=3, cost="1.1", quantity="7"),
         ])
-        assert db.get_sale_lots("Brokerage XX-12", "XX", d(2), 1) == {}
+        assert db.get_sale_lots("Brokerage XX-12", "XX", d(2), D("1")) == {}
 
     def test_sale_lots_multiple_candidates(self, db) -> None:
         db.load([
-            lot(opened=1, asof=3, cost="1.1", quantity=10),
-            lot(opened=1, asof=5, cost="1.1", quantity=5),
-            lot(opened=2, asof=3, cost="1.2", quantity=10),
-            lot(opened=2, asof=5, cost="1.2", quantity=7),
+            lot(opened=1, asof=3, cost="1.1", quantity="10"),
+            lot(opened=1, asof=5, cost="1.1", quantity="5"),
+            lot(opened=2, asof=3, cost="1.2", quantity="10"),
+            lot(opened=2, asof=5, cost="1.2", quantity="7"),
         ])
-        assert db.get_sale_lots("Brokerage XX-12", "XX", d(4), 3) == {}
+        assert db.get_sale_lots("Brokerage XX-12", "XX", d(4), D("3")) == {}
 
     def test_sale_lots_split(self, db) -> None:
         db.load([
-            lot(opened=1, asof=3, cost="1.1", quantity=10),
-            lot(opened=1, asof=5, cost="1.1", quantity=5),
-            lot(opened=2, asof=3, cost="1.2", quantity=10),
-            lot(opened=2, asof=5, cost="1.2", quantity=7),
+            lot(opened=1, asof=3, cost="1.1", quantity="10"),
+            lot(opened=1, asof=5, cost="1.1", quantity="5"),
+            lot(opened=2, asof=3, cost="1.2", quantity="10"),
+            lot(opened=2, asof=5, cost="1.2", quantity="7"),
         ])
-        assert db.get_sale_lots("Brokerage XX-12", "XX", d(4), 8) == {
-            D("1.1"): 5,
-            D("1.2"): 3,
+        assert db.get_sale_lots("Brokerage XX-12", "XX", d(4), D("8")) == {
+            D("1.1"): D("5"),
+            D("1.2"): D("3"),
         }
 
     def test_sale_lots_zero_fill(self, db) -> None:
         db.load([
-            lot(symbol="XX", asof=1, cost="1.1", quantity=5),
-            lot(symbol="YY", asof=3, cost="1.2", quantity=2),
+            lot(symbol="XX", asof=1, cost="1.1", quantity="5"),
+            lot(symbol="YY", asof=3, cost="1.2", quantity="2"),
         ])
-        assert db.get_sale_lots("Brokerage XX-12", "XX", d(2), 5) == {D("1.1"): 5}
+        assert db.get_sale_lots("Brokerage XX-12", "XX", d(2), D("5")) == {D("1.1"): D("5")}
