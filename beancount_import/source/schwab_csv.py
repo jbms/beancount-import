@@ -432,16 +432,11 @@ class TransactionEntry(DirectiveEntry):
         return -self.amount
 
     def get_meta(self) -> Meta:
-        meta = OrderedDict(
+        return OrderedDict(
             source_desc=self.description,
             date=self.date,
             **{POSTING_META_ACTION_KEY: self.get_action()},
         )
-        if self.amount.currency != CASH_CURRENCY:
-            # Add amount key so this posting can be split into lots while still
-            # deduping from the original CSV entry.
-            meta[POSTING_META_AMOUNT_KEY] = str(self.amount)
-        return meta
 
     def get_narration_prefix(self) -> str:
         return self.action.value
@@ -584,7 +579,7 @@ class Sell(TransactionEntry):
                 ),
                 price=Amount(self.price, currency=CASH_CURRENCY),
                 flag=None,
-                meta=self.get_meta()
+                meta=self.get_meta(),
             ),
             Posting(
                 account=self.get_other_account(),
@@ -819,7 +814,6 @@ class EntryProcessor:
 
 POSTING_META_ACTION_KEY = "schwab_action"
 POSTING_META_ACCOUNT_KEY = "schwab_account"
-POSTING_META_AMOUNT_KEY = "schwab_amount"
 INTEREST_INCOME_ACCOUNT_KEY = "interest_income_account"
 DIV_INCOME_ACCOUNT_KEY = "div_income_account"
 FEES_ACCOUNT_KEY = "fees_account"
@@ -995,23 +989,14 @@ class SchwabSource(DescriptionBasedSource):
         action = cast(str, posting.meta.get(POSTING_META_ACTION_KEY, ""))
         units = posting.units
         final_units = None
-        # used when you need to split a posting to match multiple lots
-        amount_override = posting.meta.get(POSTING_META_AMOUNT_KEY, "")
-        if amount_override != "":
-            final_units = Amount.from_string(amount_override)
-        if final_units is None:
+        if isinstance(units, Amount) or units is None:
             final_units = units
-        if not isinstance(units, Amount):
-            assert False, units
-        date_str = posting.meta.get(POSTING_DATE_KEY)
-        if date_str:
-            date = cast(datetime.date, posting.meta[POSTING_DATE_KEY])
         else:
-            date = entry.date
+            assert False, units
         return (
             posting.account,
             action,
-            date,
+            cast(datetime.date, posting.meta[POSTING_DATE_KEY]),
             final_units,
             source_desc,
         )

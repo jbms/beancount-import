@@ -417,7 +417,6 @@
   Assets:Schwab:Brokerage-1234:FB  300 FB {1 FIXME}
     date: 2020-11-01
     schwab_action: "Stock Plan Activity"
-    schwab_amount: "300 FB"
     source_desc: "FACEBOOK INC CLASS A"
   Expenses:FIXME
 
@@ -637,7 +636,6 @@
   Assets:Schwab:Intelligent-4321:GOOG  -12.3456 GOOG
     date: 2021-02-16
     schwab_action: "Journaled Shares"
-    schwab_amount: "-12.3456 GOOG"
     source_desc: "ALPHABET INC. CLASS C"
   Expenses:FIXME                        12.3456 GOOG
 
@@ -659,6 +657,5 @@
   Assets:Schwab:Intelligent-4321:GOOG  -10 GOOG
     date: 2021-03-22
     schwab_action: "Security Transfer"
-    schwab_amount: "-10 GOOG"
     source_desc: "ALPHABET INC. CLASS C"
   Expenses:FIXME                        10 GOOG
