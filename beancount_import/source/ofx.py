@@ -672,6 +672,16 @@ class ParsedOfxStatement(object):
             availcash = find_child(inv_bal, 'availcash', D)
             self.availcash = availcash
 
+            for bal in inv_bal.find_all('bal'):
+                if find_child(bal, 'value', D) == availcash:
+                    date = find_child(bal, 'dtasof', parse_ofx_time)
+                    if date is not None:
+                        date = date.date()
+                        raw_cash_balance_entries.append(
+                            RawCashBalanceEntry(
+                                date=date, number=availcash, filename=filename))
+                        break
+
         for bal in stmtrs.find_all('ledgerbal'):
             bal_amount_str = find_child(bal, 'balamt')
             if not bal_amount_str.strip(): continue
@@ -739,6 +749,11 @@ class ParsedOfxStatement(object):
             commodity = commodities_by_cusip.get(unique_id)
             if commodity is not None:
                 return commodity
+            if unique_id not in securities_map:
+                results.add_error(
+                    'Missing id for security %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
+                    % (unique_id, ))
+                return None
             sec = securities_map[unique_id]
             ticker = sec.ticker
             if ticker is None:
