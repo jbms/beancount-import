@@ -174,15 +174,18 @@ class BrokerageAction(enum.Enum):
     WIRE_FUNDS = "Wire Funds"
     WIRE_FUNDS_RECEIVED = "Wire Funds Received"
     MISC_CASH_ENTRY = "Misc Cash Entry"
+    JOURNALED_SHARES = "Journaled Shares"
+    SECURITY_TRANSFER = "Security Transfer"
 
 
 class BankingEntryType(enum.Enum):
     ACH = "ACH"
+    ATM = "ATM"
+    CHECK = "CHECK"
     INTADJUST = "INTADJUST"
     TRANSFER = "TRANSFER"
     VISA = "VISA"
-    ATM = "ATM"
-    CHECK = "CHECK"
+    WIRE = "WIRE"
 
 
 @dataclass(frozen=True)
@@ -300,6 +303,8 @@ class RawBrokerageEntry(RawEntry):
             )
         if self.action in (BrokerageAction.MONEYLINK_TRANSFER,
                            BrokerageAction.JOURNAL,
+                           BrokerageAction.JOURNALED_SHARES,
+                           BrokerageAction.SECURITY_TRANSFER,
                            BrokerageAction.WIRE_FUNDS,
                            BrokerageAction.WIRE_FUNDS_RECEIVED):
             return Transfer(**shared_attrs)
