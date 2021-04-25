@@ -309,7 +309,6 @@ class RawBrokerageEntry(RawEntry):
             assert self.quantity is not None
             lot_splits = lots.split(acct, self.symbol, self.date, self.quantity)
             return StockSplit(
-                capital_gains_account=capital_gains_account,
                 lot_splits=lot_splits,
                 **shared_attrs,
             )
@@ -612,7 +611,6 @@ class Transfer(TransactionEntry):
 
 @dataclass(frozen=True)
 class StockSplit(TransactionEntry):
-    capital_gains_account: str
     lot_splits: List[LotSplit]
 
     def get_sub_account(self) -> Optional[str]:
@@ -659,20 +657,7 @@ class StockSplit(TransactionEntry):
                 )
             )
 
-        postings.append(
-            Posting(
-                account=self.get_cap_gains_account(),
-                units=MISSING,
-                cost=None,
-                price=None,
-                flag=None,
-                meta={},
-            )
-        )
         return postings
-
-    def get_cap_gains_account(self) -> str:
-        return f"{self.capital_gains_account}:{self.amount.currency}"
 
     def get_narration_prefix(self) -> str:
         return "STOCKSPLIT"

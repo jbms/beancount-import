@@ -139,7 +139,6 @@
     date: 2020-10-13
     schwab_action: "Stock Split"
     source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
-  Income:Capital-Gains:Schwab:HYLB
 
 ;; date: 2020-10-19
 ;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 3, "type": "text/csv"}
