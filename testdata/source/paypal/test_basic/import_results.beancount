@@ -433,3 +433,40 @@
   Assets:Paypal                    73.45 USD
     date: 2019-08-26
     paypal_transaction_id: "5Y903271C7730840Z"
+
+;; date: 2020-09-14
+;; info: {"filename": "<testdata>/5GS66998X92750532.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "-30.00 USD",
+;               "date": "2020-09-14",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "eBay - Counterparty Co.",
+;                   "eBay - Counterparty Co."
+;                 ],
+;                 "paypal_item_name": [
+;                   "Harry Potter"
+;                 ],
+;                 "paypal_item_number": [
+;                   "124066610329"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2020-09-14 * "eBay - Counterparty Co." "Payment Received" ^paypal.5GS66998X92750532
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.5GS66998X92750532\", \"path\": \"<testdata>/5GS66998X92750532.html\", \"type\": \"text/html\"}"
+  Expenses:Financial:Paypal:Fees    1.47 USD
+  Expenses:FIXME:A                -10.50 USD
+    paypal_counterparty: "eBay - Counterparty Co."
+    paypal_item_name: "Harry Potter"
+    paypal_item_number: "124066610329"
+    paypal_item_url: "http://cgi.ebay.com/ebaymotors/ws/eBayISAPI.dll?ViewItem&item=124066610329"
+  Expenses:FIXME:A                -30.00 USD
+    paypal_counterparty: "eBay - Counterparty Co."
+    paypal_item_type: "shippingAmount"
+  Assets:Paypal                    39.03 USD
+    date: 2020-09-14
+    paypal_transaction_id: "5GS66998X92750532"
