@@ -11,6 +11,7 @@ import sys
 import logging
 import traceback
 import pdb
+import pkg_resources
 import json
 import os
 import tempfile
@@ -193,16 +194,27 @@ def json_encode_state(obj):
         return json_encode_candidates(obj)
 
 
-class IndexHandler(tornado.web.RequestHandler):
-    def get(self):
-        frontend_dist = self.application.frontend_dist
-        self.set_header('Content-Type', 'text/html')
-        import pkg_resources
-        contents = pkg_resources.resource_string(
-            __name__, 'frontend_dist/%s/index.html' % frontend_dist)
-        contents = contents.replace(
-            self.application.secret_key_pattern.encode(),
-            self.application.secret_key.encode())
+class StaticHandler(tornado.web.RequestHandler):
+    def get(self, name: str):
+        if name == '':
+            name = 'index.html'
+        if name.endswith('.html'):
+            content_type = 'text/html'
+        elif name.endswith('.js'):
+            content_type = 'application/javascript'
+        elif name.endswith('.css'):
+            content_type = 'text/css'
+        elif name.endswith('.map'):
+            content_type = 'application/json'
+        else:
+            content_type = 'application/octet-stream'
+        self.set_header('Content-Type', content_type)
+        contents = pkg_resources.resource_string(__name__,
+                                                 'frontend_dist/%s' % name)
+        if name == 'app.js':
+            contents = contents.replace(
+                self.application.secret_key_pattern.encode(),  # type: ignore
+                self.application.secret_key.encode())  # type: ignore
         self.write(contents)
 
 
@@ -419,8 +431,9 @@ class Application(tornado.web.Application):
         self.secret_key_pattern = 'BEANCOUNT_IMPORT_SECRET_KEY_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
         self.secret_key = secret_key
         self.ioloop = ioloop
-        super(Application, self).__init__([
-            ('/', IndexHandler),
+        super().__init__([
+            (r'/(|index\.html|app\.js|app\.js\.map|app\.css|app\.css\.map)',
+             StaticHandler),
             (r'/%s/(errors|pending|invalid|uncleared)/([^/]*)/(\d+)-(\d+)' %
              secret_key, GetDataHandler),
             (r'/%s/websocket' % secret_key, WebSocketHandler),
@@ -430,7 +443,6 @@ class Application(tornado.web.Application):
             (r'/%s/skip' % secret_key, SkipHandler),
             (r'/%s/retrain' % secret_key, RetrainHandler),
         ], **kwargs)
-        self.frontend_dist = args.frontend_dist
         self.socket_clients = set()
         self.watched_files = dict()
         self.current_state = dict()
@@ -692,14 +704,6 @@ def parse_arguments(argv, **kwargs):
         const=logging.DEBUG,
         default=logging.WARNING)
     argparser.add_argument(
-        '--dev',
-        help='Use development version of frontend.',
-        action='store_const',
-        dest='frontend_dist',
-        const='dev',
-        default='prod',
-    )
-    argparser.add_argument(
         '-v',
         '--verbose',
         help='Set log verbosity to INFO.',
@@ -736,7 +740,7 @@ def main(argv, **kwargs):
     if args.log_output is not None:
         logging_args['filename'] = args.log_output
     logging.basicConfig(**logging_args)
-    
+
     init_tornado_asyncio()
 
     ioloop = tornado.ioloop.IOLoop.instance()

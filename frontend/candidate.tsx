@@ -31,23 +31,21 @@ interface CandidateComponentProps {
 }
 
 const groupBackgroundColors = [
-  "#faa",
-  "#afa",
-  "#aff",
-  "#faf",
-  "#aff",
-  "#ffa",
-  "#f8a"
+  "var(--color-bg-group-1)",
+  "var(--color-bg-group-2)",
+  "var(--color-bg-group-3)",
+  "var(--color-bg-group-4)",
+  "var(--color-bg-group-5)",
+  "var(--color-bg-group-6)",
+  "var(--color-bg-group-7)"
 ];
 
-const AccountSubstitutionBackground = styled<{ groupNumber: number }, "div">(
-  "div"
-)`
+const AccountSubstitutionBackground = styled.div<{ groupNumber: number }>`
   background-color: ${p =>
     groupBackgroundColors[p.groupNumber % groupBackgroundColors.length]};
 `;
 
-const AccountSubstitutionElement = styled<{ active: boolean }, "div">("div")`
+const AccountSubstitutionElement = styled.div<{ active: boolean }>`
   display: inline;
   position: relative;
   cursor: pointer;
@@ -73,14 +71,14 @@ const lineChangeElements = new Map([
   [
     LineChangeType.delete,
     styled.div`
-      color: red;
+      color: var(--color-line-change-delete);
     `
   ],
   [LineChangeType.context, styled.div``],
   [
     LineChangeType.insert,
     styled.div`
-      color: green;
+      color: var(--color-line-change-add);
     `
   ]
 ]);
@@ -91,30 +89,28 @@ const lineChangePrefix: { [index: string]: string } = {
   "1": "+"
 };
 
-const CandidateChangesElement = styled<
-  { selected: boolean; hover: boolean },
-  "div"
->("div")`
-  font-family: monospace;
+const CandidateChangesElement = styled.div<
+  { selected: boolean; hover: boolean }>`
+  cursor: pointer;
+  font-family: var(--font-fam-mono);
+  font-size: var(--font-size-mono-reg);
   white-space: pre;
-  border: 1px solid ${props => (props.hover ? "black" : "transparent")};
-  opacity: ${p => (p.selected ? 1.0 : 0.75)};
-  position: relative;
-  padding: 2px;
-  margin-top: 1em;
-  margin-bottom: 1em;
-  margin-left: 7px;
-
-  :before {
-    content: " ";
-    position: absolute;
-    left: -5px;
-    right: 0px;
-    bottom: 0px;
-    top: 0px;
-    z-index: -1;
-    border-left: 4px solid ${p => (p.selected ? "blue" : "transparent")};
-  }
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--color-main-accent);
+  min-width: 100%;
+  box-sizing: border-box;
+  ${props => (props.hover && 
+    `
+    background-color: var(--color-hover-bg);
+    color: var(--color-hover-text);
+    `
+  )};
+  ${props => (props.selected && 
+    `
+    background-color: var(--color-select-bg);
+    color: var(--color-select-text);
+    `
+  )};
 `;
 
 export class CandidateComponent extends React.PureComponent<

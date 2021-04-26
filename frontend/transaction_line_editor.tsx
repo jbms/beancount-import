@@ -32,17 +32,20 @@ interface TransactionLineEditorState {
   parseResult?: { value: string; result: TransactionLineParseResult | null };
 }
 
-const LineEditorElement = styled<{ valid: boolean }, "input">("input")`
+const LineEditorElement = styled.input<{ valid: boolean }>`
   color: inherit;
   font-family: inherit;
   font-size: inherit;
   outline: 0px;
   border: 0px;
+  padding: 0;
+  margin: 0;
   background-color: transparent;
-
+  
   :focus {
-    color: black;
-    outline: 1px solid ${p => (p.valid ? "black" : "red")};
+    background-color: var(--color-main-bg);
+    color: var(--color-main-text);
+    outline: 1px solid ${p => (p.valid ? "var(--color-main-accent)" : "var(--color-line-change-delete)")};
   }
 `;
 

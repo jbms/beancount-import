@@ -1,0 +1,188 @@
+:root, body.theme-light {
+  --font-fam-sans: Roboto, "Helvetica Neue", HelveticaNeue, Helvetica, Arial,
+    sans-serif;
+  --font-fam-mono: "Inconsolata", "Courier New", Courier, monospace;
+  --font-size-sans-reg: 14px;
+  --font-size-sans-small: 12px;
+  --font-size-mono-reg: 15px;
+
+  --color-main-bg: #fff;
+  --color-main-text: black;
+  --color-main-accent: rgba(0, 0, 0, 0.5);
+
+  --color-link-text: hsl(229, 86%, 42%);
+
+  --color-nav-bg: hsl(210, 33%, 40%);
+  --color-nav-text: white;
+  
+  --color-hover-bg: hsl(0, 0%, 93%);
+  --color-hover-text: var(--color-main-text);
+  
+  --color-select-bg: hsl(211, 40%, 85%);
+  --color-select-text: black;
+
+  --color-line-change-delete: hsla(0, 100%, 26%, 1);
+  --color-line-change-add: hsla(143, 85%, 27%, 1);
+
+  --color-bg-group-1: hsla(0, 100%, 83%, 0.6);
+  --color-bg-group-2: hsla(120, 100%, 83%, 0.6);
+  --color-bg-group-3: hsla(180, 100%, 83%, 0.6);
+  --color-bg-group-4: hsla(300, 100%, 83%, 0.6);
+  --color-bg-group-5: hsla(180, 100%, 83%, 0.6);
+  --color-bg-group-6: hsla(60, 100%, 83%, 0.6);
+  --color-bg-group-7: hsla(343, 100%, 83%, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-main-bg: #0f171f;
+    --color-main-text: rgba(255, 255, 255, 0.87);
+    --color-main-accent: rgba(255, 255, 255, 0.5);
+
+    --color-nav-bg: #213040;
+    --color-nav-text: white;
+
+    --color-link-text: hsl(229, 100%, 87%);
+    
+    --color-hover-bg: hsl(211, 34%, 18%);
+    --color-hover-text: var(--color-main-text);
+    
+    --color-select-bg: hsl(211, 32%, 25%);
+    --color-select-text: rgba(255, 255, 255, 0.87);
+
+    --color-line-change-delete: hsl(0, 100%, 76%, 0.87);
+    --color-line-change-add: hsla(143, 100%, 76%, .87);
+
+    --color-bg-group-1: hsla(0, 100%, 60%, 0.4);
+    --color-bg-group-2: hsla(120, 100%, 60%, 0.4);
+    --color-bg-group-3: hsla(180, 100%, 60%, 0.4);
+    --color-bg-group-4: hsla(300, 100%, 60%, 0.4);
+    --color-bg-group-5: hsla(180, 100%, 60%, 0.4);
+    --color-bg-group-6: hsla(60, 100%, 60%, 0.4);
+    --color-bg-group-7: hsla(343, 100%, 60%, 0.4);
+  }
+}
+
+body.theme-dark {
+  --color-main-bg: #0f171f;
+  --color-main-text: rgba(255, 255, 255, 0.87);
+  --color-main-accent: rgba(255, 255, 255, 0.5);
+
+  --color-nav-bg: #213040;
+  --color-nav-text: white;
+
+  --color-link-text: hsl(229, 100%, 87%);
+  
+  --color-hover-bg: hsl(211, 34%, 18%);
+  --color-hover-text: var(--color-main-text);
+  
+  --color-select-bg: hsl(211, 32%, 25%);
+  --color-select-text: rgba(255, 255, 255, 0.87);
+
+  --color-line-change-delete: hsl(0, 100%, 76%, 0.87);
+  --color-line-change-add: hsla(143, 100%, 76%, .87);
+
+  --color-bg-group-1: hsla(0, 100%, 60%, 0.4);
+  --color-bg-group-2: hsla(120, 100%, 60%, 0.4);
+  --color-bg-group-3: hsla(180, 100%, 60%, 0.4);
+  --color-bg-group-4: hsla(300, 100%, 60%, 0.4);
+  --color-bg-group-5: hsla(180, 100%, 60%, 0.4);
+  --color-bg-group-6: hsla(60, 100%, 60%, 0.4);
+  --color-bg-group-7: hsla(343, 100%, 60%, 0.4);
+}
+
+body {
+  color: var(--color-main-text);
+  background-color: var(--color-main-bg);
+  font-family: var(--font-fam-sans);
+  font-size: var(--font-size-sans-reg);
+}
+
+a {
+  color: var(--color-link-text);
+}
+
+.react-tabs__tab-list {
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--color-nav-text);
+  background-color: var(--color-nav-bg);
+  color: var(--color-nav-text);
+}
+
+.react-tabs__tab {
+  display: inline-block;
+  position: relative;
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 12px;
+  font-family: var(--font-fam-sans);
+  font-size: var(--font-size-sans-reg);
+  border-bottom: 4px solid transparent;
+}
+
+.react-tabs__tab--selected {
+  cursor: default;
+  border-bottom: 4px solid var(--color-nav-text);
+  font-weight: 500;
+}
+
+.react-tabs__tab-panel {
+  display: none;
+}
+
+.react-tabs__tab-panel--selected {
+  display: block;
+}
+
+.action-button__group {
+  margin: 8px 4px;
+  display: inline-block;
+}
+
+.action-button__group:first-of-type {
+  margin-left: 0;
+}
+
+.action-button__group:last-of-type {
+  margin-right: 0;
+}
+
+.action-button-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--color-main-accent);
+}
+
+.action-button {
+  border: 1px solid var(--color-main-accent);
+  background-color: var(--color-main-bg);
+  color: var(--color-main-text);
+  padding: 8px 6px;
+  cursor: pointer;
+  border-right: none;
+}
+
+.action-button:first-of-type {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.action-button:last-of-type {
+  border-right: 1px solid var(--color-main-accent);
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.action-button:hover,
+.action-button:focus {
+  background-color: var(--color-hover-bg);
+  color: var(--color-hover-text);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

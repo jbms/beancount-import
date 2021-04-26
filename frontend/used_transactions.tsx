@@ -3,35 +3,42 @@ import styled from "styled-components";
 import { UsedTransaction } from "./server_connection";
 import { AssociatedDataViewController, AssociatedDataViewContext } from "./app";
 
-const UsedTransactionList = styled.div``;
+const UsedTransactionList = styled.div`
+  border-bottom: 1px solid var(--color-main-accent);
+`;
 
-const UsedTransactionElement = styled<
-  { selected: boolean; hover: boolean },
-  "div"
->("div")`
-  border: 1px solid ${props => (props.hover ? "black" : "transparent")};
-  font-family: monospace;
-  background-color: #fef;
-  display: block;
-  position: relative;
+const UsedTransactionElement = styled.div<
+  { selected: boolean; hover: boolean }>`
+  font-family: var(--font-fam-mono);
+  background-color: var(--color-main-bg);
+  color: var(--color-main-text);
   overflow: hidden;
-  text-overflow: ellipses;
+  text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 1px;
-  margin-top: 1px;
-  margin-bottom: 1px;
-  margin-left: 7px;
+  line-height: 24px;
 
-  :before {
-    content: " ";
-    position: absolute;
-    left: -5px;
-    right: 0px;
-    bottom: 0px;
-    top: 0px;
-    z-index: -1;
-    border-left: 4px solid ${p => (p.selected ? "blue" : "transparent")};
-  }
+  ${props => (props.hover && 
+    `
+    background-color: var(--color-hover-bg);
+    color: var(--color-hover-text);
+    `
+  )};
+  ${props => (props.selected && 
+    `
+    background-color: var(--color-select-bg);
+    color: var(--color-select-text);
+    `
+  )};
+`;
+
+const UsedTransactionCheckbox = styled.input<{disabled: boolean}>`
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  padding: 0px;
+  margin: 0 6px;
+  display: inline-block;
+  cursor: ${props => props.disabled ? 'default' : 'pointer'};
 `;
 
 export class UsedTransactionsComponent extends React.PureComponent<{
@@ -72,7 +79,7 @@ export class UsedTransactionsComponent extends React.PureComponent<{
                     onClick={this.handleClick}
                     data-id={index}
                   >
-                    <input
+                    <UsedTransactionCheckbox
                       data-id={index}
                       disabled={index === 0}
                       type="checkbox"

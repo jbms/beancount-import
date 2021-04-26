@@ -21,10 +21,11 @@ import { CandidatesComponent, CandidateSelectionState } from "./candidates";
 import { InvalidReferencesComponent } from "./invalid_references";
 import { UnclearedPostingsComponent } from "./uncleared";
 import { SourceDataComponent } from "./source_data";
+import { SettingsComponentState, SettingsComponent } from "./settings";
 
 import commonPrefix from "common-prefix";
 
-import "react-tabs/style/react-tabs.css";
+import "./styles.css";
 
 import styled from "styled-components";
 import { VirtualListScrollState } from "./virtual_list";
@@ -87,11 +88,26 @@ const AppTabPanel = styled(TabPanel).attrs({ selectedClassName: "" })`
   flex: 1;
 `;
 
+const CandidatesUnavailable = styled.div`
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;
+
+const StatusBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 4px;
+  border-top: 1px solid var(--color-main-accent);
+  background-color: var(--color-main-bg);
+`;
+
 enum TabKeys {
-  errors,
-  invalid,
+  candidates,
   uncleared,
-  candidates
+  invalid,
+  errors
 }
 
 enum DataTabKeys {
@@ -114,6 +130,8 @@ interface AppState extends Partial<ServerState> {
   journalDirty: boolean;
   selectedTab: number;
   selectedDataTab: number;
+  settingsOpen: boolean;
+  settingsCandidatesLeft: boolean;
 }
 
 class AppComponent
@@ -191,7 +209,9 @@ class AppComponent
   state: AppState = {
     ...this.props.serverConnection.state,
     journalDirty: false,
-    ...this.getSelectedTabsFromUrl()
+    ...this.getSelectedTabsFromUrl(),
+    settingsOpen: false,
+    settingsCandidatesLeft: false
   };
 
   selectFile = (
@@ -230,6 +250,19 @@ class AppComponent
     this.setState({ selectedDataTab: index });
   };
 
+  private handleToggleSettings = (open?: boolean) => {
+    this.setState({
+      settingsOpen:
+        typeof open !== "undefined" ? open : !this.state.settingsOpen
+    });
+  };
+
+  private handleSettingsChange = (settings: SettingsComponentState) => {
+    this.setState({
+      settingsCandidatesLeft: settings.candidatesLeft
+    });
+  };
+
   componentDidUpdate() {
     this.setUrlFromTab(this.state);
   }
@@ -237,7 +270,12 @@ class AppComponent
   render() {
     if (this.state.closed) {
       return (
-        <AppRootElement>
+        <AppRootElement
+          style={{
+            textAlign: "center",
+            justifyContent: "center"
+          }}
+        >
           Server connection closed, waiting to reconnect.
         </AppRootElement>
       );
@@ -257,24 +295,19 @@ class AppComponent
         <CommonJournalPrefixContext.Provider value={commonJournalPrefix}>
           <AppRootElement>
             <SplitContainer>
-              <SplitChild style={{ flexDirection: "column" }}>
+              <SplitChild
+                style={{
+                  flexDirection: "column",
+                  borderLeft: !this.state.settingsCandidatesLeft ? "1px solid var(--color-nav-bg)" : "",
+                  borderRight: this.state.settingsCandidatesLeft ? "1px solid var(--color-nav-bg)" : "",
+                  order: this.state.settingsCandidatesLeft ? 0 : 1
+                }}
+              >
                 <AppTabs
                   onSelect={this.handleSelectTab}
                   selectedIndex={this.state.selectedTab}
                 >
                   <TabList>
-                    <Tab>
-                      Errors
-                      {getOptionalCount(this.state.errors)}
-                    </Tab>
-                    <Tab>
-                      Invalid
-                      {getOptionalCount(this.state.invalid)}
-                    </Tab>
-                    <Tab>
-                      Uncleared
-                      {getOptionalCount(this.state.uncleared)}
-                    </Tab>
                     <Tab>
                       Candidates
                       {this.state.candidates != null &&
@@ -282,20 +315,19 @@ class AppComponent
                         ? ` (${this.state.candidates.candidates.length})`
                         : undefined}
                     </Tab>
+                    <Tab>
+                      Uncleared
+                      {getOptionalCount(this.state.uncleared)}
+                    </Tab>
+                    <Tab>
+                      Invalid
+                      {getOptionalCount(this.state.invalid)}
+                    </Tab>
+                    <Tab>
+                      Errors
+                      {getOptionalCount(this.state.errors)}
+                    </Tab>
                   </TabList>
-                  <AppTabPanel>
-                    <JournalErrorsComponent listState={this.errorListState} />
-                  </AppTabPanel>
-                  <AppTabPanel>
-                    <InvalidReferencesComponent
-                      listState={this.invalidListState}
-                    />
-                  </AppTabPanel>
-                  <AppTabPanel>
-                    <UnclearedPostingsComponent
-                      listState={this.unclearedListState}
-                    />
-                  </AppTabPanel>
                   <AppTabPanel>
                     {hasCandidates && !this.state.journalDirty ? (
                       <CandidatesComponent
@@ -315,9 +347,22 @@ class AppComponent
                       undefined
                     )}
                     {hasCandidates && this.state.journalDirty
-                      ? "Candidates not available due to unsaved local edits to journal."
+                      ? <CandidatesUnavailable>Candidates not available due to unsaved local edits to journal.</CandidatesUnavailable>
                       : undefined}
-                    {!hasCandidates ? "No pending entries." : undefined}
+                    {!hasCandidates ? <CandidatesUnavailable>"No pending entries."</CandidatesUnavailable> : undefined}
+                  </AppTabPanel>
+                  <AppTabPanel>
+                    <UnclearedPostingsComponent
+                      listState={this.unclearedListState}
+                    />
+                  </AppTabPanel>
+                  <AppTabPanel>
+                    <InvalidReferencesComponent
+                      listState={this.invalidListState}
+                    />
+                  </AppTabPanel>
+                  <AppTabPanel>
+                    <JournalErrorsComponent listState={this.errorListState} />
                   </AppTabPanel>
                 </AppTabs>
               </SplitChild>
@@ -360,7 +405,14 @@ class AppComponent
                 </AppTabs>
               </SplitChild>
             </SplitContainer>
-            <div>{this.state.message || ""}</div>
+            <StatusBar>
+              {this.state.message || ""}
+              <SettingsComponent
+                isOpen={this.state.settingsOpen}
+                onToggle={this.handleToggleSettings}
+                onSettingsChange={this.handleSettingsChange}
+              />
+            </StatusBar>
           </AppRootElement>
         </CommonJournalPrefixContext.Provider>
       </AssociatedDataViewContext.Provider>
@@ -382,6 +434,14 @@ class AppComponent
     this.pendingListState.scrollState.scrollToIndex(index);
   };
 }
+
+const link = document.createElement("link");
+link.setAttribute(
+  "href",
+  "https://fonts.googleapis.com/css2?family=Inconsolata&family=Roboto:wght@400;500&display=swap"
+);
+link.setAttribute("rel", "stylesheet");
+document.body.appendChild(link);
 
 const root = document.createElement("div");
 document.body.appendChild(root);

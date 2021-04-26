@@ -1,0 +1,81 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  tox:
+    strategy:
+      matrix:
+        os:
+          - 'ubuntu-latest'
+          - 'windows-latest'
+          - 'macos-latest'
+        python-version:
+          - '3.7'
+          - '3.8'
+          - '3.9'
+        node-version:
+          - '15.x'
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # Need full history to determine version number.
+        fetch-depth: 0
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - uses: actions/cache@v2
+      with:
+        path: "**/node_modules"
+        key: ${{ runner.os }}-${{ matrix.node-version }}-node_modules-${{ hashFiles('**/package-lock.json') }}
+    - run: npm install
+      working-directory: frontend
+    - run: npm run tsc
+      working-directory: frontend
+    - name: Install Python packaging/test tools
+      run: python -m pip install tox wheel
+    - name: Show package version
+      run: python setup.py --version
+    - name: Test with tox
+      run: tox -vv
+    - name: Build wheel
+      run: python setup.py bdist_wheel
+    - name: Upload wheels as artifacts
+      uses: actions/upload-artifact@v2
+      if: ${{ runner.os == 'Linux' && matrix.python-version == '3.9' }}
+      with:
+        name: python-packages
+        path: |
+          dist/*.whl
+          dist/*.tar.gz
+
+  python-publish-package:
+    # Only publish package on push to tag or default branch.
+    if: ${{ github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master') }}
+    runs-on: ubuntu-latest
+    needs:
+      - tox
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: python-packages
+        path: dist
+    - name: Publish to PyPI (test server)
+      uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806 # 2020-09-25
+      with:
+        user: __token__
+        password: ${{ secrets.pypi_test_token }}
+        repository_url: https://test.pypi.org/legacy/
+      if: ${{ ! startsWith(github.ref, 'refs/tags/v') }}
+    - name: Publish to PyPI (main server)
+      uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806 # 2020-09-25
+      with:
+        user: __token__
+        password: ${{ secrets.pypi_token }}
+      if: ${{ startsWith(github.ref, 'refs/tags/v') }}

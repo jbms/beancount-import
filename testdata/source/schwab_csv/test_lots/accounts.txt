@@ -1,0 +1,4 @@
+Assets:Schwab:Intelligent-4321
+Assets:Schwab:Intelligent-4321:Cash
+Assets:Schwab:Intelligent-4321:FNDA
+Assets:Schwab:Intelligent-4321:SCHA

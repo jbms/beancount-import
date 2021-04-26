@@ -1,0 +1,82 @@
+option "operating_currency" "USD"
+option "conversion_currency" "USD"
+
+1900-01-01 commodity USD
+  name: "US Dollars"
+
+1900-01-01 open Assets:Investment:Fidelity
+  ofx_org: "fidelity.com"
+  ofx_broker_id: "fidelity.com"
+  account_id: "01234567890"
+  ofx_account_type: "securities_and_cash"
+  div_income_account: "Income:Fidelity:Dividends"
+  interest_income_account: "Income:Fidelity:Interest"
+  capital_gains_account: "Income:Fidelity:Capital-Gains"
+  fees_account: "Expenses:Investment:Fidelity:Fees"
+  commission_account: "Expenses:Investment:Fidelity:Commissions"
+
+
+1900-01-01 open Assets:Investment:Fidelity:CLCT
+1900-01-01 open Assets:Investment:Fidelity:Cash
+1900-01-01 open Assets:Investment:Fidelity:HI
+1900-01-01 open Assets:Investment:Fidelity:INTC
+1900-01-01 open Assets:Investment:Fidelity:RHT
+1900-01-01 open Assets:Investment:Fidelity:SDRL
+1900-01-01 open Assets:Investment:Fidelity:SPY
+1900-01-01 open Assets:Investment:Fidelity:XIN
+
+1900-01-01 open Income:Fidelity:Capital-Gains
+1900-01-01 open Income:Fidelity:Capital-Gains:SPY
+1900-01-01 open Income:Fidelity:Dividends
+1900-01-01 open Income:Fidelity:Dividends:CLCT
+1900-01-01 open Income:Fidelity:Dividends:INTC
+1900-01-01 open Income:Fidelity:Dividends:SPY
+1900-01-01 open Income:Fidelity:Dividends:XIN
+1900-01-01 open Income:Fidelity:Interest
+
+1900-01-01 open Expenses:FIXME
+1900-01-01 open Expenses:Investment:Fidelity:Commissions
+1900-01-01 open Expenses:Investment:Fidelity:Fees
+
+1900-01-01 open Equity:Opening-Balances
+
+1900-01-01 * "Opening Balances"
+  Assets:Investment:Fidelity:Cash                  28600.65 USD
+  Assets:Investment:Fidelity:RHT                         50 RHT
+  Equity:Opening-Balances
+
+2012-07-27 * "SELLSTOCK - YOU SOLD"
+  Assets:Investment:Fidelity:SPY                         -8 SPY @ 137.16 USD
+    date: 2012-07-27
+    ofx_fitid: "0123456789020901320120727"
+    ofx_memo: "YOU SOLD"
+    ofx_type: "SELLSTOCK"
+    cleared: TRUE
+  Income:Fidelity:Capital-Gains:SPY
+  Assets:Investment:Fidelity:Cash                   1089.30 USD
+    ofx_fitid: "0123456789020901320120727"
+    cleared: TRUE
+  Expenses:Investment:Fidelity:Commissions           7.9500 USD
+
+2012-08-01 * "SELLSTOCK - IN LIEU OF FRX SHARE"
+  Assets:Investment:Fidelity:SPY                     -0.035 SPY @ 137.142857143 USD
+    date: 2012-08-01
+    ofx_fitid: "0123456789021401420120801"
+    ofx_memo: "IN LIEU OF FRX SHARE"
+    ofx_type: "SELLSTOCK"
+    cleared: TRUE
+  Income:Fidelity:Capital-Gains:SPY
+  Assets:Investment:Fidelity:Cash                      4.80 USD
+    ofx_fitid: "0123456789021401420120801"
+    cleared: TRUE
+
+2012-09-01 * "BUYSTOCK - REINVESTMENT"
+  Assets:Investment:Fidelity:INTC                     0.911 INTC {24.70 USD}
+    date: 2012-09-01
+    ofx_fitid: "0123456789024801120120901"
+    ofx_memo: "REINVESTMENT"
+    ofx_type: "BUYSTOCK"
+    cleared: TRUE
+  Assets:Investment:Fidelity:Cash                    -22.50 USD
+    ofx_fitid: "0123456789024801120120901"
+    cleared: TRUE

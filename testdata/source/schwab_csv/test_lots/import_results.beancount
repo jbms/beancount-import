@@ -1,0 +1,140 @@
+;; date: 2020-08-24
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 6, "type": "text/csv"}
+
+; features: []
+2020-08-24 * "BUYSTOCK - SCHWAB FUNDAMENTAL US SMALL COM ETF"
+  Assets:Schwab:Intelligent-4321:FNDA       1 FNDA {34.89 USD}
+    date: 2020-08-24
+    schwab_action: "Buy"
+    source_desc: "SCHWAB FUNDAMENTAL US SMALL COM ETF"
+  Assets:Schwab:Intelligent-4321:Cash  -34.89 USD
+    date: 2020-08-24
+    schwab_action: "Buy"
+    source_desc: "SCHWAB FUNDAMENTAL US SMALL COM ETF"
+
+;; date: 2020-08-24
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 5, "type": "text/csv"}
+
+; features: []
+2020-08-24 * "BUYSTOCK - SCHWAB US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:SCHA       10 SCHA {71.35 USD}
+    date: 2020-08-24
+    schwab_action: "Buy"
+    source_desc: "SCHWAB US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:Cash  -713.50 USD
+    date: 2020-08-24
+    schwab_action: "Buy"
+    source_desc: "SCHWAB US SMALL CAP ETF"
+
+;; date: 2020-08-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-08-25.CSV", "line": 4, "type": "text/csv"}
+
+2020-08-25 balance Assets:Schwab:Intelligent-4321:FNDA             1 FNDA
+
+;; date: 2020-08-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-08-25.CSV", "line": 5, "type": "text/csv"}
+
+2020-08-25 balance Assets:Schwab:Intelligent-4321:SCHA             10 SCHA
+
+;; date: 2020-08-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-08-25.CSV", "line": 6, "type": "text/csv"}
+
+2020-08-25 balance Assets:Schwab:Intelligent-4321:Cash             10.00 USD
+
+;; date: 2020-08-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-08-25.CSV", "line": 4, "type": "text/csv"}
+
+2020-08-25 price FNDA                                33.89 USD
+
+;; date: 2020-08-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-08-25.CSV", "line": 5, "type": "text/csv"}
+
+2020-08-25 price SCHA                                71.39 USD
+
+;; date: 2020-09-24
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 4, "type": "text/csv"}
+
+; features: []
+2020-09-24 * "BUYSTOCK - SCHWAB US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:SCHA        20 SCHA {72.56 USD}
+    date: 2020-09-24
+    schwab_action: "Buy"
+    source_desc: "SCHWAB US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:Cash  -1451.20 USD
+    date: 2020-09-24
+    schwab_action: "Buy"
+    source_desc: "SCHWAB US SMALL CAP ETF"
+
+;; date: 2020-09-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-09-25.CSV", "line": 4, "type": "text/csv"}
+
+2020-09-25 balance Assets:Schwab:Intelligent-4321:FNDA             1 FNDA
+
+;; date: 2020-09-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-09-25.CSV", "line": 5, "type": "text/csv"}
+
+2020-09-25 balance Assets:Schwab:Intelligent-4321:SCHA             30 SCHA
+
+;; date: 2020-09-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-09-25.CSV", "line": 6, "type": "text/csv"}
+
+2020-09-25 balance Assets:Schwab:Intelligent-4321:Cash             10.00 USD
+
+;; date: 2020-09-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-09-25.CSV", "line": 4, "type": "text/csv"}
+
+2020-09-25 price FNDA                                33.89 USD
+
+;; date: 2020-09-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-09-25.CSV", "line": 5, "type": "text/csv"}
+
+2020-09-25 price SCHA                                72.56 USD
+
+;; date: 2020-10-19
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 3, "type": "text/csv"}
+
+; features: []
+2020-10-19 * "SELLSTOCK - SCHWAB FUNDAMENTAL US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:FNDA     -1 FNDA {34.89 USD} @ 35.00 USD
+    date: 2020-10-19
+    schwab_action: "Sell"
+    source_desc: "SCHWAB FUNDAMENTAL US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:Cash  35.00 USD
+    date: 2020-10-19
+    schwab_action: "Sell"
+    source_desc: "SCHWAB FUNDAMENTAL US SMALL CAP ETF"
+  Income:Capital-Gains:Schwab:FNDA
+
+;; date: 2020-10-19
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 2, "type": "text/csv"}
+
+; features: []
+2020-10-19 * "SELLSTOCK - SCHWAB US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:SCHA      -10 SCHA {71.35 USD} @ 74.23 USD
+    date: 2020-10-19
+    schwab_action: "Sell"
+    source_desc: "SCHWAB US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:SCHA     -9.5 SCHA {72.56 USD} @ 74.23 USD
+    date: 2020-10-19
+    schwab_action: "Sell"
+    source_desc: "SCHWAB US SMALL CAP ETF"
+  Assets:Schwab:Intelligent-4321:Cash  1447.49 USD
+    date: 2020-10-19
+    schwab_action: "Sell"
+    source_desc: "SCHWAB US SMALL CAP ETF"
+  Income:Capital-Gains:Schwab:SCHA
+
+;; date: 2020-10-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-10-25.CSV", "line": 4, "type": "text/csv"}
+
+2020-10-25 balance Assets:Schwab:Intelligent-4321:SCHA             10.5 SCHA
+
+;; date: 2020-10-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-10-25.CSV", "line": 5, "type": "text/csv"}
+
+2020-10-25 balance Assets:Schwab:Intelligent-4321:Cash             10.00 USD
+
+;; date: 2020-10-25
+;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-10-25.CSV", "line": 4, "type": "text/csv"}
+
+2020-10-25 price SCHA                                70.50 USD

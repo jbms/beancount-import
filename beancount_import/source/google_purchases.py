@@ -31,7 +31,7 @@ expression like the following to specify the Google Purchases source:
     dict(module='beancount_import.source.google_purchases',
          directory=os.path.join(journal_dir, 'data/google_purchases'),
          link_prefix='google_purchases.',
-         ignored_transaction_merchants_pattern=r'Amazon\.com',
+         ignored_transaction_merchants_pattern=r'Amazon\\.com',
     )
 
 The `directory` specifies the directory containing the `.json` and `.html`

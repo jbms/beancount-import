@@ -2,7 +2,7 @@ import * as React from "react";
 import styled from "styled-components";
 import { UnclearedPosting } from "./server_connection";
 import { AssociatedDataViewController, AssociatedDataViewContext } from "./app";
-import { JournalLineReference } from "./journal_errors";
+import { JournalLineReference } from "./invalid_references";
 import { EventSubscription } from "fbemitter";
 import {
   ServerVirtualListComponent,
@@ -14,29 +14,35 @@ class UnclearedVirtualListComponent extends ServerVirtualListComponent<
 > {}
 
 const UnclearedPostingsList = styled(UnclearedVirtualListComponent)`
-  margin: 0;
-  padding-left: 3px;
-  padding-right: 3px;
   overflow-y: scroll;
   flex: 1;
-  flex-basis: 0px;
 `;
 
 const UnclearedPostingElement = styled.div`
-  border: 1px solid transparent;
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-top: 3px;
-  padding-bottom: 3px;
+  cursor: pointer;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--color-main-accent);
+  min-width: 100%;
+  box-sizing: border-box;
 
   :hover {
-    border: 1px solid black;
+    background-color: var(--color-hover-bg);
+    color: var(--color-hover-text);
   }
 `;
 
 const UnclearedPostingFormattedElement = styled.div`
-  font-family: monospace;
+  font-family: var(--font-fam-mono);
+  font-size: var(--font-size-mono-reg);
   white-space: pre;
+`;
+
+const UnclearedPostingSource = styled.div`
+  font-size: var(--font-size-sans-small);
+  border-top: 1px solid var(--color-main-accent);
+  margin: 6px 0 2px;
+  padding: 6px 0 0px;
+  white-space: nowrap;
 `;
 
 interface UnclearedPostingsComponentProps {
@@ -53,6 +59,9 @@ export class UnclearedPostingComponent extends React.PureComponent<
   private dataViewController?: AssociatedDataViewController;
   render() {
     const { entry } = this.props;
+    const filename = entry.transaction.meta && entry.transaction.meta.filename;
+    const lineno = entry.transaction.meta && entry.transaction.meta.lineno;
+    
     const formattedText = entry.transaction_formatted;
     return (
       <AssociatedDataViewContext.Consumer>
@@ -63,6 +72,10 @@ export class UnclearedPostingComponent extends React.PureComponent<
               <UnclearedPostingFormattedElement>
                 {formattedText}
               </UnclearedPostingFormattedElement>
+              {filename && <UnclearedPostingSource>
+                <em>File:</em> {filename}
+                {lineno !== undefined && `:${lineno}`}
+              </UnclearedPostingSource>}
             </UnclearedPostingElement>
           );
         }}

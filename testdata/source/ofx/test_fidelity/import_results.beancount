@@ -1,0 +1,277 @@
+;; date: 2012-07-20
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: []
+2012-07-20 * "BUYSTOCK - YOU BOUGHT"
+  Expenses:Investment:Fidelity:Commissions    7.9500 USD
+  Assets:Investment:Fidelity:INTC                100 INTC {25.635 USD}
+    date: 2012-07-20
+    ofx_fitid: "0123456789020201120120720"
+    ofx_memo: "YOU BOUGHT"
+    ofx_type: "BUYSTOCK"
+  Assets:Investment:Fidelity:Cash           -2571.45 USD
+    ofx_fitid: "0123456789020201120120720"
+
+;; date: 2012-07-27
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: []
+2012-07-27 * "BUYSTOCK - YOU BOUGHT"
+  Expenses:Investment:Fidelity:Commissions    7.9500 USD
+  Assets:Investment:Fidelity:SDRL                128 SDRL {39.3909 USD}
+    date: 2012-07-27
+    ofx_fitid: "0123456789020901120120727"
+    ofx_memo: "YOU BOUGHT"
+    ofx_type: "BUYSTOCK"
+  Assets:Investment:Fidelity:Cash           -5049.99 USD
+    ofx_fitid: "0123456789020901120120727"
+
+;; date: 2012-07-27
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: []
+2012-07-27 * "BUYSTOCK - YOU BOUGHT"
+  Expenses:Investment:Fidelity:Commissions    7.9500 USD
+  Assets:Investment:Fidelity:HI                  115 HI {17.25 USD}
+    date: 2012-07-27
+    ofx_fitid: "0123456789020901220120727"
+    ofx_memo: "YOU BOUGHT"
+    ofx_type: "BUYSTOCK"
+  Assets:Investment:Fidelity:Cash           -1991.70 USD
+    ofx_fitid: "0123456789020901220120727"
+
+;; date: 2012-07-31
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: []
+2012-07-31 * "BUYSTOCK - YOU BOUGHT"
+  Expenses:Investment:Fidelity:Commissions    7.9500 USD
+  Assets:Investment:Fidelity:CLCT                 69 CLCT {14.4699 USD}
+    date: 2012-07-31
+    ofx_fitid: "0123456789021301120120731"
+    ofx_memo: "YOU BOUGHT"
+    ofx_type: "BUYSTOCK"
+  Assets:Investment:Fidelity:Cash           -1006.37 USD
+    ofx_fitid: "0123456789021301120120731"
+
+;; date: 2012-07-31
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: []
+2012-07-31 * "BUYSTOCK - YOU BOUGHT"
+  Expenses:Investment:Fidelity:Commissions    7.9500 USD
+  Assets:Investment:Fidelity:XIN                 386 XIN {2.5887 USD}
+    date: 2012-07-31
+    ofx_fitid: "0123456789021301620120731"
+    ofx_memo: "YOU BOUGHT"
+    ofx_type: "BUYSTOCK"
+  Assets:Investment:Fidelity:Cash           -1007.19 USD
+    ofx_fitid: "0123456789021301620120731"
+
+;; date: 2012-07-31
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: []
+2012-07-31 * "INCOME - DIV - DIVIDEND RECEIVED"
+  Assets:Investment:Fidelity:Cash   5.53 USD
+    date: 2012-07-31
+    ofx_fitid: "0123456789021301520120731"
+    ofx_memo: "DIVIDEND RECEIVED"
+    ofx_type: "INCOME"
+  Income:Fidelity:Dividends:SPY    -5.53 USD
+
+;; date: 2012-07-31
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "0.24 USD",
+;               "date": "2012-07-31",
+;               "key_value_pairs": {
+;                 "desc": "INTEREST EARNED",
+;                 "ofx_memo": "INTEREST EARNED",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Investment:Fidelity:Cash"
+;             }
+;           ]
+2012-07-31 * "INVBANKTRAN - INTEREST EARNED"
+  Assets:Investment:Fidelity:Cash   0.24 USD
+    date: 2012-07-31
+    ofx_fitid: "0123456789021301320120731"
+    ofx_memo: "INTEREST EARNED"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME                   -0.24 USD
+
+;; date: 2012-08-20
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: []
+2012-08-20 * "BUYSTOCK - REINVESTMENT"
+  Assets:Investment:Fidelity:XIN    4.909 XIN {2.9474 USD}
+    date: 2012-08-20
+    ofx_fitid: "0123456789023501220120820"
+    ofx_memo: "REINVESTMENT"
+    ofx_type: "BUYSTOCK"
+  Assets:Investment:Fidelity:Cash  -14.47 USD
+    ofx_fitid: "0123456789023501220120820"
+
+;; date: 2012-08-20
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: []
+2012-08-20 * "INCOME - DIV - DIVIDEND RECEIVED"
+  Assets:Investment:Fidelity:Cash   15.44 USD
+    date: 2012-08-20
+    ofx_fitid: "0123456789023501320120820"
+    ofx_memo: "DIVIDEND RECEIVED"
+    ofx_type: "INCOME"
+  Income:Fidelity:Dividends:XIN    -15.44 USD
+
+;; date: 2012-08-20
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "-0.97 USD",
+;               "date": "2012-08-20",
+;               "key_value_pairs": {
+;                 "desc": "LATE SETTLEMENT FEE",
+;                 "ofx_memo": "LATE SETTLEMENT FEE",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Investment:Fidelity:Cash"
+;             }
+;           ]
+2012-08-20 * "INVBANKTRAN - LATE SETTLEMENT FEE"
+  Assets:Investment:Fidelity:Cash  -0.97 USD
+    date: 2012-08-20
+    ofx_fitid: "0123456789023501120120820"
+    ofx_memo: "LATE SETTLEMENT FEE"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME                    0.97 USD
+
+;; date: 2012-08-31
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: []
+2012-08-31 * "BUYSTOCK - REINVESTMENT"
+  Assets:Investment:Fidelity:CLCT   1.573 CLCT {14.257 USD}
+    date: 2012-08-31
+    ofx_fitid: "0123456789024401120120831"
+    ofx_memo: "REINVESTMENT"
+    ofx_type: "BUYSTOCK"
+  Assets:Investment:Fidelity:Cash  -22.43 USD
+    ofx_fitid: "0123456789024401120120831"
+
+;; date: 2012-08-31
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: []
+2012-08-31 * "INCOME - DIV - DIVIDEND RECEIVED"
+  Assets:Investment:Fidelity:Cash   22.43 USD
+    date: 2012-08-31
+    ofx_fitid: "0123456789024401220120831"
+    ofx_memo: "DIVIDEND RECEIVED"
+    ofx_type: "INCOME"
+  Income:Fidelity:Dividends:CLCT   -22.43 USD
+
+;; date: 2012-08-31
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "0.16 USD",
+;               "date": "2012-08-31",
+;               "key_value_pairs": {
+;                 "desc": "INTEREST EARNED",
+;                 "ofx_memo": "INTEREST EARNED",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Investment:Fidelity:Cash"
+;             }
+;           ]
+2012-08-31 * "INVBANKTRAN - INTEREST EARNED"
+  Assets:Investment:Fidelity:Cash   0.16 USD
+    date: 2012-08-31
+    ofx_fitid: "0123456789024401420120831"
+    ofx_memo: "INTEREST EARNED"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME                   -0.16 USD
+
+;; date: 2012-09-01
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+; features: []
+2012-09-01 * "INCOME - DIV - DIVIDEND RECEIVED"
+  Assets:Investment:Fidelity:Cash   22.50 USD
+    date: 2012-09-01
+    ofx_fitid: "0123456789024801220120901"
+    ofx_memo: "DIVIDEND RECEIVED"
+    ofx_type: "INCOME"
+  Income:Fidelity:Dividends:INTC   -22.50 USD
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 balance Assets:Investment:Fidelity:Cash                 18073.98 USD
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 balance Assets:Investment:Fidelity:SDRL                 128.00000 SDRL
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 price SDRL                           40.8700000 USD
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 balance Assets:Investment:Fidelity:CLCT                 70.57300 CLCT
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 price CLCT                           14.3200000 USD
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 balance Assets:Investment:Fidelity:HI                   115.00000 HI
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 price HI                             18.9300000 USD
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 balance Assets:Investment:Fidelity:INTC                 100.91100 INTC
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 price INTC                           24.1900000 USD
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 balance Assets:Investment:Fidelity:RHT                  50.00000 RHT
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 price RHT                            59.1500000 USD
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 balance Assets:Investment:Fidelity:XIN                  390.90900 XIN
+
+;; date: 2012-09-08
+;; info: {"filename": "<testdata>/fidelity.ofx", "type": "application/x-ofx"}
+
+2012-09-08 price XIN                             2.8200000 USD

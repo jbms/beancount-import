@@ -32,7 +32,7 @@ function getIdentifier(data: AssociatedEntryData) {
 
 const SourceDataList = styled.div``;
 
-const SourceDataListItem = styled<{ selected: boolean }, "div">("div")`
+const SourceDataListItem = styled.div<{ selected: boolean }>`
   cursor: pointer;
   background-color: ${p => (p.selected ? "#fcc" : "transparent")};
 
