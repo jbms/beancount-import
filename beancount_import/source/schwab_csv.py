@@ -152,6 +152,7 @@ CASH_CURRENCY="USD"
 class BrokerageAction(enum.Enum):
     CASH_DIVIDEND = "Cash Dividend"
     PRIOR_YEAR_CASH_DIVIDEND = "Pr Yr Cash Div"
+    PRIOR_YEAR_SPECIAL_DIVIDEND = "Pr Yr Special Div"
     SPECIAL_DIVIDEND = "Special Dividend"
     QUALIFIED_DIVIDEND = "Qualified Dividend"
     BUY = "Buy"
@@ -174,6 +175,7 @@ class BrokerageAction(enum.Enum):
     WIRE_FUNDS = "Wire Funds"
     WIRE_FUNDS_RECEIVED = "Wire Funds Received"
     MISC_CASH_ENTRY = "Misc Cash Entry"
+    PROMOTIONAL_AWARD = "Promotional Award"
     JOURNALED_SHARES = "Journaled Shares"
     SECURITY_TRANSFER = "Security Transfer"
 
@@ -286,6 +288,7 @@ class RawBrokerageEntry(RawEntry):
         if self.action in (
             BrokerageAction.CASH_DIVIDEND,
             BrokerageAction.PRIOR_YEAR_CASH_DIVIDEND,
+            BrokerageAction.PRIOR_YEAR_SPECIAL_DIVIDEND,
             BrokerageAction.SPECIAL_DIVIDEND,
             BrokerageAction.QUALIFIED_DIVIDEND,
             BrokerageAction.QUAL_DIV_REINVEST,
@@ -298,6 +301,11 @@ class RawBrokerageEntry(RawEntry):
             )
         if self.action == BrokerageAction.BANK_INTEREST:
             return BankInterest(
+                interest_account=interest_account,
+                **shared_attrs,
+            )
+        if self.action == BrokerageAction.PROMOTIONAL_AWARD:
+            return PromotionalAward(
                 interest_account=interest_account,
                 **shared_attrs,
             )
@@ -585,6 +593,23 @@ class BankInterest(TransactionEntry):
 
     def get_narration_prefix(self) -> str:
         return "INTEREST"
+
+
+@dataclass(frozen=True)
+class PromotionalAward(TransactionEntry):
+    interest_account: str
+
+    def get_sub_account(self) -> Optional[str]:
+        if self.action == BankingEntryType.INTADJUST:
+            # Checking interest, cash is held in main account
+            return None
+        return "Cash"
+
+    def get_other_account(self) -> str:
+        return self.interest_account
+
+    def get_narration_prefix(self) -> str:
+        return "PROMOTIONAL AWARD"
 
 
 @dataclass(frozen=True)
