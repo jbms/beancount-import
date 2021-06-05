@@ -5,7 +5,7 @@ from decimal import Decimal as D
 
 import pytest
 
-from .schwab_csv import LotsDB, RawLot
+from .schwab_csv import LotsDB, LotSplit, RawLot
 from .source_test import check_source_example
 
 testdata_dir = os.path.realpath(
@@ -160,3 +160,18 @@ class TestLotsDB:
             lot(symbol="YY", asof=3, cost="1.2", quantity="2"),
         ])
         assert db.get_sale_lots("Brokerage XX-12", "XX", d(2), D("5")) == {D("1.1"): D("5")}
+
+    def test_split(self, db) -> None:
+        db.load([
+            lot(opened=1, asof=3, cost="1.0", quantity="4"),
+            lot(opened=1, asof=5, cost="1.0", quantity="6"),
+            lot(opened=1, asof=7, cost="1.0", quantity="8"),
+            lot(opened=2, asof=3, cost="2.0", quantity="8"),
+            lot(opened=2, asof=5, cost="2.0", quantity="10"),
+            lot(opened=2, asof=7, cost="2.0", quantity="12"),
+        ])
+        assert db.split("Brokerage XX-12", "XX", d(6), D("4")) == [
+            LotSplit(date=d(1), prev_cost=D("1.0"), prev_qty=D("6"), new_cost=D("0.8"), new_qty=D("7.50")),
+            LotSplit(date=d(2), prev_cost=D("2.0"), prev_qty=D("10"), new_cost=D("1.6"), new_qty=D("12.50")),
+        ]
+

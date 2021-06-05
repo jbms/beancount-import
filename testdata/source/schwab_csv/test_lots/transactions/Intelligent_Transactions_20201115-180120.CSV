@@ -2,7 +2,10 @@
 "Date","Action","Symbol","Description","Quantity","Price","Fees & Comm","Amount",
 "10/19/2020","Sell","SCHA","SCHWAB US SMALL CAP ETF","19.5","$74.23","","$1447.49",
 "10/19/2020","Sell","FNDA","SCHWAB FUNDAMENTAL US SMALL CAP ETF","1","$35.00","","$35.00",
+"10/14/2020 as of 10/13/2020","Stock Split","HYLB","XTRACKERS USD HIGH YIELDCOR BND ETF","20","$5.00","","",
 "09/24/2020","Buy","SCHA","SCHWAB US SMALL CAP ETF","20","$72.56","","-$1451.20",
+"08/31/2020","Buy","HYLB","XTRACKERS USD HIGH YIELDCOR BND ETF","12","$10.00","","-$120.00",
+"08/30/2020","Buy","HYLB","XTRACKERS USD HIGH YIELDCOR BND ETF","8","$20.00","","-$160.00",
 "08/24/2020","Buy","SCHA","SCHWAB US SMALL CAP ETF","10","$71.35","","-$713.50",
 "08/24/2020","Buy","FNDA","SCHWAB FUNDAMENTAL US SMALL COM ETF","1","$34.89","","-$34.89",
-Transactions Total,"","","","","","",-$679.99
+Transactions Total,"","","","","","",-$897.10

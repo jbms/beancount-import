@@ -1,5 +1,5 @@
 ;; date: 2020-08-24
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 6, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 9, "type": "text/csv"}
 
 ; features: []
 2020-08-24 * "BUYSTOCK - SCHWAB FUNDAMENTAL US SMALL COM ETF"
@@ -13,7 +13,7 @@
     source_desc: "SCHWAB FUNDAMENTAL US SMALL COM ETF"
 
 ;; date: 2020-08-24
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 5, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 8, "type": "text/csv"}
 
 ; features: []
 2020-08-24 * "BUYSTOCK - SCHWAB US SMALL CAP ETF"
@@ -51,8 +51,36 @@
 
 2020-08-25 price SCHA                                71.39 USD
 
+;; date: 2020-08-30
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 7, "type": "text/csv"}
+
+; features: []
+2020-08-30 * "BUYSTOCK - XTRACKERS USD HIGH YIELDCOR BND ETF"
+  Assets:Schwab:Intelligent-4321:HYLB        8 HYLB {20.00 USD}
+    date: 2020-08-30
+    schwab_action: "Buy"
+    source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
+  Assets:Schwab:Intelligent-4321:Cash  -160.00 USD
+    date: 2020-08-30
+    schwab_action: "Buy"
+    source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
+
+;; date: 2020-08-31
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 6, "type": "text/csv"}
+
+; features: []
+2020-08-31 * "BUYSTOCK - XTRACKERS USD HIGH YIELDCOR BND ETF"
+  Assets:Schwab:Intelligent-4321:HYLB       12 HYLB {10.00 USD}
+    date: 2020-08-31
+    schwab_action: "Buy"
+    source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
+  Assets:Schwab:Intelligent-4321:Cash  -120.00 USD
+    date: 2020-08-31
+    schwab_action: "Buy"
+    source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
+
 ;; date: 2020-09-24
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 4, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 5, "type": "text/csv"}
 
 ; features: []
 2020-09-24 * "BUYSTOCK - SCHWAB US SMALL CAP ETF"
@@ -89,6 +117,28 @@
 ;; info: {"filename": "<testdata>/test_lots/positions/Intelligent-Positions-2020-09-25.CSV", "line": 5, "type": "text/csv"}
 
 2020-09-25 price SCHA                                72.56 USD
+
+;; date: 2020-10-13
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 4, "type": "text/csv"}
+
+; features: []
+2020-10-13 * "STOCKSPLIT - XTRACKERS USD HIGH YIELDCOR BND ETF"
+  Assets:Schwab:Intelligent-4321:HYLB  -12 HYLB {10.00 USD, 2020-08-31}
+    date: 2020-10-13
+    schwab_action: "Stock Split"
+    source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
+  Assets:Schwab:Intelligent-4321:HYLB   24 HYLB {5.00 USD, 2020-08-31}
+    date: 2020-10-13
+    schwab_action: "Stock Split"
+    source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
+  Assets:Schwab:Intelligent-4321:HYLB   -8 HYLB {20.00 USD, 2020-08-30}
+    date: 2020-10-13
+    schwab_action: "Stock Split"
+    source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
+  Assets:Schwab:Intelligent-4321:HYLB   16 HYLB {10.00 USD, 2020-08-30}
+    date: 2020-10-13
+    schwab_action: "Stock Split"
+    source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
 
 ;; date: 2020-10-19
 ;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 3, "type": "text/csv"}

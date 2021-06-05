@@ -150,6 +150,7 @@ from beancount_import.unbook import group_postings_by_meta, unbook_postings
 CASH_CURRENCY="USD"
 
 class BrokerageAction(enum.Enum):
+    # Please keep these alphabetized:
     ADR_MGMT_FEE = "ADR Mgmt Fee"
     BANK_INTEREST = "Bank Interest"
     BOND_INTEREST = "Bond Interest"
@@ -186,6 +187,7 @@ class BrokerageAction(enum.Enum):
     WIRE_FUNDS_RECEIVED = "Wire Funds Received"
 
 class BankingEntryType(enum.Enum):
+    # Please keep these alphabetized:
     ACH = "ACH"
     ATM = "ATM"
     CHECK = "CHECK"
@@ -329,6 +331,14 @@ class RawBrokerageEntry(RawEntry):
         if self.action == BrokerageAction.BANK_INTEREST:
             return BankInterest(
                 interest_account=interest_account,
+                **shared_attrs,
+            )
+        if self.action == BrokerageAction.STOCK_SPLIT:
+            acct = account_meta["schwab_account"]
+            assert self.quantity is not None
+            lot_splits = lots.split(acct, self.symbol, self.date, self.quantity)
+            return StockSplit(
+                lot_splits=lot_splits,
                 **shared_attrs,
             )
         if self.action == BrokerageAction.PROMOTIONAL_AWARD:
@@ -714,6 +724,60 @@ class Transfer(TransactionEntry):
 
     def get_narration_prefix(self) -> str:
         return "TRANSFER"
+
+
+@dataclass(frozen=True)
+class StockSplit(TransactionEntry):
+    lot_splits: List[LotSplit]
+
+    def get_sub_account(self) -> Optional[str]:
+        return self.amount.currency
+
+    def get_postings(self) -> List[Posting]:
+        postings = []
+        if not self.lot_splits:
+            return super().get_postings()
+
+        for split in self.lot_splits:
+            postings.append(
+                Posting(
+                    account=self.get_primary_account(),
+                    units=Amount(-split.prev_qty, self.amount.currency),
+                    cost=CostSpec(
+                        number_per=split.prev_cost,
+                        number_total=None,
+                        currency=CASH_CURRENCY,
+                        date=split.date,
+                        label=None,
+                        merge=None,
+                    ),
+                    price=None,
+                    flag=None,
+                    meta=self.get_meta(),
+                )
+            )
+            postings.append(
+                Posting(
+                    account=self.get_primary_account(),
+                    units=Amount(split.new_qty, self.amount.currency),
+                    cost=CostSpec(
+                        number_per=split.new_cost,
+                        number_total=None,
+                        currency=CASH_CURRENCY,
+                        date=split.date,
+                        label=None,
+                        merge=None,
+                    ),
+                    price=None,
+                    flag=None,
+                    meta=self.get_meta(),
+                )
+            )
+
+        return postings
+
+    def get_narration_prefix(self) -> str:
+        return "STOCKSPLIT"
 
 
 @dataclass(frozen=True)
@@ -1259,12 +1323,22 @@ class SchwabSource(DescriptionBasedSource):
         )
 
 
+@dataclass(frozen=True)
+class LotSplit:
+    date: datetime.date
+    prev_cost: Decimal
+    prev_qty: Decimal
+    new_cost: Decimal
+    new_qty: Decimal
+
+
 class LotsDB:
-    """In-memory database of historical lot information.
+    """In-memory database of historical lot information from Schwab lot details CSVs.
 
     Can answer these queries:
         - Cost basis of the shares of symbol X in acct Y acquired on date Z?
         - Cost bases of the N shares of symbol X sold from acct Y on date Z?
+        - LotSplits for a split of symbol X in acct Y on date Z, adding N shares?
 
     """
     def __init__(self) -> None:
@@ -1318,6 +1392,13 @@ class LotsDB:
         db = self.holdings.get((self.convert_account(account), symbol))
         return db.get_sale_lots(date, quantity_sold) if db else {}
 
+    def split(
+        self, account: str, symbol: str, date: datetime.date, quantity_added: Decimal,
+    ) -> List[LotSplit]:
+        """Get LotSplit for each lot of `symbol` in `account` as of `date`."""
+        db = self.holdings.get((self.convert_account(account), symbol))
+        return db.split(date, quantity_added) if db else []
+
     def _get_db(self, account: str, symbol: str) -> HoldingLotsDB:
         key = (account, symbol)
         db = self.holdings.get(key)
@@ -1358,7 +1439,9 @@ class HoldingLotsDB:
             ret = cost
         return ret
 
-    def get_sale_lots(self, date: datetime.date, quantity_sold: Decimal) -> Mapping[Decimal, Decimal]:
+    def get_sale_lots(
+        self, date: datetime.date, quantity_sold: Decimal
+    ) -> Mapping[Decimal, Decimal]:
         ret: Dict[Decimal, Decimal] = {}
         for (opened, cost), quantities in self.lots.items():
             last_qty = None
@@ -1381,6 +1464,35 @@ class HoldingLotsDB:
         if quantity_sold:
             return {}
         return ret
+
+    def split(self, date: datetime.date, quantity_added: Decimal) -> List[LotSplit]:
+        existing_quantity = Decimal("0")
+        existing_lots: List[Tuple[datetime.date, Decimal, Decimal]] = []
+        for (opened, cost), quantities in self.lots.items():
+            current_lot: Optional[Tuple[datetime.date, Decimal, Decimal]] = None
+            for asof, qty in sorted(quantities.items()):
+                if asof.date() > date:
+                    break
+                current_lot = (opened.date(), cost, qty)
+            if current_lot is not None and current_lot[2] > Decimal("0"):
+                existing_quantity += current_lot[2]
+                existing_lots.append(current_lot)
+        ratio = (existing_quantity + quantity_added) / existing_quantity
+        splits: List[LotSplit] = []
+        for (date, cost, qty) in existing_lots:
+            new_cost = cost / ratio
+            new_qty = qty * ratio
+            splits.append(
+                LotSplit(
+                    date=date,
+                    prev_cost=cost,
+                    prev_qty=qty,
+                    new_cost=new_cost,
+                    new_qty=new_qty,
+                )
+            )
+        return splits
+
 
 def _load_transactions(filename: str) -> List[RawEntry]:
     expected_brokerage_field_names = [
