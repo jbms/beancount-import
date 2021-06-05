@@ -219,6 +219,68 @@
     source_desc: "CALL SMALL CAP INDEX $83 EXP 04/03/20"
   Expenses:Brokerage-Fees:Schwab                      1.34 USD
 
+;; date: 2020-03-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 11, "type": "text/csv"}
+
+; features: []
+2020-03-31 * "BUYOPT - EXPIRED - PUT SMALL CAP INDEX $124 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:SMAL0331202012400P    100 SMAL0331202012400P {23 USD}
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SMALL CAP INDEX $124 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:Cash                -2290 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SMALL CAP INDEX $124 EXP 03/31/21"
+  Income:Capital-Gains:Schwab:SMAL0331202012400P
+  Expenses:Brokerage-Fees:Schwab                      10 USD
+
+;; date: 2020-03-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 10, "type": "text/csv"}
+
+; features: []
+2020-03-31 * "BUYOPT - EXPIRED - CALL SMALL CAP INDEX $184 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:SMAL0331202018400C  100 SMAL0331202018400C {0 USD}
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "CALL SMALL CAP INDEX $184 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:Cash                  0 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "CALL SMALL CAP INDEX $184 EXP 03/31/21"
+  Income:Capital-Gains:Schwab:SMAL0331202018400C
+
+;; date: 2020-03-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 9, "type": "text/csv"}
+
+; features: []
+2020-03-31 * "SELLOPT - EXPIRED - PUT SMALL CAP INDEX $84 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:SMAL033120208400P   100 SMAL033120208400P {} @ 1.1 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SMALL CAP INDEX $84 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:Cash               1095 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SMALL CAP INDEX $84 EXP 03/31/21"
+  Income:Capital-Gains:Schwab:SMAL033120208400P
+  Expenses:Brokerage-Fees:Schwab                     5 USD
+
+;; date: 2020-03-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 8, "type": "text/csv"}
+
+; features: []
+2020-03-31 * "SELLOPT - EXPIRED - PUT SPDR S&P 500 $284 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:SPY0331202028400P  100 SPY0331202028400P {} @ 0 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SPDR S&P 500 $284 EXP 03/31/21"
+  Assets:Schwab:Brokerage-1234:Cash                 0 USD
+    date: 2020-03-31
+    schwab_action: "Expired"
+    source_desc: "PUT SPDR S&P 500 $284 EXP 03/31/21"
+  Income:Capital-Gains:Schwab:SPY0331202028400P
+
 ;; date: 2020-06-12
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 21, "type": "text/csv"}
 
@@ -264,7 +326,7 @@
     source_desc: "SCHWAB US SMALL CAP ETF"
 
 ;; date: 2020-09-15
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 5, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 7, "type": "text/csv"}
 
 ; features: []
 2020-09-15 * "INTEREST - BANK INT 081620-091520 SCHWAB PREMIER BANK"
@@ -400,7 +462,7 @@
   Expenses:FIXME           1.10 USD
 
 ;; date: 2020-11-01
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 4, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 6, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -421,7 +483,7 @@
   Expenses:FIXME
 
 ;; date: 2020-11-05
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 3, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 5, "type": "text/csv"}
 
 ; features: []
 2020-11-05 * "SELLSTOCK - FACEBOOK INC CLASS A"
@@ -459,7 +521,7 @@
   Income:Dividend:Schwab:HYLB          -92.16 USD
 
 ;; date: 2020-11-10
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 2, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 4, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -603,6 +665,28 @@
 
 2020-11-15 price SMAL040120203200P                   12.53 USD
 
+;; date: 2020-11-19
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 3, "type": "text/csv"}
+
+; features: []
+2020-11-19 * "PROMOTIONAL AWARD - PROMOTIONAL AWARD"
+  Assets:Schwab:Brokerage-1234:Cash   300.00 USD
+    date: 2020-11-19
+    schwab_action: "Promotional Award"
+    source_desc: "PROMOTIONAL AWARD"
+  Income:Interest:Schwab             -300.00 USD
+
+;; date: 2020-11-20
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 2, "type": "text/csv"}
+
+; features: []
+2020-11-20 * "INCOME - DIV - ISHARES GLOBAL CLEAN ENERGY ETF"
+  Assets:Schwab:Brokerage-1234:Cash   2.11 USD
+    date: 2020-11-20
+    schwab_action: "Pr Yr Special Div"
+    source_desc: "ISHARES GLOBAL CLEAN ENERGY ETF"
+  Income:Dividend:Schwab:ICLN        -2.11 USD
+
 ;; date: 2020-12-21
 ;; info: {"filename": "<testdata>/test_basic/positions/Intelligent-Positions-2020-11-30.CSV", "line": 4, "type": "text/csv"}
 
@@ -617,6 +701,28 @@
 ;; info: {"filename": "<testdata>/test_basic/positions/Intelligent-Positions-2020-11-30.CSV", "line": 4, "type": "text/csv"}
 
 2020-12-21 price SCHA                                88.71 USD
+
+;; date: 2020-12-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 13, "type": "text/csv"}
+
+; features: []
+2020-12-31 * "INCOME - CAP GAINS - ARK INNOVATION ETF"
+  Assets:Schwab:Brokerage-1234:Cash   100 USD
+    date: 2020-12-31
+    schwab_action: "Long Term Cap Gain"
+    source_desc: "ARK INNOVATION ETF"
+  Income:Capital-Gains:Schwab:ARKK   -100 USD
+
+;; date: 2020-12-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 12, "type": "text/csv"}
+
+; features: []
+2020-12-31 * "INCOME - CAP GAINS - ARK INNOVATION ETF"
+  Assets:Schwab:Brokerage-1234:Cash   1000 USD
+    date: 2020-12-31
+    schwab_action: "Short Term Cap Gain"
+    source_desc: "ARK INNOVATION ETF"
+  Income:Capital-Gains:Schwab:ARKK   -1000 USD
 
 ;; date: 2021-02-01
 ;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 5, "type": "text/csv"}
@@ -638,6 +744,17 @@
     schwab_action: "WIRE"
     source_desc: "Incoming Wire Transfer"
   Expenses:FIXME          -20000.00 USD
+
+;; date: 2021-02-15
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 14, "type": "text/csv"}
+
+; features: []
+2021-02-15 * "BOND INTEREST - US TREASURY 1.375%08/50UST BOND DUE 08/15/50"
+  Assets:Schwab:Brokerage-1234:Cash   6.87 USD
+    date: 2021-02-15
+    schwab_action: "Bond Interest"
+    source_desc: "US TREASURY 1.375%08/50UST BOND DUE 08/15/50"
+  Income:Interest:Schwab:912810SP4   -6.87 USD
 
 ;; date: 2021-02-16
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 23, "type": "text/csv"}
@@ -680,3 +797,17 @@
     schwab_action: "Security Transfer"
     source_desc: "ALPHABET INC. CLASS C"
   Expenses:FIXME                        10 GOOG
+
+;; date: 2021-03-25
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 16, "type": "text/csv"}
+
+; features: []
+2021-03-25 * "STOCKMERGER - QUQUZETA CORP - SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
+  Assets:Schwab:Brokerage-1234:SPAC1  -100 SPAC1 {}
+    date: 2021-03-25
+    schwab_action: "Stock Merger"
+    source_desc: "SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
+  Assets:Schwab:Brokerage-1234:QQZ     100 QQZ {"merger"}
+    date: 2021-03-25
+    schwab_action: "Stock Merger"
+    source_desc: "SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
