@@ -84,6 +84,26 @@
     ofx_type: "BUYMF"
   Income:Company:Match                                             -336.50 USD
 
+;; date: 2014-10-10
+;; info: {"filename": "<testdata>/vanguard401k.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "7.62519 VANGUARD-92202V351",
+;               "date": "2014-10-10",
+;               "key_value_pairs": {
+;                 "ofx_type": "BUYMF"
+;               },
+;               "source_account": "Assets:Retirement:Vanguard:Company401k"
+;             }
+;           ]
+2014-10-10 * "BUYMF - OTHERVEST"
+  Assets:Retirement:Vanguard:Company401k  7.62519 VANGUARD-92202V351 {44.13 USD}
+    date: 2014-10-10
+    ofx_fitid: "1234567890123456796AAA"
+    ofx_type: "BUYMF"
+  Expenses:FIXME                          -336.50 USD
+
 ;; date: 2014-10-17
 ;; info: {"filename": "<testdata>/vanguard401k.ofx", "type": "application/x-ofx"}
 
