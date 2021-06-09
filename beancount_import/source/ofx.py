@@ -774,7 +774,7 @@ class ParsedOfxStatement(object):
                 suffix = ':' + security
             prefix = account.account
             if inv401ksource is not None:
-                if inv401ksource == 'OTHERNONVEST':
+                if (inv401ksource == 'OTHERNONVEST') or (inv401ksource == 'OTHERVEST'):
                     # For balance entries, OTHERNONVEST indicates an aggregate
                     # balance (at least with Vanguard).
                     return prefix
