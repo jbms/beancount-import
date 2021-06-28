@@ -13,7 +13,8 @@ def group_postings_by_meta(postings: Iterable[Posting]) -> Iterable[List[Posting
     prev_meta = None # type: Optional[Meta]
     posting_list = []
     for posting in postings:
-        if posting.meta is not None and posting.meta is prev_meta:
+        if posting.meta is not None and (posting.meta is prev_meta or
+           posting.meta.get("merge")):
             posting_list.append(posting)
             continue
         if posting_list:
