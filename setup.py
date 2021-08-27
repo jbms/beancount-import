@@ -179,9 +179,6 @@ setuptools.setup(
     test_requirements=[
         'pytest',
         'coverage',
-        'types-setuptools',
-        'types-atomicwrites',
-        'types-python-dateutil'
     ],
     cmdclass={
         'sdist': SdistCommand,
