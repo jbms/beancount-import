@@ -177,6 +177,8 @@ SingleSignMatchGroups = NamedTuple(
      ('double_removals', SingleSignMatchGroup)])
 BothSignMatchGroups = Tuple[SingleSignMatchGroups, SingleSignMatchGroups]
 
+def is_missing_number(input: Decimal) -> bool:
+    return input is None or input is MISSING
 
 def is_unknown_account(account: str):
     return account == FIXME_ACCOUNT or account.startswith(
@@ -189,11 +191,12 @@ def get_posting_weight(posting: Posting) -> Optional[Amount]:
 
     if posting.cost is not None and posting.cost.currency is not None:
         posting = booking_full.convert_costspec_to_cost(posting)
-        if posting.cost.number is not None and posting.cost.number is not MISSING:
+        if not is_missing_number(posting.cost.number):
             return Amount(posting.cost.number * posting.units.number,
                           posting.cost.currency)
         return None
-    elif posting.price is not None and posting.price.number is not MISSING:
+    elif posting.price is not None and 
+        not is_missing_number(posting.price.number):
         return amount_mul(posting.price, posting.units.number)
     return posting.units
 
@@ -343,6 +346,8 @@ class PostingDatabase(object):
         return {
             k: (t, mp) for (k, (t, mp)) in postings.items()
             if mp.weight.currency == amount.currency and
+                not is_missing_number(mp.weight.number) and
+                not is_missing_number(amount.number):
             abs(mp.weight.number - amount.number) <= self.fuzzy_match_amount
         }
 
@@ -611,7 +616,7 @@ def normalize_transaction(transaction: Transaction) -> Transaction:
 class SimpleInventory(dict):
     def __iadd__(self, amount: Amount):
         """Adds an amount to the inventory."""
-        if amount is None or amount.number == ZERO:
+        if  is_missing_number(amount) or amount.number == ZERO:
             return self
 
         currency = amount.currency
@@ -717,7 +722,8 @@ def get_aggregate_posting_candidates(
     )  # type: Dict[Tuple[str, str], List[Posting]]
     for posting in postings:
         if (posting.price is not None or posting.cost is not None or
-                posting.units is None or posting.units is MISSING):
+                posting.units is None or posting.units is MISSING
+                or is_missing_number(posting.units.number)):
             continue
         if is_cleared(posting):
             continue
