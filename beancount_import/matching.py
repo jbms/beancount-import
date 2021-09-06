@@ -195,7 +195,7 @@ def get_posting_weight(posting: Posting) -> Optional[Amount]:
             return Amount(posting.cost.number * posting.units.number,
                           posting.cost.currency)
         return None
-    elif posting.price is not None and 
+    elif posting.price is not None and \
         not is_missing_number(posting.price.number):
         return amount_mul(posting.price, posting.units.number)
     return posting.units
@@ -347,7 +347,7 @@ class PostingDatabase(object):
             k: (t, mp) for (k, (t, mp)) in postings.items()
             if mp.weight.currency == amount.currency and
                 not is_missing_number(mp.weight.number) and
-                not is_missing_number(amount.number):
+                not is_missing_number(amount.number) and
             abs(mp.weight.number - amount.number) <= self.fuzzy_match_amount
         }
 
