@@ -164,6 +164,7 @@ class BrokerageAction(enum.Enum):
     JOURNALED_SHARES = "Journaled Shares"
     LONG_TERM_CAP_GAIN = "Long Term Cap Gain"
     MARGIN_INTEREST = "Margin Interest"
+    CREDIT_INTEREST = "Credit Interest"
     MISC_CASH_ENTRY = "Misc Cash Entry"
     MONEYLINK_TRANSFER = "MoneyLink Transfer"
     PRIOR_YEAR_CASH_DIVIDEND = "Pr Yr Cash Div"
@@ -171,6 +172,7 @@ class BrokerageAction(enum.Enum):
     PROMOTIONAL_AWARD = "Promotional Award"
     QUAL_DIV_REINVEST = "Qual Div Reinvest"
     QUALIFIED_DIVIDEND = "Qualified Dividend"
+    NON_QUALIFIED_DIVIDEND = "Non-Qualified Div"
     REINVEST_DIVIDEND = "Reinvest Dividend"
     REINVEST_SHARES = "Reinvest Shares"
     SECURITY_TRANSFER = "Security Transfer"
@@ -185,6 +187,7 @@ class BrokerageAction(enum.Enum):
     STOCK_SPLIT = "Stock Split"
     WIRE_FUNDS = "Wire Funds"
     WIRE_FUNDS_RECEIVED = "Wire Funds Received"
+    FUNDS_RECEIVED = "Funds Received"
 
 class BankingEntryType(enum.Enum):
     # Please keep these alphabetized:
@@ -195,6 +198,7 @@ class BankingEntryType(enum.Enum):
     TRANSFER = "TRANSFER"
     VISA = "VISA"
     WIRE = "WIRE"
+    ATMREBATE = "ATMREBATE"
 
 @dataclass(frozen=True)
 class MergerSpecification:
@@ -320,6 +324,7 @@ class RawBrokerageEntry(RawEntry):
             BrokerageAction.PRIOR_YEAR_SPECIAL_DIVIDEND,
             BrokerageAction.SPECIAL_DIVIDEND,
             BrokerageAction.QUALIFIED_DIVIDEND,
+            BrokerageAction.NON_QUALIFIED_DIVIDEND,
             BrokerageAction.QUAL_DIV_REINVEST,
             BrokerageAction.REINVEST_DIVIDEND,
         ):
@@ -357,7 +362,8 @@ class RawBrokerageEntry(RawEntry):
                            BrokerageAction.JOURNALED_SHARES,
                            BrokerageAction.SECURITY_TRANSFER,
                            BrokerageAction.WIRE_FUNDS,
-                           BrokerageAction.WIRE_FUNDS_RECEIVED):
+                           BrokerageAction.WIRE_FUNDS_RECEIVED,
+                           BrokerageAction.FUNDS_RECEIVED):
             return Transfer(**shared_attrs)
         if self.action in (BrokerageAction.SELL,
                             BrokerageAction.SELL_TO_OPEN,
@@ -408,7 +414,7 @@ class RawBrokerageEntry(RawEntry):
             return Fee(fees_account=fees_account, **shared_attrs)
         if self.action == BrokerageAction.FOREIGN_TAX_PAID:
             return TaxPaid(taxes_account=taxes_account, **shared_attrs)
-        if self.action == BrokerageAction.MARGIN_INTEREST:
+        if self.action == BrokerageAction.MARGIN_INTEREST or self.action == BrokerageAction.CREDIT_INTEREST:
             return MarginInterest(**shared_attrs)
         if self.action == BrokerageAction.EXPIRED:
             assert self.quantity is not None
@@ -1098,7 +1104,7 @@ class EntryProcessor:
         self.found_accounts: Set[str] = set()
 
     def process_entry(self, raw_entry: RawEntry) -> Optional[TransactionEntry]:
-        account = self.schwab_to_account.get(raw_entry.account)
+        account = self.schwab_to_account.get(raw_entry.account) or self.schwab_to_account.get(raw_entry.account[-9:]) # try only the XXXX-1234 part
         if account is None:
             self.missing_accounts.add(raw_entry.account)
             return None
@@ -1118,7 +1124,7 @@ class EntryProcessor:
         self, raw_positions: Iterable[RawPosition]
     ) -> Iterator[Tuple[BalanceEntry, Optional[PriceEntry]]]:
         for raw_position in raw_positions:
-            account = self.schwab_to_account.get(raw_position.account)
+            account = self.schwab_to_account.get(raw_position.account) or self.schwab_to_account.get(raw_position.account[-9:]) # try only the XXXX-1234 part
             if account is None:
                 self.missing_accounts.add(raw_position.account)
                 return None
@@ -1847,4 +1853,3 @@ def _convert_title_datetime(raw: str) -> datetime.datetime:
 
 def _convert_datetime(raw: str) -> datetime.datetime:
     return datetime.datetime.strptime(raw, DATETIME_FORMAT)
-
