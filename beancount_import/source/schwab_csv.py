@@ -1104,7 +1104,7 @@ class EntryProcessor:
         self.found_accounts: Set[str] = set()
 
     def process_entry(self, raw_entry: RawEntry) -> Optional[TransactionEntry]:
-        account = self.schwab_to_account.get(raw_entry.account) or self.schwab_to_account.get(raw_entry.account[-9:]) # try only the XXXX-1234 part
+        account = self.schwab_to_account.get(raw_entry.account)
         if account is None:
             self.missing_accounts.add(raw_entry.account)
             return None
@@ -1124,7 +1124,7 @@ class EntryProcessor:
         self, raw_positions: Iterable[RawPosition]
     ) -> Iterator[Tuple[BalanceEntry, Optional[PriceEntry]]]:
         for raw_position in raw_positions:
-            account = self.schwab_to_account.get(raw_position.account) or self.schwab_to_account.get(raw_position.account[-9:]) # try only the XXXX-1234 part
+            account = self.schwab_to_account.get(raw_position.account)
             if account is None:
                 self.missing_accounts.add(raw_position.account)
                 return None
