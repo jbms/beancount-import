@@ -39,17 +39,17 @@ downloaded and one file per commodity. So your source spec might look like this:
 
 This importer also makes use of certain metadata keys on your accounts. In order to label
 a beancount account as a Schwab account whose authoritative transaction source is this
-importer, specify the `schwab_account` metadata key as the account name exactly as it
+importer, specify the `schwab_account` metadata key as the account ID exactly as it
 appears in your Schwab CSV downloads. For example:
 
     2015-11-09 open Assets:Investments:Schwab:Brokerage-1234
-         schwab_account: "Brokerage XXXX-1234"
+         schwab_account: "XXXX-1234"
 
 You can also optionally specify accounts to be used for recording dividends, capital
 gains, interest, fees, and taxes:
 
     2015-11-09 open Assets:Investments:Schwab:Brokerage-1234
-         schwab_account: "Brokerage XXXX-1234"
+         schwab_account: "XXXX-1234"
          div_income_account: "Income:Dividend:Schwab"
          interest_income_account: "Income:Interest:Schwab"
          capital_gains_account: "Income:Capital-Gains:Schwab"
@@ -129,6 +129,7 @@ from beancount.core.data import (
     Balance,
     Directive,
     Meta,
+    Open,
     Posting,
     Price,
     Transaction,
@@ -143,7 +144,7 @@ from beancount_import.source import ImportResult, InvalidSourceReference, Source
 from beancount_import.source.description_based_source import (
     SOURCE_DESC_KEYS,
     DescriptionBasedSource,
-    get_account_mapping,
+    get_account_mapping as orig_get_account_mapping,
 )
 from beancount_import.unbook import group_postings_by_meta, unbook_postings
 
@@ -315,7 +316,7 @@ class RawBrokerageEntry(RawEntry):
                     **shared_attrs
             )
         if self.action == BrokerageAction.STOCK_PLAN_ACTIVITY:
-            acct = account_meta["schwab_account"]
+            acct = get_schwab_account_from_meta(account_meta)
             cost = lots.get_cost(acct, self.symbol, self.date)
             return StockPlanActivity(symbol=self.symbol, cost=cost, **shared_attrs)
         if self.action in (
@@ -339,7 +340,7 @@ class RawBrokerageEntry(RawEntry):
                 **shared_attrs,
             )
         if self.action == BrokerageAction.STOCK_SPLIT:
-            acct = account_meta["schwab_account"]
+            acct = get_schwab_account_from_meta(account_meta)
             assert self.quantity is not None
             lot_splits = lots.split(acct, self.symbol, self.date, self.quantity)
             return StockSplit(
@@ -373,7 +374,7 @@ class RawBrokerageEntry(RawEntry):
             assert quantity is not None
             price = self.price
             assert price is not None
-            acct = account_meta["schwab_account"]
+            acct = get_schwab_account_from_meta(account_meta)
             lot_info = lots.get_sale_lots(acct, self.symbol, self.date, quantity)
             return Sell(
                 capital_gains_account=capital_gains_account,
@@ -419,7 +420,8 @@ class RawBrokerageEntry(RawEntry):
         if self.action == BrokerageAction.EXPIRED:
             assert self.quantity is not None
             price = Decimal(0) if self.price is None else self.price
-            lot_info = lots.get_sale_lots(account_meta["schwab_account"], self.symbol, self.date, self.quantity)
+            acct = get_schwab_account_from_meta(account_meta)
+            lot_info = lots.get_sale_lots(acct, self.symbol, self.date, self.quantity)
             if self.quantity > 0:
                 # an expiring long option means it is sold at the end => the posting has a negative 'quantity'
                 return Buy(
@@ -1097,7 +1099,7 @@ class EntryProcessor:
         (
             self.account_to_schwab,
             self.schwab_to_account,
-        ) = get_account_mapping(journal.accounts, POSTING_META_ACCOUNT_KEY)
+        ) = get_account_mapping(journal.accounts)
         self.journal = journal
         self.lots = lots
         self.missing_accounts: Set[str] = set()
@@ -1140,11 +1142,28 @@ DIV_INCOME_ACCOUNT_KEY = "div_income_account"
 FEES_ACCOUNT_KEY = "fees_account"
 CAPITAL_GAINS_ACCOUNT_KEY = "capital_gains_account"
 TAXES_ACCOUNT_KEY = "taxes_account"
-TITLE_RE = re.compile(r'"?Transactions\s*for (?:Checking )?account '
-                      r'(?P<account>.+) as of '
-                      r'(?P<when>.+)"?')
+ACCOUNT_RE = r"(?P<account_type>[a-zA-Z\s]*\s+)?(?P<account>[^\s]+)"
+TITLE_RE = re.compile(
+    r'"?Transactions\s+for\s+(?:[a-zA-Z]*\s+)?account '
+    + ACCOUNT_RE +
+    r' as of (?P<when>.+)"?')
 OPTION_RE = re.compile(r'\w{1,4} \d\d\/\d\d\/\d\d\d\d \d*\.\d* [PC]')
 STRIP_FROM_SYMBOL_RE = re.compile(r'[^\d\w]')
+
+
+def get_schwab_account_from_meta(account_meta: Mapping[str, str]) -> str:
+    raw_acct = account_meta[POSTING_META_ACCOUNT_KEY]
+    # Because Schwab CSVs sometimes list accounts like "Foobar XXXX-1234" and
+    # sometimes like "XXXX-1234", we strip the initial part and only use the
+    # XXXX-1234 account ID. But for backward-compatibility we still need to
+    # support the longer names being used in the Beancount account meta.
+    return raw_acct.split()[-1]
+
+
+def get_account_mapping(accounts: Dict[str, Open]) -> Tuple[Dict[str, str], Dict[str, str]]:
+    """Wrap the base `get_account_mapping` with the account name to ID truncation."""
+    acct_to_id, id_to_acct = orig_get_account_mapping(accounts, POSTING_META_ACCOUNT_KEY)
+    return {a: i.split()[-1] for a, i in acct_to_id.items()}, {i.split()[-1]: a for i, a in id_to_acct.items()}
 
 
 class SchwabSourceSpecDict(TypedDict):
@@ -1363,11 +1382,6 @@ class LotsDB:
         for db in self.holdings.values():
             db.zero_fill(self.asof_datetimes)
 
-    def convert_account(self, acct: str) -> str:
-        # Transactions and positions CSV use accounts in the form "Brokerage XXXX-1234",
-        # but Lots CSV uses just "XXXX-1234"
-        return acct.split()[-1]
-
     def get_cost(
         self, account: str, symbol: str, date: datetime.date,
     ) -> Optional[Decimal]:
@@ -1375,7 +1389,7 @@ class LotsDB:
 
         Return None if it can't be determined given lot info in db.
         """
-        db = self.holdings.get((self.convert_account(account), symbol))
+        db = self.holdings.get((account, symbol))
         return db.get_cost(date) if db else None
 
     def get_sale_lots(
@@ -1395,14 +1409,14 @@ class LotsDB:
         every sale of a given holding, so things should match up exactly; if they don't,
         we revert to unknown cost.
         """
-        db = self.holdings.get((self.convert_account(account), symbol))
+        db = self.holdings.get((account, symbol))
         return db.get_sale_lots(date, quantity_sold) if db else {}
 
     def split(
         self, account: str, symbol: str, date: datetime.date, quantity_added: Decimal,
     ) -> List[LotSplit]:
         """Get LotSplit for each lot of `symbol` in `account` as of `date`."""
-        db = self.holdings.get((self.convert_account(account), symbol))
+        db = self.holdings.get((account, symbol))
         return db.split(date, quantity_added) if db else []
 
     def _get_db(self, account: str, symbol: str) -> HoldingLotsDB:
@@ -1632,10 +1646,10 @@ def _load_brokerage_transactions(reader: csv.DictReader, account: str,
 
 
 POSITIONS_TITLE_RE = re.compile(
-    r'"?Positions for (account )?(?P<account>.+) as of (?P<time>.+), '
+    r'"?Positions for ' + ACCOUNT_RE + ' as of (?P<time>.+), '
     r'(?P<date>[\d\/]+)"?'
 )
-POSITIONS_ACCT_RE = re.compile(r'"(?P<account>.+)"')
+POSITIONS_ACCT_RE = re.compile(f'"{ACCOUNT_RE}"')
 
 
 def _load_positions(filename: str) -> Sequence[RawPosition]:
