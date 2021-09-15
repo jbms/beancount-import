@@ -159,6 +159,7 @@ class BrokerageAction(enum.Enum):
     BUY_TO_CLOSE = "Buy to Close"
     BUY_TO_OPEN = "Buy to Open"
     CASH_DIVIDEND = "Cash Dividend"
+    CASH_IN_LIEU = "Cash In Lieu"
     EXPIRED = "Expired"
     FOREIGN_TAX_PAID = "Foreign Tax Paid"
     JOURNAL = "Journal"
@@ -316,6 +317,7 @@ class RawBrokerageEntry(RawEntry):
             return StockPlanActivity(symbol=self.symbol, cost=cost, **shared_attrs)
         if self.action in (
             BrokerageAction.CASH_DIVIDEND,
+            BrokerageAction.CASH_IN_LIEU,
             BrokerageAction.PRIOR_YEAR_CASH_DIVIDEND,
             BrokerageAction.PRIOR_YEAR_SPECIAL_DIVIDEND,
             BrokerageAction.SPECIAL_DIVIDEND,
