@@ -10,8 +10,11 @@
 "04/01/2020 as of 03/31/2020","Expired","SMAL 03/31/2020 84.00 P","PUT SMALL CAP INDEX $84 EXP 03/31/21","-1","$1.1","$5","$1095",
 "04/01/2020 as of 03/31/2020","Expired","SMAL 03/31/2020 184.00 C","CALL SMALL CAP INDEX $184 EXP 03/31/21","1","","","",
 "04/01/2020 as of 03/31/2020","Expired","SMAL 03/31/2020 124.00 P","PUT SMALL CAP INDEX $124 EXP 03/31/21","1","$23","$10","-$2290",
+"12/10/2020","Funds Received","","Invest With Rewards","","","","$625.00",
 "12/31/2020","Short Term Cap Gain","ARKK","ARK INNOVATION ETF","","","","$1000",
 "12/31/2020","Long Term Cap Gain","ARKK","ARK INNOVATION ETF","","","","$100",
+"12/31/2020","Non-Qualified Div","ARKK","ARK INNOVATION ETF","","","","$0.09",
+"01/30/2021","Credit Interest","","SCHWAB1 INT 12/30-01/29","","","","$0.02",
 "02/16/2021 as of 02/15/2021","Bond Interest","912810SP4","US TREASURY 1.375%08/50UST BOND DUE 08/15/50","","","","$6.87",
 "03/25/2021","Stock Merger","QQZ","QUQUZETA CORP","100","","","",
 "03/25/2021","Stock Merger","SPAC1","SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21","-100","","",""
