@@ -280,6 +280,7 @@ class RawBrokerageEntry(RawEntry):
         interest_account = self.get_meta_account(account_meta, INTEREST_INCOME_ACCOUNT_KEY)
         dividend_account = self.get_meta_account(account_meta, DIV_INCOME_ACCOUNT_KEY)
         taxes_account = self.get_meta_account(account_meta, TAXES_ACCOUNT_KEY)
+        schwab_account = get_schwab_account_from_meta(account_meta)
         amount = self.amount
         if self.action == BrokerageAction.STOCK_PLAN_ACTIVITY:
             quantity = self.quantity
@@ -316,8 +317,7 @@ class RawBrokerageEntry(RawEntry):
                     **shared_attrs
             )
         if self.action == BrokerageAction.STOCK_PLAN_ACTIVITY:
-            acct = get_schwab_account_from_meta(account_meta)
-            cost = lots.get_cost(acct, self.symbol, self.date)
+            cost = lots.get_cost(schwab_account, self.symbol, self.date)
             return StockPlanActivity(symbol=self.symbol, cost=cost, **shared_attrs)
         if self.action in (
             BrokerageAction.CASH_DIVIDEND,
@@ -340,9 +340,8 @@ class RawBrokerageEntry(RawEntry):
                 **shared_attrs,
             )
         if self.action == BrokerageAction.STOCK_SPLIT:
-            acct = get_schwab_account_from_meta(account_meta)
             assert self.quantity is not None
-            lot_splits = lots.split(acct, self.symbol, self.date, self.quantity)
+            lot_splits = lots.split(schwab_account, self.symbol, self.date, self.quantity)
             return StockSplit(
                 lot_splits=lot_splits,
                 **shared_attrs,
@@ -374,8 +373,7 @@ class RawBrokerageEntry(RawEntry):
             assert quantity is not None
             price = self.price
             assert price is not None
-            acct = get_schwab_account_from_meta(account_meta)
-            lot_info = lots.get_sale_lots(acct, self.symbol, self.date, quantity)
+            lot_info = lots.get_sale_lots(schwab_account, self.symbol, self.date, quantity)
             return Sell(
                 capital_gains_account=capital_gains_account,
                 fees_account=fees_account,
@@ -420,8 +418,7 @@ class RawBrokerageEntry(RawEntry):
         if self.action == BrokerageAction.EXPIRED:
             assert self.quantity is not None
             price = Decimal(0) if self.price is None else self.price
-            acct = get_schwab_account_from_meta(account_meta)
-            lot_info = lots.get_sale_lots(acct, self.symbol, self.date, self.quantity)
+            lot_info = lots.get_sale_lots(schwab_account, self.symbol, self.date, self.quantity)
             if self.quantity > 0:
                 # an expiring long option means it is sold at the end => the posting has a negative 'quantity'
                 return Buy(
