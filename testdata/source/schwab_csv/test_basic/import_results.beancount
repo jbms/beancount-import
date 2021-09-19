@@ -63,7 +63,7 @@
   Income:Dividend:Schwab:NOK           -6.32 USD
 
 ;; date: 2019-11-22
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 14, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 15, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -106,7 +106,7 @@
   Income:Dividend:Schwab:EMLC          -51.77 USD
 
 ;; date: 2020-01-10
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 13, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 14, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -127,7 +127,7 @@
   Expenses:FIXME           16.69 USD
 
 ;; date: 2020-01-12
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 12, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 13, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -148,7 +148,7 @@
   Expenses:FIXME           6.14 USD
 
 ;; date: 2020-01-31
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 11, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 12, "type": "text/csv"}
 
 ; features: []
 2020-01-31 * "INTEREST - Interest Paid"
@@ -399,7 +399,7 @@
   Income:Capital-Gains:Schwab:SCHA
 
 ;; date: 2020-10-26
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 10, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 11, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -420,7 +420,7 @@
   Expenses:FIXME          -2500.00 USD
 
 ;; date: 2020-10-27
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 9, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 10, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -441,7 +441,7 @@
   Expenses:FIXME          -1.56 USD
 
 ;; date: 2020-10-27
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 8, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 9, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -563,7 +563,7 @@
   Expenses:FIXME                       -123.45 USD
 
 ;; date: 2020-11-13
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 7, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 8, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -584,7 +584,7 @@
   Expenses:FIXME          -10500.00 USD
 
 ;; date: 2020-11-13
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 6, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 7, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -687,6 +687,27 @@
     source_desc: "ISHARES GLOBAL CLEAN ENERGY ETF"
   Income:Dividend:Schwab:ICLN        -2.11 USD
 
+;; date: 2020-12-10
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 12, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "625.00 USD",
+;               "date": "2020-12-10",
+;               "key_value_pairs": {
+;                 "desc": "Invest With Rewards",
+;                 "schwab_action": "Funds Received"
+;               },
+;               "source_account": "Assets:Schwab:Brokerage-1234:Cash"
+;             }
+;           ]
+2020-12-10 * "TRANSFER - Invest With Rewards"
+  Assets:Schwab:Brokerage-1234:Cash   625.00 USD
+    date: 2020-12-10
+    schwab_action: "Funds Received"
+    source_desc: "Invest With Rewards"
+  Expenses:FIXME                     -625.00 USD
+
 ;; date: 2020-12-21
 ;; info: {"filename": "<testdata>/test_basic/positions/Intelligent-Positions-2020-11-30.CSV", "line": 4, "type": "text/csv"}
 
@@ -703,7 +724,18 @@
 2020-12-21 price SCHA                                88.71 USD
 
 ;; date: 2020-12-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 13, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 15, "type": "text/csv"}
+
+; features: []
+2020-12-31 * "INCOME - DIV - ARK INNOVATION ETF"
+  Assets:Schwab:Brokerage-1234:Cash   0.09 USD
+    date: 2020-12-31
+    schwab_action: "Non-Qualified Div"
+    source_desc: "ARK INNOVATION ETF"
+  Income:Dividend:Schwab:ARKK        -0.09 USD
+
+;; date: 2020-12-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 14, "type": "text/csv"}
 
 ; features: []
 2020-12-31 * "INCOME - CAP GAINS - ARK INNOVATION ETF"
@@ -714,7 +746,7 @@
   Income:Capital-Gains:Schwab:ARKK   -100 USD
 
 ;; date: 2020-12-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 12, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 13, "type": "text/csv"}
 
 ; features: []
 2020-12-31 * "INCOME - CAP GAINS - ARK INNOVATION ETF"
@@ -724,8 +756,29 @@
     source_desc: "ARK INNOVATION ETF"
   Income:Capital-Gains:Schwab:ARKK   -1000 USD
 
+;; date: 2021-01-30
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 16, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "0.02 USD",
+;               "date": "2021-01-30",
+;               "key_value_pairs": {
+;                 "desc": "SCHWAB1 INT 12/30-01/29",
+;                 "schwab_action": "Credit Interest"
+;               },
+;               "source_account": "Assets:Schwab:Brokerage-1234:Cash"
+;             }
+;           ]
+2021-01-30 * "MARGININTEREST - SCHWAB1 INT 12/30-01/29"
+  Assets:Schwab:Brokerage-1234:Cash   0.02 USD
+    date: 2021-01-30
+    schwab_action: "Credit Interest"
+    source_desc: "SCHWAB1 INT 12/30-01/29"
+  Expenses:FIXME                     -0.02 USD
+
 ;; date: 2021-02-01
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 5, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 6, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -746,7 +799,7 @@
   Expenses:FIXME          -20000.00 USD
 
 ;; date: 2021-02-15
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 14, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 17, "type": "text/csv"}
 
 ; features: []
 2021-02-15 * "BOND INTEREST - US TREASURY 1.375%08/50UST BOND DUE 08/15/50"
@@ -799,7 +852,7 @@
   Expenses:FIXME                        10 GOOG
 
 ;; date: 2021-03-25
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 16, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 19, "type": "text/csv"}
 
 ; features: []
 2021-03-25 * "STOCKMERGER - QUQUZETA CORP - SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
@@ -811,3 +864,24 @@
     date: 2021-03-25
     schwab_action: "Stock Merger"
     source_desc: "SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
+
+;; date: 2021-07-30
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 5, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "3.00 USD",
+;               "date": "2021-07-30",
+;               "key_value_pairs": {
+;                 "desc": "ATM Fee Rebate",
+;                 "schwab_action": "ATMREBATE"
+;               },
+;               "source_account": "Assets:Schwab:Checking"
+;             }
+;           ]
+2021-07-30 * "ATMREBATE - ATM Fee Rebate"
+  Assets:Schwab:Checking   3.00 USD
+    date: 2021-07-30
+    schwab_action: "ATMREBATE"
+    source_desc: "ATM Fee Rebate"
+  Expenses:FIXME          -3.00 USD
