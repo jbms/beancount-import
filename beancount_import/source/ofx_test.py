@@ -19,6 +19,7 @@ examples = [
     ('test_vanguard_with_cash_account_matching_missing_primary',
      'vanguard.ofx'),
     ('test_vanguard401k', 'vanguard401k.ofx'),
+    ('test_vanguard_401k_matching', 'vanguard401k.ofx'),
     ('test_fidelity_savings', 'fidelity-savings.ofx'),
     ('test_suncorp', 'suncorp.ofx'),
     ('test_checking', 'checking.ofx'),

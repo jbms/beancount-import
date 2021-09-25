@@ -1,0 +1,20 @@
+1900-01-01 commodity VANGUARD-92202V351
+  cusip: "92202V351"
+
+1900-01-01 open Assets:Retirement:Vanguard:Company401k
+  ofx_org: "Vanguard"
+  ofx_broker_id: "vanguard.com"
+  ofx_account_type: "securities_only"
+  account_id: "0123456"
+  capital_gains_account: "Income:Vanguard:Capital-Gains"
+  match_contribution_account: "Income:Company:Match"
+
+2014-09-26 * "BUYMF - PRETAX"
+  Assets:Retirement:Vanguard:Company401k:PreTax:VANGUARD-92202V351  14.61137 VANGUARD-92202V351 {46.06 USD}
+    date: 2014-09-26
+    ofx_fitid: "1234567890123456790AAA"
+    ofx_type: "BUYMF"
+    cleared: TRUE
+  Expenses:FIXME                                                     -673.00 USD
+2014-09-26 open Assets:Retirement:Vanguard:Company401k:PreTax:VANGUARD-92202V351
+2014-09-26 open Expenses:FIXME
