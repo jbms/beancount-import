@@ -2,6 +2,7 @@ import os
 
 import pytest
 
+from . import ofx
 from .source_test import check_source_example
 
 testdata_dir = os.path.realpath(
@@ -46,3 +47,17 @@ def test_source(name: str, ofx_filename: str):
             'ofx_filenames': [os.path.join(testdata_dir, ofx_filename)],
         },
         replacements=[(testdata_dir, '<testdata>')])
+
+def test_find_ofx_id_for_account():
+    ofx_ids = {
+        'Assets:Vanguard:401k': 1,
+    }
+    for (account, want) in [
+        ('Assets:Vanguard:401k:PreTax:VGI1', 1),
+        ('Assets:Vanguard:401k:PreTax', 1),
+        ('Assets:Vanguard:401k:VG1', 1),
+        ('Assets:Vanguard:401k', 1),
+        ('Assets:Vanguard:Unknown', None),
+        ('Assets:Vanguard:401k:PreTax:Excessive:VGI1', None),
+    ]:
+        assert ofx.find_ofx_id_for_account(account, ofx_ids) == want, account
