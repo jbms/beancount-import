@@ -418,7 +418,7 @@ class PaypalSource(LinkBasedSource, Source):
 
         counterparty_remainder_account = FIXME_ACCOUNT + ':A'
 
-        if transaction_type_enum == 'TRANSFER_TO_BANK':
+        if transaction_type_enum == 'TRANSFER_TO_BANK' or transaction_type_enum == 'TRANSFER':
             counterparty_remainder_account = self.assets_account
             counterparty_metadata = []
             negate_funding_source_amounts = False
@@ -553,7 +553,7 @@ class PaypalSource(LinkBasedSource, Source):
                 source_type = source['type']
                 if (source_type == 'BALANCE' or
                     (transaction_type_enum == 'SEND_MONEY_SENT' and
-                     source_type != 'CREDIT_CARD')):
+                     source_type != 'CREDIT_CARD' and source_type != 'BANK_ACCOUNT')):
                     # For SEND_MONEY_SENT, sources other than CREDIT_CARD
                     # are actually handled by a separate transfer transaction.
                     account = self.assets_account
