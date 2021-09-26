@@ -409,7 +409,7 @@ class RawBrokerageEntry(RawEntry):
         if self.action == BrokerageAction.FOREIGN_TAX_PAID:
             return TaxPaid(taxes_account=taxes_account, **shared_attrs)
         if self.action == BrokerageAction.MARGIN_INTEREST or self.action == BrokerageAction.CREDIT_INTEREST:
-            return MarginInterest(interest_account=interest_account, **shared_attrs)
+            return Interest(interest_account=interest_account, **shared_attrs)
         if self.action == BrokerageAction.EXPIRED:
             assert self.quantity is not None
             price = Decimal(0) if self.price is None else self.price
@@ -596,7 +596,7 @@ class TaxPaid(TransactionEntry):
         return "INVBANKTRAN"
 
 @dataclass(frozen=True)
-class MarginInterest(TransactionEntry):
+class Interest(TransactionEntry):
     interest_account: str
 
     def get_sub_account(self) -> Optional[str]:
@@ -604,9 +604,6 @@ class MarginInterest(TransactionEntry):
 
     def get_other_account(self) -> str:
         return self.interest_account
-
-    def get_narration_prefix(self) -> str:
-        return "MARGININTEREST"
 
 
 @dataclass(frozen=True)
