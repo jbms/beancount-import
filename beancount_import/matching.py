@@ -940,10 +940,10 @@ def are_cost_and_costspec_mergeable(a: Cost, b: CostSpec, b_units: Optional[Amou
     if not equal_or_none(a.number, b.number_per): return False
     if not equal_or_none(a.date, b.date): return False
     if not equal_or_none(a.label, b.label): return False
-    if b.number_total is not None:
-        if b_units is None or b_units.number is None:
-            return False
-        return a.number == b.number_total / b_units.number
+    if b.number_total is None: return True
+    if b_units is None or b_units.number is None:
+        return False
+    return a.number == b.number_total / b_units.number
 
 
 def are_costs_mergeable(a: Optional[Union[Cost, CostSpec]],
@@ -1280,18 +1280,25 @@ def get_combined_transactions(txns: Tuple[Transaction, Transaction],
     results = []
 
     # List of weighted postings for each of the two transactions
-    weighted_postings: List[List[WeightedPosting]] = [get_weighted_postings(txn.postings) for txn in txns]
+    weighted_postings = cast(
+        Tuple[List[WeightedPosting], List[WeightedPosting]],
+        tuple(get_weighted_postings(txn.postings) for txn in txns))
 
     # List of matchable postings, by currency and sign, for each of the two transactions
-    matchable_posting_groups: List[Dict[MatchGroupKey, List[MatchablePosting]]] = [
-        get_matchable_posting_groups(txn_weighted_postings, is_cleared)
-        for txn_weighted_postings in weighted_postings
-    ]
+    matchable_posting_groups = cast(
+        Tuple[Dict[MatchGroupKey, List[MatchablePosting]],
+              Dict[MatchGroupKey, List[MatchablePosting]]],
+        tuple(
+            get_matchable_posting_groups(txn_weighted_postings, is_cleared)
+            for txn_weighted_postings in weighted_postings))
 
-    unweighted_postings = tuple([
-        weighted_posting.posting for weighted_posting in txn_weighted_postings
-        if weighted_posting.weight is None
-    ] for txn_weighted_postings in weighted_postings)
+    unweighted_postings = cast(
+        Tuple[List[Posting], List[Posting]],
+        tuple([
+            weighted_posting.posting
+            for weighted_posting in txn_weighted_postings
+            if weighted_posting.weight is None
+        ] for txn_weighted_postings in weighted_postings))
 
     match_groups = collections.OrderedDict(
         (key.currency, None)  # type: ignore
