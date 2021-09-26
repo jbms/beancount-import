@@ -11,6 +11,19 @@
 ;                 ]
 ;               },
 ;               "source_account": ""
+;             },
+;             {
+;               "amount": "-12.70 USD",
+;               "date": "2012-10-16",
+;               "key_value_pairs": {
+;                 "paypal_funding_source_institution": [
+;                   "My Bank"
+;                 ],
+;                 "paypal_funding_source_last4": [
+;                   "1234"
+;                 ]
+;               },
+;               "source_account": ""
 ;             }
 ;           ]
 2012-10-16 * "Payment Administrator" "Money Sent" ^paypal.JNNTICIP9966PELUB
@@ -18,9 +31,9 @@
   Expenses:FIXME:A   12.70 USD
     paypal_counterparty: "Payment Administrator"
     paypal_counterparty_email: "payment@example.com"
-  Assets:Paypal     -12.70 USD
-    date: 2012-10-16
-    paypal_transaction_id: "JNNTICIP9966PELUB"
+  Expenses:FIXME    -12.70 USD
+    paypal_funding_source_institution: "My Bank"
+    paypal_funding_source_last4: "1234"
 
 ;; date: 2012-10-16
 ;; info: {"filename": "<testdata>/RNPYPAWXEWBUUBNER.json", "type": "application/json"}

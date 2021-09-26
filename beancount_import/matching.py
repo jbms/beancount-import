@@ -944,6 +944,7 @@ def are_cost_and_costspec_mergeable(a: Cost, b: CostSpec, b_units: Optional[Amou
         if b_units is None or b_units.number is None:
             return False
         return a.number == b.number_total / b_units.number
+    return False
 
 
 def are_costs_mergeable(a: Optional[Union[Cost, CostSpec]],
@@ -1288,10 +1289,10 @@ def get_combined_transactions(txns: Tuple[Transaction, Transaction],
         for txn_weighted_postings in weighted_postings
     ]
 
-    unweighted_postings = tuple([
+    unweighted_postings = cast(Tuple[List[Posting], List[Posting]], tuple([
         weighted_posting.posting for weighted_posting in txn_weighted_postings
         if weighted_posting.weight is None
-    ] for txn_weighted_postings in weighted_postings)
+    ] for txn_weighted_postings in weighted_postings))
 
     match_groups = collections.OrderedDict(
         (key.currency, None)  # type: ignore
