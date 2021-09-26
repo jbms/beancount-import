@@ -1,23 +1,13 @@
 ;; date: 2018-06-28
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 17, "type": "text/csv"}
 
-; features: [
-;             {
-;               "amount": "-0.05 USD",
-;               "date": "2018-06-28",
-;               "key_value_pairs": {
-;                 "desc": "INTEREST 05/30THRU 06/27",
-;                 "schwab_action": "Margin Interest"
-;               },
-;               "source_account": "Assets:Schwab:Intelligent-4321:Cash"
-;             }
-;           ]
+; features: []
 2018-06-28 * "MARGININTEREST - INTEREST 05/30THRU 06/27"
   Assets:Schwab:Intelligent-4321:Cash  -0.05 USD
     date: 2018-06-28
     schwab_action: "Margin Interest"
     source_desc: "INTEREST 05/30THRU 06/27"
-  Expenses:FIXME                        0.05 USD
+  Income:Interest:Schwab                0.05 USD
 
 ;; date: 2019-06-11
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 16, "type": "text/csv"}
@@ -44,7 +34,7 @@
 ;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 15, "type": "text/csv"}
 
 ; features: []
-2019-06-11 * "INVBANKTRAN - NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS"
+2019-06-11 * "ADR Mgmt Fee - NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS"
   Assets:Schwab:Intelligent-4321:Cash  -0.47 USD
     date: 2019-06-11
     schwab_action: "ADR Mgmt Fee"
@@ -759,23 +749,13 @@
 ;; date: 2021-01-30
 ;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 16, "type": "text/csv"}
 
-; features: [
-;             {
-;               "amount": "0.02 USD",
-;               "date": "2021-01-30",
-;               "key_value_pairs": {
-;                 "desc": "SCHWAB1 INT 12/30-01/29",
-;                 "schwab_action": "Credit Interest"
-;               },
-;               "source_account": "Assets:Schwab:Brokerage-1234:Cash"
-;             }
-;           ]
+; features: []
 2021-01-30 * "MARGININTEREST - SCHWAB1 INT 12/30-01/29"
   Assets:Schwab:Brokerage-1234:Cash   0.02 USD
     date: 2021-01-30
     schwab_action: "Credit Interest"
     source_desc: "SCHWAB1 INT 12/30-01/29"
-  Expenses:FIXME                     -0.02 USD
+  Income:Interest:Schwab             -0.02 USD
 
 ;; date: 2021-02-01
 ;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 6, "type": "text/csv"}
@@ -868,20 +848,10 @@
 ;; date: 2021-07-30
 ;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 5, "type": "text/csv"}
 
-; features: [
-;             {
-;               "amount": "3.00 USD",
-;               "date": "2021-07-30",
-;               "key_value_pairs": {
-;                 "desc": "ATM Fee Rebate",
-;                 "schwab_action": "ATMREBATE"
-;               },
-;               "source_account": "Assets:Schwab:Checking"
-;             }
-;           ]
+; features: []
 2021-07-30 * "ATMREBATE - ATM Fee Rebate"
-  Assets:Schwab:Checking   3.00 USD
+  Assets:Schwab:Checking      3.00 USD
     date: 2021-07-30
     schwab_action: "ATMREBATE"
     source_desc: "ATM Fee Rebate"
-  Expenses:FIXME          -3.00 USD
+  Expenses:Bank-Fees:Schwab  -3.00 USD
