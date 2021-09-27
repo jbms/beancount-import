@@ -1272,7 +1272,6 @@ class PrepareState(object):
         matched_cash_transfer_transactions = self.matched_cash_transfer_transactions
         account_to_ofx_id = self.account_to_ofx_id
         commodities_by_cusip = self.commodities_by_cusip
-        account_leaf_regexp = '^(.+):([^:]+)$'
         results = self.results
         for entry in self.journal.all_entries:
             if isinstance(entry, Transaction):
@@ -1287,14 +1286,7 @@ class PrepareState(object):
                     last_lineno = new_lineno
                     fitid = meta.get(OFX_FITID_KEY, None)
                     if fitid is None: continue
-                    m = re.fullmatch(account_leaf_regexp, posting.account)
-                    if m is not None:
-                        lookup_account = m.group(1)
-                    else:
-                        lookup_account = posting.account
-                    ofx_id = account_to_ofx_id.get(lookup_account)
-                    if ofx_id is None and lookup_account is not posting.account:
-                        ofx_id = account_to_ofx_id.get(posting.account)
+                    ofx_id = find_ofx_id_for_account(posting.account, account_to_ofx_id)
                     if ofx_id is None:
                         continue
                     results.add_account(posting.account)
@@ -1334,6 +1326,22 @@ class PrepareState(object):
                 if excess_number == 0: continue
                 results.add_invalid_reference(
                     InvalidSourceReference(excess_number, transactions))
+
+
+def find_ofx_id_for_account(account, account_to_ofx_id):
+    """Find the OFX id corresponding to account or one of its parents,
+    searching at most two parents. This is particularly needed for 401(k)
+    sub-accounts. For example, this will search
+    'Assets:Vanguard:401k:PreTax:VGI1' then 'Assets:Vanguard:401k:PreTax' then
+    'Assets:Vanguard:401k'.
+    """
+    for i in range(3):
+        if i != 0:
+            account = account.rsplit(':', 1)[0]
+        ofx_id = account_to_ofx_id.get(account)
+        if ofx_id is not None:
+            return ofx_id
+    return None
 
 
 class OfxSource(Source):

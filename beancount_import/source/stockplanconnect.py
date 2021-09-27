@@ -516,9 +516,9 @@ class StockplanconnectSource(Source):
             if key not in seen_releases:
                 results.add_pending_entry(
                     self._make_import_result(self._make_journal_entry(r), r))
-            if r.transfer_amount is not None and (
+            if (r.transfer_amount is not None and (
                     r.settlement_date or r.release_date,
-                    r.award_id) not in seen_release_transfers:
+                    r.award_id) not in seen_release_transfers):
                 results.add_pending_entry(
                     self._make_import_result(
                         self._make_transfer_journal_entry(r), r))
@@ -528,11 +528,12 @@ class StockplanconnectSource(Source):
                 results.add_pending_entry(
                     self._make_import_result(
                         self._make_trade_journal_entry(r), r))
-            if (r.settlement_date,
-                    r.reference_number) not in seen_trade_transfers:
-                results.add_pending_entry(
-                    self._make_import_result(
-                        self._make_transfer_trade_journal_entry(r), r))
+            # FIXME: seems to be separate transactions now
+            # if (r.settlement_date,
+            #         r.reference_number) not in seen_trade_transfers:
+            #     results.add_pending_entry(
+            #         self._make_import_result(
+            #             self._make_transfer_trade_journal_entry(r), r))
         results.add_accounts(self.managed_accounts)
 
     def _make_import_result(self, txn: Transaction,
