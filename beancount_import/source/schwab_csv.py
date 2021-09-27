@@ -194,12 +194,12 @@ class BankingEntryType(enum.Enum):
     # Please keep these alphabetized:
     ACH = "ACH"
     ATM = "ATM"
+    ATMREBATE = "ATMREBATE"
     CHECK = "CHECK"
     INTADJUST = "INTADJUST"
     TRANSFER = "TRANSFER"
     VISA = "VISA"
     WIRE = "WIRE"
-    ATMREBATE = "ATMREBATE"
 
 @dataclass(frozen=True)
 class MergerSpecification:
@@ -236,6 +236,7 @@ class RawBankEntry(RawEntry):
     ) -> Optional[TransactionEntry]:
         interest_account = self.get_meta_account(account_meta,
                                             INTEREST_INCOME_ACCOUNT_KEY)
+        fees_account = self.get_meta_account(account_meta, FEES_ACCOUNT_KEY)
         shared_attrs: SharedAttrsDict = SharedAttrsDict(
             account=account,
             date=self.date,
@@ -252,15 +253,9 @@ class RawBankEntry(RawEntry):
                interest_account=interest_account,
                **shared_attrs,
             )
-        return TransactionEntry(
-            account=account,
-            date=self.date,
-            action=self.entry_type,
-            description=self.description,
-            amount=self.amount,
-            filename=self.filename,
-            line=self.line,
-        )
+        elif self.entry_type == BankingEntryType.ATMREBATE:
+            return BankFee(fees_account=fees_account, **shared_attrs)
+        return TransactionEntry(**shared_attrs)
 
 
 @dataclass(frozen=True)
@@ -414,7 +409,7 @@ class RawBrokerageEntry(RawEntry):
         if self.action == BrokerageAction.FOREIGN_TAX_PAID:
             return TaxPaid(taxes_account=taxes_account, **shared_attrs)
         if self.action == BrokerageAction.MARGIN_INTEREST or self.action == BrokerageAction.CREDIT_INTEREST:
-            return MarginInterest(**shared_attrs)
+            return Interest(interest_account=interest_account, **shared_attrs)
         if self.action == BrokerageAction.EXPIRED:
             assert self.quantity is not None
             price = Decimal(0) if self.price is None else self.price
@@ -574,17 +569,17 @@ class TransactionEntry(DirectiveEntry):
 
 
 @dataclass(frozen=True)
-class Fee(TransactionEntry):
+class BankFee(TransactionEntry):
     fees_account: str
-
-    def get_sub_account(self) -> Optional[str]:
-        return "Cash"
 
     def get_other_account(self) -> str:
         return self.fees_account
 
-    def get_narration_prefix(self) -> str:
-        return "INVBANKTRAN"
+
+@dataclass(frozen=True)
+class Fee(BankFee):
+    def get_sub_account(self) -> Optional[str]:
+        return "Cash"
 
 
 @dataclass(frozen=True)
@@ -601,12 +596,14 @@ class TaxPaid(TransactionEntry):
         return "INVBANKTRAN"
 
 @dataclass(frozen=True)
-class MarginInterest(TransactionEntry):
+class Interest(TransactionEntry):
+    interest_account: str
+
     def get_sub_account(self) -> Optional[str]:
         return "Cash"
 
-    def get_narration_prefix(self) -> str:
-        return "MARGININTEREST"
+    def get_other_account(self) -> str:
+        return self.interest_account
 
 
 @dataclass(frozen=True)
