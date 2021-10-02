@@ -1,0 +1,30 @@
+plugin "beancount.plugins.auto_accounts"
+
+1900-01-01 commodity VANGUARD-92202V351
+  cusip: "92202V351"
+
+; The capital gains account is ":CapitalGains" instead of the customary
+; ":Capital-Gains".
+1900-01-01 open Assets:Retirement:Vanguard:Company401k
+  ofx_org: "Vanguard"
+  ofx_broker_id: "vanguard.com"
+  ofx_account_type: "securities_only"
+  account_id: "0123456"
+  capital_gains_account: "Income:Vanguard:CapitalGains"
+  match_contribution_account: "Income:Company:Match"
+
+; This is need so that the expense transaction doesn't reduce below zero.
+2013-09-04 * "Initial value"
+  Assets:Retirement:Vanguard:Company401k:Match:VANGUARD-92202V351  1 VANGUARD-92202V351 {39.37 USD}
+  Equity:Opening-Balances
+
+; Again, ":CapitalGains" without the hyphen.
+2013-09-05 * "TRANSFER - MATCH - Investment Expense"
+  Assets:Retirement:Vanguard:Company401k:Match:VANGUARD-92202V351  -0.04241 VANGUARD-92202V351 {} @ 39.37 USD
+    date: 2013-09-05
+    ofx_fitid: "1234567890123456795AAA"
+    ofx_memo: "Investment Expense"
+    ofx_type: "TRANSFER"
+    cleared: TRUE
+  Income:Vanguard:CapitalGains:VANGUARD-92202V351
+  Expenses:Fees:Vanguard                                            1.67 USD
