@@ -1,5 +1,7 @@
 import collections
 import datetime
+import functools
+import itertools
 import re
 from typing import Callable, Any, Dict, Iterable, List, NamedTuple, Sequence, Union, Optional, Tuple, Set
 
@@ -109,10 +111,9 @@ class FeatureExtractor(object):
             str = DEFAULT_IGNORE_ACCOUNT_FOR_CLASSIFICATION_PATTERN,
     ) -> None:
         self.account_source_map = account_source_map
-        self.ignore_account_pattern = ignore_account_pattern
-        self.skip_accounts = skip_accounts
-        self.skip_accounts_cache = dict(
-        )  # type: Dict[str, bool]
+        patterns = itertools.chain((ignore_account_pattern,),
+                                   ('^' + re.escape(a) for a in skip_accounts))
+        self.skip_accounts_re = re.compile('(?:' + '|'.join(patterns) + ')')
         self.example_posting_key_extractors = dict(
         )  # type: Dict[str, ExampleKeyExtractor]
         self.example_transaction_key_extractors = dict(
@@ -129,28 +130,17 @@ class FeatureExtractor(object):
                         extractor = default_extractor
                     getattr(self, t)[key] = extractor
 
-    def _ignore_posting_for_automatic_classification(self, posting):
-        skip = self.skip_accounts_cache.get(posting.account)
-        if skip is not None:
-            return skip
-
-        # Cache because checking prefixes can be an expensive O(m*n)
-        # operation.
-        for parent in self.skip_accounts:
-            if posting.account.startswith(parent):
-                self.skip_accounts_cache[posting.account] = True
-                return True
-
-        skip = re.match(self.ignore_account_pattern,
-                        posting.account) is not None
-        self.skip_accounts_cache[posting.account] = skip
-        return skip
-
+    # Cache because checking prefixes can be an expensive O(m*n)
+    # operation. An unbounded cache is okay because there's a finite number
+    # of accounts.
+    @functools.lru_cache(maxsize=None)
+    def _ignore_posting_for_automatic_classification(self, account):
+        return self.skip_accounts_re.match(account)
 
     def get_postings_for_automatic_classification(self, postings):
         return [
             posting for posting in postings
-            if not self._ignore_posting_for_automatic_classification(posting)
+            if not self._ignore_posting_for_automatic_classification(posting.account)
         ]
 
     def extract_examples(self, entries: Entries,
