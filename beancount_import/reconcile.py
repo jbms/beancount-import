@@ -396,11 +396,15 @@ class LoadedReconciler(object):
         all_source_results = self._prepare_sources()
         self._preprocess_entries()
         self._match_sources(all_source_results)
+        all_skip_accounts = set()
+        for src in all_source_results:
+            all_skip_accounts.update(src.skip_training_accounts)
         self._feature_extractor = training.FeatureExtractor(
             account_source_map=self.account_source_map,
             ignore_account_pattern=reconciler.options[
                 'ignore_account_for_classification_pattern'],
             sources=self.sources,
+            skip_accounts=all_skip_accounts,
         )
         self.training_examples = training.TrainingExamples()
         self._extract_training_examples(self.editor.entries)

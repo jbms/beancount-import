@@ -1,1 +1,15 @@
-[]
+[
+  [
+    {
+      "amount": "-0.04241 VANGUARD-92202V351",
+      "date": "2013-09-05",
+      "key_value_pairs": {
+        "desc": "Investment Expense",
+        "ofx_memo": "Investment Expense",
+        "ofx_type": "TRANSFER"
+      },
+      "source_account": "Assets:Retirement:Vanguard:Company401k:Match:VANGUARD-92202V351"
+    },
+    "Expenses:Fees:Vanguard"
+  ]
+]

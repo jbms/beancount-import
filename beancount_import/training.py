@@ -1,7 +1,7 @@
 import collections
 import datetime
 import re
-from typing import Callable, Any, Dict, Iterable, List, NamedTuple, Sequence, Union, Optional, Tuple
+from typing import Callable, Any, Dict, Iterable, List, NamedTuple, Sequence, Union, Optional, Tuple, Set
 
 from beancount.core.data import Directive, Entries, Transaction, Posting
 from beancount.core.amount import Amount
@@ -104,11 +104,15 @@ class FeatureExtractor(object):
             self,
             account_source_map: Dict[str, 'Source'],
             sources: Iterable['Source'],
+            skip_accounts: Set[str],
             ignore_account_pattern:
             str = DEFAULT_IGNORE_ACCOUNT_FOR_CLASSIFICATION_PATTERN,
     ) -> None:
         self.account_source_map = account_source_map
         self.ignore_account_pattern = ignore_account_pattern
+        self.skip_accounts = skip_accounts
+        self.skip_accounts_cache = dict(
+        )  # type: Dict[str, bool]
         self.example_posting_key_extractors = dict(
         )  # type: Dict[str, ExampleKeyExtractor]
         self.example_transaction_key_extractors = dict(
@@ -126,8 +130,22 @@ class FeatureExtractor(object):
                     getattr(self, t)[key] = extractor
 
     def _ignore_posting_for_automatic_classification(self, posting):
-        return re.match(self.ignore_account_pattern,
+        skip = self.skip_accounts_cache.get(posting.account)
+        if skip is not None:
+            return skip
+
+        # Cache because checking prefixes can be an expensive O(m*n)
+        # operation.
+        for parent in self.skip_accounts:
+            if posting.account.startswith(parent):
+                self.skip_accounts_cache[posting.account] = True
+                return True
+
+        skip = re.match(self.ignore_account_pattern,
                         posting.account) is not None
+        self.skip_accounts_cache[posting.account] = skip
+        return skip
+
 
     def get_postings_for_automatic_classification(self, postings):
         return [
@@ -149,7 +167,10 @@ class FeatureExtractor(object):
                     if extractor is None: continue
                     extractor(entry.meta[k], transaction_key_value_pairs)
 
-            # First attempt to extract direct training examples
+            # First attempt to extract direct training examples using
+            # the key extractors that convert metadata key-value pairs
+            # to sets of features. This is for the alternative prediction
+            # method described in source/__init__.py with an Amazon example.
             got_example = False
             for posting in entry.postings:
                 meta = posting.meta
@@ -173,6 +194,10 @@ class FeatureExtractor(object):
                         target_account=posting.account,
                     )
             if got_example: continue
+
+            # Otherwise use the metadata values directly, as long as there
+            # are only two postings. Two postings are a requirement to have
+            # a source account and a target account.
             non_ignored_postings = self.get_postings_for_automatic_classification(
                 entry.postings)
             if len(non_ignored_postings) != 2: continue
