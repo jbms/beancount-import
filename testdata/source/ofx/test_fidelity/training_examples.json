@@ -1,6 +1,19 @@
 [
   [
     {
+      "amount": "-8 SPY",
+      "date": "2012-07-27",
+      "key_value_pairs": {
+        "desc": "YOU SOLD",
+        "ofx_memo": "YOU SOLD",
+        "ofx_type": "SELLSTOCK"
+      },
+      "source_account": "Assets:Investment:Fidelity:SPY"
+    },
+    "Assets:Investment:Fidelity:Cash"
+  ],
+  [
+    {
       "amount": "-0.035 SPY",
       "date": "2012-08-01",
       "key_value_pairs": {
