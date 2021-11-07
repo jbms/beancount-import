@@ -36,8 +36,9 @@ def parse(text: str) -> ParseResult:
     account_re = r'[0-9x]+'
 
     # One or more space separated words.  Each word starts with
-    # alphanumeric, remaining characters are alphanumeric + hyphen.
-    field_name_re = r'[0-9a-zA-Z][0-9a-zA-Z\-]*(?:[ \n]+[0-9a-zA-Z][0-9a-zA-Z\-]*)*'
+    # alphanumeric and remaining characters are alphanumeric + hyphen. A
+    # single hyphen is also allowed as a word after the first word.
+    field_name_re = r'[0-9a-zA-Z][0-9a-zA-Z\-]*(?:[ \n]+(?:[0-9a-zA-Z][0-9a-zA-Z\-]*|-))*'
 
     def parse_date(x: str) -> datetime.date:
         return datetime.datetime.strptime(x, '%m/%d/%Y').date()
