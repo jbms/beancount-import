@@ -61,7 +61,7 @@ export class UnclearedPostingComponent extends React.PureComponent<
     const { entry } = this.props;
     const filename = entry.transaction.meta && entry.transaction.meta.filename;
     const lineno = entry.transaction.meta && entry.transaction.meta.lineno;
-    
+    const account = entry.posting.account;
     const formattedText = entry.transaction_formatted;
     return (
       <AssociatedDataViewContext.Consumer>
@@ -73,8 +73,13 @@ export class UnclearedPostingComponent extends React.PureComponent<
                 {formattedText}
               </UnclearedPostingFormattedElement>
               {filename && <UnclearedPostingSource>
-                <em>File:</em> {filename}
-                {lineno !== undefined && `:${lineno}`}
+                <div>
+                  <em>Account:</em> {account}
+                </div>
+                <div>
+                  <em>File:</em> {filename}
+                  {lineno !== undefined && `:${lineno}`}
+                </div>
               </UnclearedPostingSource>}
             </UnclearedPostingElement>
           );
@@ -85,7 +90,7 @@ export class UnclearedPostingComponent extends React.PureComponent<
 
   private handleClick = () => {
     const { dataViewController } = this;
-    dataViewController!.selectFileByMeta(this.props.entry.posting.meta);
+    dataViewController!.selectFileByMeta(this.props.entry.transaction.meta);
   };
 }
 
