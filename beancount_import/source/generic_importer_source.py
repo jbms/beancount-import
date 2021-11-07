@@ -113,10 +113,10 @@ class ImporterSource(DescriptionBasedSource):
         if isinstance(entry, Balance):
             return (entry.account, entry.date, entry.amount)
         if not isinstance(entry, Transaction):
-            raise ValueError("currently, ImporterSource only supports Transaction and Balance Directive")
+            raise ValueError("currently, ImporterSource only supports Transaction and Balance Directive. Got entry {}".format(entry))
         source_posting = self._get_source_posting(entry)
         if source_posting is None:
-            raise ValueError("entry has no postings for account: {}".format(self.account))
+            raise ValueError("entry {} has no postings for account: {}".format(entry, self.account))
         return (self.account,
                 entry.date,
                 source_posting.units,
