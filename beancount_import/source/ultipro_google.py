@@ -174,28 +174,52 @@ def make_import_result(parse_result: ultipro_google_statement.ParseResult,
     txn.meta[config.period_start_date_key] = start_date
     txn.meta[config.period_end_date_key] = end_date
 
-    for section in ['Earnings', 'Deductions', 'Taxes', 'Net Pay Distribution']:
-        if section == 'Net Pay Distribution':
-            field_name = 'Amount'
-        else:
-            field_name = 'Current'
+    def add_posting(section, row_name, value):
+        account_pattern = account_pattern_for_row_name(row_name, section)
+        txn.postings.append(
+            Posting(
+                account=account_pattern.format(year=year),
+                units=Amount(currency=currency, number=value),
+                cost=None,
+                meta={config.desc_key: '%s: %s' % (section, row_name)},
+                price=None,
+                flag=None,
+            ))
+
+    for section, field_names, sign in [
+            (
+                'Earnings',
+                [('Current', False)],
+                -1, # Earnings are recorded as negative amounts
+            ),
+            (
+                'Deductions',
+                [('Current', False),
+                 ('Current:Employer', True)],
+                1),
+            (
+                'Taxes',
+                [('Current', False)],
+                1,
+            ),
+            (
+                'Net Pay Distribution',
+                [('Amount', False)],
+                1,
+            ),
+            ]:
         for row_name, fields in all_values[section]:
-            value = fields[field_name]
-            if section == 'Earnings':
-                value = -value
-            if value == ZERO:
-                continue
-            account_pattern = account_pattern_for_row_name(row_name, section)
-            account = account_pattern.format(year=year)
-            txn.postings.append(
-                Posting(
-                    account=account,
-                    units=Amount(currency=currency, number=value),
-                    cost=None,
-                    meta={config.desc_key: '%s: %s' % (section, row_name)},
-                    price=None,
-                    flag=None,
-                ))
+            for field_name, employer_match in field_names:
+                value = fields.get(field_name)
+                if value is None or value == ZERO:
+                    continue
+                value *= sign
+                if employer_match:
+                    row_name += ' Employer Match'
+                add_posting(section, row_name, value)
+                if employer_match:
+                    assert section == 'Deductions'
+                    add_posting('Earnings', row_name, -value)
 
     return ImportResult(date=txn.date, entries=[txn], info=info)
 

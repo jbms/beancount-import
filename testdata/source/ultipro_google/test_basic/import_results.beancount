@@ -23,6 +23,26 @@
 ;               "source_account": ""
 ;             },
 ;             {
+;               "amount": "3000.00 USD",
+;               "date": "2021-01-08",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Deductions: 401K Pretax Employer Match"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "-3000.00 USD",
+;               "date": "2021-01-08",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Earnings: 401K Pretax Employer Match"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
 ;               "amount": "50.00 USD",
 ;               "date": "2021-01-08",
 ;               "key_value_pairs": {
@@ -67,6 +87,10 @@
     google_payroll_desc: "Earnings: Regular Pay"
   Expenses:FIXME                                         6000.00 USD
     google_payroll_desc: "Deductions: 401K Pretax"
+  Expenses:FIXME                                         3000.00 USD
+    google_payroll_desc: "Deductions: 401K Pretax Employer Match"
+  Expenses:FIXME                                        -3000.00 USD
+    google_payroll_desc: "Earnings: 401K Pretax Employer Match"
   Expenses:Health:Dental:Insurance                          1.11 USD
     google_payroll_desc: "Deductions: Dental"
   Expenses:FIXME                                           50.00 USD
