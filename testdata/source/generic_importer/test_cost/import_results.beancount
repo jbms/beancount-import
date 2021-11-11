@@ -1,0 +1,9 @@
+;; date: 2020-01-01
+;; info: {"filename": "<testdata>/beancount/generic_statement.beancount", "line": 2, "type": "text/plain"}
+
+; features: []
+2020-01-01 * "convert currency"
+  Assets:Bank    -1 USD
+    date: 2020-01-01
+    source_desc: "convert currency"
+  Assets:Saving   2 EUR @ 0.5 USD

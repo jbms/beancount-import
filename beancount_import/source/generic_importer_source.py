@@ -20,8 +20,10 @@ from typing import Hashable, List, Dict, Optional
 
 from beancount.core.data import Balance, Transaction, Posting,  Directive
 from beancount.core.amount import Amount
+from beancount.core.convert import get_weight
 from beancount.ingest.importer import ImporterProtocol
 from beancount.ingest.cache import get_file
+from beancount.parser.booking_full import convert_costspec_to_cost
 
 from ..matching import FIXME_ACCOUNT, SimpleInventory
 from . import ImportResult, SourceResults
@@ -143,7 +145,7 @@ def balance_amounts(txn:Transaction)-> None:
     """Add FIXME account for the remaing amount to balance accounts"""
     inventory = SimpleInventory()
     for posting in txn.postings:
-        inventory += posting.units
+        inventory += get_weight(convert_costspec_to_cost(posting))
     for currency in inventory:
         txn.postings.append(
             Posting(
