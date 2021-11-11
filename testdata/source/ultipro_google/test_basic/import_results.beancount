@@ -1,0 +1,87 @@
+;; date: 2021-01-08
+;; info: {"filename": "<testdata>/test_basic/20210108-1.pdf", "type": "application/pdf"}
+
+; features: [
+;             {
+;               "amount": "-50.00 USD",
+;               "date": "2021-01-08",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Earnings: Dom Part"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "6000.00 USD",
+;               "date": "2021-01-08",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Deductions: 401K Pretax"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "50.00 USD",
+;               "date": "2021-01-08",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Deductions: Dmstc Part - NR"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "3.33 USD",
+;               "date": "2021-01-08",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Deductions: Vision"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "100.00 USD",
+;               "date": "2021-01-08",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Taxes: NY State Income Tax"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2021-01-08 * "Google" "Payroll"
+  associated_data0: "{\"description\": \"Google payroll statement\", \"meta\": [\"google_payroll_document\", \"98765432\"], \"path\": \"<testdata>/test_basic/20210108-1.pdf\", \"type\": \"application/pdf\"}"
+  google_payroll_document: "98765432"
+  google_payroll_pay_date: 2021-01-08
+  google_payroll_period_end_date: 2021-01-03
+  google_payroll_period_start_date: 2020-12-21
+  Expenses:FIXME                                          -50.00 USD
+    google_payroll_desc: "Earnings: Dom Part"
+  Income:Google:Salary                                   -800.00 USD
+    google_payroll_desc: "Earnings: Regular Pay"
+  Income:Google:Salary                                  -7200.00 USD
+    google_payroll_desc: "Earnings: Regular Pay"
+  Expenses:FIXME                                         6000.00 USD
+    google_payroll_desc: "Deductions: 401K Pretax"
+  Expenses:Health:Dental:Insurance                          1.11 USD
+    google_payroll_desc: "Deductions: Dental"
+  Expenses:FIXME                                           50.00 USD
+    google_payroll_desc: "Deductions: Dmstc Part - NR"
+  Expenses:Health:Medical:Insurance                         2.22 USD
+    google_payroll_desc: "Deductions: Medical"
+  Expenses:FIXME                                            3.33 USD
+    google_payroll_desc: "Deductions: Vision"
+  Income:Expenses:Taxes:TY2021:Federal:Income             200.00 USD
+    google_payroll_desc: "Taxes: Federal Income Tax"
+  Income:Expenses:Taxes:TY2021:Federal:Medicare            50.00 USD
+    google_payroll_desc: "Taxes: Employee Medicare"
+  Income:Expenses:Taxes:TY2021:Federal:Social-Security     50.00 USD
+    google_payroll_desc: "Taxes: Social Security Employee Tax"
+  Expenses:FIXME                                          100.00 USD
+    google_payroll_desc: "Taxes: NY State Income Tax"
+  Assets:Checking:My-Bank                                 600.00 USD
+    google_payroll_desc: "Net Pay Distribution: xxxxxxxx1234"
