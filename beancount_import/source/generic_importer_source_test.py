@@ -12,7 +12,6 @@ testdata_dir = os.path.realpath(
         os.path.dirname(__file__), '..', '..', 'testdata', 'source', 'generic_importer'))
 
 testdata_csv = os.path.join(testdata_dir, "csv")
-testdata_beancount = os.path.join(testdata_dir, "beancount")
 
 examples = [
     'test_basic',
@@ -30,13 +29,6 @@ importer = CSVImporter({Col.DATE: 'Date',
                        )
 
 
-class BeancountImporter(ImporterProtocol):
-    def extract(self, file, existing_entries):
-        entries, errors, options_map = parse_file(file.name)
-        return entries
-    def identify(self, file):
-        return True
-
 @pytest.mark.parametrize('name', examples)
 def test_source(name: str):
     check_source_example(
@@ -50,14 +42,25 @@ def test_source(name: str):
         replacements=[(testdata_dir, '<testdata>')])
 
 
+# The existing testcases use CSVImporter, which cannot handle costs.
+# This importer instead loads the transaction from a beancount file.
+class BeancountLedgerImporter(ImporterProtocol):
+    def extract(self, file, existing_entries):
+        entries, errors, options_map = parse_file(file.name)
+        return entries
+    def identify(self, file):
+        return True
+
+
 def test_cost():
+    example_dir = os.path.join(testdata_dir, "test_cost")
     check_source_example(
-        example_dir=os.path.join(testdata_dir, "test_cost"),
+        example_dir=example_dir,
         source_spec={
             'module': 'beancount_import.source.generic_importer_source',
-            'directory': testdata_beancount,
+            'directory': os.path.join(example_dir, "input"),
             'account': 'Assets:Bank',
-            'importer': BeancountImporter(),
+            'importer': BeancountLedgerImporter(),
         },
         replacements=[(testdata_dir, '<testdata>')])
     

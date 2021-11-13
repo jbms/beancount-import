@@ -1,5 +1,5 @@
 ;; date: 2020-01-01
-;; info: {"filename": "<testdata>/beancount/generic_statement.beancount", "line": 2, "type": "text/plain"}
+;; info: {"filename": "<testdata>/test_cost/input/generic_statement.beancount", "line": 2, "type": "text/plain"}
 
 ; features: []
 2020-01-01 * "convert currency"
