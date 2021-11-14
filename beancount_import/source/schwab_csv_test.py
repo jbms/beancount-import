@@ -52,7 +52,7 @@ def lot(
     return RawLot(
         symbol=symbol,
         account=account,
-        asof=dt(asof),
+        asof=d(asof),
         opened=dt(opened),
         quantity=D(quantity),
         price=D(price),

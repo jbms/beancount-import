@@ -444,7 +444,7 @@ class RawLot:
     """A single cost-basis lot of a single holding from Lot Details CSV."""
     symbol: str
     account: str
-    asof: datetime.datetime
+    asof: datetime.date
     opened: datetime.datetime
     quantity: Decimal
     price: Decimal
@@ -1362,11 +1362,11 @@ class LotsDB:
     """
     def __init__(self) -> None:
         self.holdings: Dict[Tuple[str, str], HoldingLotsDB] = {}
-        self.asof_datetimes: Set[datetime.datetime] = set()
+        self.asof_dates: Set[datetime.date] = set()
 
     def load(self, raw_lots: Iterable[RawLot]) -> None:
         for raw_lot in raw_lots:
-            self.asof_datetimes.add(raw_lot.asof)
+            self.asof_dates.add(raw_lot.asof)
             db = self._get_db(raw_lot.account, raw_lot.symbol)
             db.add(raw_lot)
         self.zero_fill()
@@ -1374,7 +1374,7 @@ class LotsDB:
     def zero_fill(self):
         """Fill zero quantities for all holdings without a quantity on an asof date."""
         for db in self.holdings.values():
-            db.zero_fill(self.asof_datetimes)
+            db.zero_fill(self.asof_dates)
 
     def get_cost(
         self, account: str, symbol: str, date: datetime.date,
@@ -1431,8 +1431,8 @@ class HoldingLotsDB:
         # unique key to distinguish these by, so the best we can do is collapse them, and
         # that's good enough for our query needs anyway, since all we ever want to get out
         # is a cost.) So this dict maps (opened, cost) to a per-lot dict mapping as-of
-        # datetime to quantity of shares in the lot at that point in time.
-        self.lots: Dict[Tuple[datetime.datetime, Decimal], Dict[datetime.datetime, Decimal]] = {}
+        # date to quantity of shares in the lot at that point in time.
+        self.lots: Dict[Tuple[datetime.datetime, Decimal], Dict[datetime.date, Decimal]] = {}
 
     def add(self, raw_lot: RawLot) -> None:
         assert raw_lot.account == self.account, raw_lot.account
@@ -1440,8 +1440,8 @@ class HoldingLotsDB:
         lot = self.lots.setdefault((raw_lot.opened, raw_lot.cost), {})
         lot[raw_lot.asof] = lot.get(raw_lot.asof, 0) + raw_lot.quantity
 
-    def zero_fill(self, asof_datetimes: Set[datetime.datetime]) -> None:
-        for dt in asof_datetimes:
+    def zero_fill(self, asof_dates: Set[datetime.date]) -> None:
+        for dt in asof_dates:
             for lot in self.lots.values():
                 lot.setdefault(dt, Decimal("0"))
 
@@ -1461,7 +1461,7 @@ class HoldingLotsDB:
             last_qty = None
             last_asof = None
             for asof, qty in sorted(quantities.items()):
-                if last_asof and (last_asof.date() < date < asof.date()):
+                if last_asof and (last_asof < date < asof):
                     # the given date falls in this interval
                     sold = last_qty - qty
                     if sold > quantity_sold:
@@ -1485,7 +1485,7 @@ class HoldingLotsDB:
         for (opened, cost), quantities in self.lots.items():
             current_lot: Optional[Tuple[datetime.date, Decimal, Decimal]] = None
             for asof, qty in sorted(quantities.items()):
-                if asof.date() > date:
+                if asof > date:
                     break
                 current_lot = (opened.date(), cost, qty)
             if current_lot is not None and current_lot[2] > Decimal("0"):
@@ -1803,7 +1803,7 @@ def _load_lots_csv(filename: str) -> Sequence[RawLot]:
         groups = match.groupdict()
         symbol = groups["symbol"]
         account = groups["account"]
-        asof = _convert_title_datetime(match.groupdict()["datetime"])
+        asof = _convert_title_datetime(match.groupdict()["datetime"]).date()
         empty = csvfile.readline()
         assert not empty.strip(), empty
         reader = csv.DictReader(csvfile)
