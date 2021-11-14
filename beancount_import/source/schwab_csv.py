@@ -177,6 +177,7 @@ class BrokerageAction(enum.Enum):
     NON_QUALIFIED_DIVIDEND = "Non-Qualified Div"
     REINVEST_DIVIDEND = "Reinvest Dividend"
     REINVEST_SHARES = "Reinvest Shares"
+    REVERSE_SPLIT = "Reverse Split"
     SECURITY_TRANSFER = "Security Transfer"
     SELL = "Sell"
     SELL_TO_CLOSE = "Sell to Close"
@@ -336,7 +337,7 @@ class RawBrokerageEntry(RawEntry):
                 interest_account=interest_account,
                 **shared_attrs,
             )
-        if self.action == BrokerageAction.STOCK_SPLIT:
+        if self.action in (BrokerageAction.REVERSE_SPLIT, BrokerageAction.STOCK_SPLIT):
             assert self.quantity is not None
             lot_splits = lots.split(schwab_account, self.symbol, self.date, self.quantity)
             return StockSplit(
@@ -1593,11 +1594,18 @@ def _load_banking_transactions(reader: csv.DictReader, account: str, filename):
     return entries
 
 
+@dataclass(frozen=True)
+class ReverseSplitFirstLine:
+    symbol: str
+    quantity: Decimal
+
+
 def _load_brokerage_transactions(reader: csv.DictReader, account: str,
                                  filename):
     entries = []
     found_total_line = False
     merger_spec = None
+    reverse_split = None
     for lno, row in enumerate(reader):
         # Final row in CSV is not a real transaction
         if row["Date"] == "Transactions Total":
@@ -1621,6 +1629,17 @@ def _load_brokerage_transactions(reader: csv.DictReader, account: str,
             # special logic: next CSV line is the second posting related to the merger
             merger_spec = MergerSpecification(symbol, quantity, description)
             continue
+        elif action == BrokerageAction.REVERSE_SPLIT and reverse_split is None:
+            # reverse splits occupy two lines in CSV
+            assert quantity is not None, quantity
+            reverse_split = ReverseSplitFirstLine(symbol=symbol, quantity=quantity)
+            continue
+        if reverse_split is not None:
+            assert action == BrokerageAction.REVERSE_SPLIT
+            assert quantity is not None, quantity
+            quantity += reverse_split.quantity
+            symbol = reverse_split.symbol
+            reverse_split = None
         entries.append(
             RawBrokerageEntry(
                 account=account,
