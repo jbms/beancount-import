@@ -1,6 +1,6 @@
 "HYLB Lot Details for XXXX-4321 as of 02:45 AM ET, 10/25/2020"
 
-"Open Date","Quantity","Price","Cost/Share","Market Value","Cost Basis","Gain/Loss $","Gain/Loss %","Holding Period",
-"08/31/2020 13:42:07","24","$1.00","$5.00","$24.00","$120.00","$0.00","+0.00%","Short Term",
-"08/30/2020 13:42:07","16","$1.00","$10.00","$16.00","$160.00","$0.00","+0.00%","Short Term",
-"Total","20","--","--","$40.00","$280.00","$0.00","+0.00%","--",
+"Open Date","Transaction Open","Quantity","Price","Cost/Share","Transaction CPS","Market Value","Cost Basis","Transaction CB","Gain/Loss $","Transaction G/L $","Gain/Loss %","Transaction G/L %","Holding Period","Disallowed Loss",
+"08/31/2020 00:00:00","--","24","$1.00","$5.00","$24.00","--","$120.00","$0.00","--","+0.00%","--","Short Term","--",
+"08/30/2020 13:42:07","--","16","$1.00","$10.00","$16.00","--","$160.00","$0.00","--","+0.00%","--","Short Term","--",
+"Total","--","20","--","--","--","$40.00","$280.00","--","$0.00","--","+0.00%","--","--","--",

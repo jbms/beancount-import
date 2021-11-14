@@ -445,7 +445,7 @@ class RawLot:
     symbol: str
     account: str
     asof: datetime.date
-    opened: datetime.datetime
+    opened: datetime.date
     quantity: Decimal
     price: Decimal
     cost: Decimal
@@ -1432,7 +1432,7 @@ class HoldingLotsDB:
         # that's good enough for our query needs anyway, since all we ever want to get out
         # is a cost.) So this dict maps (opened, cost) to a per-lot dict mapping as-of
         # date to quantity of shares in the lot at that point in time.
-        self.lots: Dict[Tuple[datetime.datetime, Decimal], Dict[datetime.date, Decimal]] = {}
+        self.lots: Dict[Tuple[datetime.date, Decimal], Dict[datetime.date, Decimal]] = {}
 
     def add(self, raw_lot: RawLot) -> None:
         assert raw_lot.account == self.account, raw_lot.account
@@ -1448,7 +1448,7 @@ class HoldingLotsDB:
     def get_cost(self, date: datetime.date) -> Optional[Decimal]:
         ret = None
         for opened, cost in sorted(self.lots.keys()):
-            if opened.date() > date:
+            if opened > date:
                 break
             ret = cost
         return ret
@@ -1487,7 +1487,7 @@ class HoldingLotsDB:
             for asof, qty in sorted(quantities.items()):
                 if asof > date:
                     break
-                current_lot = (opened.date(), cost, qty)
+                current_lot = (opened, cost, qty)
             if current_lot is not None and current_lot[2] > Decimal("0"):
                 existing_quantity += current_lot[2]
                 existing_lots.append(current_lot)
@@ -1793,6 +1793,24 @@ def _load_lots_csv(filename: str) -> Sequence[RawLot]:
         "Holding Period",
         "",
     ]
+    expected_extended_field_names = [
+        "Open Date",
+        "Transaction Open",
+        "Quantity",
+        "Price",
+        "Cost/Share",
+        "Transaction CPS",
+        "Market Value",
+        "Cost Basis",
+        "Transaction CB",
+        "Gain/Loss $",
+        "Transaction G/L $",
+        "Gain/Loss %",
+        "Transaction G/L %",
+        "Holding Period",
+        "Disallowed Loss",
+        "",
+    ]
     filename = os.path.abspath(filename)
     entries: List[RawLot] = []
     lines: List[str] = []
@@ -1807,7 +1825,9 @@ def _load_lots_csv(filename: str) -> Sequence[RawLot]:
         empty = csvfile.readline()
         assert not empty.strip(), empty
         reader = csv.DictReader(csvfile)
-        assert reader.fieldnames == expected_field_names, reader.fieldnames
+        assert (
+            reader.fieldnames == expected_field_names or
+            reader.fieldnames == expected_extended_field_names), reader.fieldnames
         for row in reader:
             if row["Open Date"] == "Total":
                 break
@@ -1816,7 +1836,7 @@ def _load_lots_csv(filename: str) -> Sequence[RawLot]:
                     account=account,
                     symbol=symbol,
                     asof=asof,
-                    opened=_convert_datetime(row["Open Date"]),
+                    opened=_convert_datetime(row["Open Date"]).date(),
                     quantity=none_throws(_convert_decimal(row["Quantity"])),
                     price=none_throws(_convert_decimal(row["Price"])),
                     cost=none_throws(_convert_decimal(row["Cost/Share"])),

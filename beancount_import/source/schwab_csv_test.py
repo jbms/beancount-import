@@ -53,7 +53,7 @@ def lot(
         symbol=symbol,
         account=account,
         asof=d(asof),
-        opened=dt(opened),
+        opened=d(opened),
         quantity=D(quantity),
         price=D(price),
         cost=D(cost),
