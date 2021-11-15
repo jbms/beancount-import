@@ -845,6 +845,17 @@
     schwab_action: "Stock Merger"
     source_desc: "SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
 
+;; date: 2021-05-25
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 25, "type": "text/csv"}
+
+; features: []
+2021-05-25 * "INCOME - DIV - ISHARES GOLD ETF"
+  Assets:Schwab:Intelligent-4321:Cash   18.02 USD
+    date: 2021-05-25
+    schwab_action: "Cash In Lieu"
+    source_desc: "ISHARES GOLD ETF"
+  Income:Dividend:Schwab:IAU           -18.02 USD
+
 ;; date: 2021-07-30
 ;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 5, "type": "text/csv"}
 

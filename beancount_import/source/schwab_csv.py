@@ -159,6 +159,7 @@ class BrokerageAction(enum.Enum):
     BUY_TO_CLOSE = "Buy to Close"
     BUY_TO_OPEN = "Buy to Open"
     CASH_DIVIDEND = "Cash Dividend"
+    CASH_IN_LIEU = "Cash In Lieu"
     EXPIRED = "Expired"
     FOREIGN_TAX_PAID = "Foreign Tax Paid"
     JOURNAL = "Journal"
@@ -176,6 +177,7 @@ class BrokerageAction(enum.Enum):
     NON_QUALIFIED_DIVIDEND = "Non-Qualified Div"
     REINVEST_DIVIDEND = "Reinvest Dividend"
     REINVEST_SHARES = "Reinvest Shares"
+    REVERSE_SPLIT = "Reverse Split"
     SECURITY_TRANSFER = "Security Transfer"
     SELL = "Sell"
     SELL_TO_CLOSE = "Sell to Close"
@@ -316,6 +318,7 @@ class RawBrokerageEntry(RawEntry):
             return StockPlanActivity(symbol=self.symbol, cost=cost, **shared_attrs)
         if self.action in (
             BrokerageAction.CASH_DIVIDEND,
+            BrokerageAction.CASH_IN_LIEU,
             BrokerageAction.PRIOR_YEAR_CASH_DIVIDEND,
             BrokerageAction.PRIOR_YEAR_SPECIAL_DIVIDEND,
             BrokerageAction.SPECIAL_DIVIDEND,
@@ -334,7 +337,7 @@ class RawBrokerageEntry(RawEntry):
                 interest_account=interest_account,
                 **shared_attrs,
             )
-        if self.action == BrokerageAction.STOCK_SPLIT:
+        if self.action in (BrokerageAction.REVERSE_SPLIT, BrokerageAction.STOCK_SPLIT):
             assert self.quantity is not None
             lot_splits = lots.split(schwab_account, self.symbol, self.date, self.quantity)
             return StockSplit(
@@ -444,8 +447,8 @@ class RawLot:
     """A single cost-basis lot of a single holding from Lot Details CSV."""
     symbol: str
     account: str
-    asof: datetime.datetime
-    opened: datetime.datetime
+    asof: datetime.date
+    opened: datetime.date
     quantity: Decimal
     price: Decimal
     cost: Decimal
@@ -1362,11 +1365,11 @@ class LotsDB:
     """
     def __init__(self) -> None:
         self.holdings: Dict[Tuple[str, str], HoldingLotsDB] = {}
-        self.asof_datetimes: Set[datetime.datetime] = set()
+        self.asof_dates: Set[datetime.date] = set()
 
     def load(self, raw_lots: Iterable[RawLot]) -> None:
         for raw_lot in raw_lots:
-            self.asof_datetimes.add(raw_lot.asof)
+            self.asof_dates.add(raw_lot.asof)
             db = self._get_db(raw_lot.account, raw_lot.symbol)
             db.add(raw_lot)
         self.zero_fill()
@@ -1374,7 +1377,7 @@ class LotsDB:
     def zero_fill(self):
         """Fill zero quantities for all holdings without a quantity on an asof date."""
         for db in self.holdings.values():
-            db.zero_fill(self.asof_datetimes)
+            db.zero_fill(self.asof_dates)
 
     def get_cost(
         self, account: str, symbol: str, date: datetime.date,
@@ -1431,8 +1434,8 @@ class HoldingLotsDB:
         # unique key to distinguish these by, so the best we can do is collapse them, and
         # that's good enough for our query needs anyway, since all we ever want to get out
         # is a cost.) So this dict maps (opened, cost) to a per-lot dict mapping as-of
-        # datetime to quantity of shares in the lot at that point in time.
-        self.lots: Dict[Tuple[datetime.datetime, Decimal], Dict[datetime.datetime, Decimal]] = {}
+        # date to quantity of shares in the lot at that point in time.
+        self.lots: Dict[Tuple[datetime.date, Decimal], Dict[datetime.date, Decimal]] = {}
 
     def add(self, raw_lot: RawLot) -> None:
         assert raw_lot.account == self.account, raw_lot.account
@@ -1440,15 +1443,15 @@ class HoldingLotsDB:
         lot = self.lots.setdefault((raw_lot.opened, raw_lot.cost), {})
         lot[raw_lot.asof] = lot.get(raw_lot.asof, 0) + raw_lot.quantity
 
-    def zero_fill(self, asof_datetimes: Set[datetime.datetime]) -> None:
-        for dt in asof_datetimes:
+    def zero_fill(self, asof_dates: Set[datetime.date]) -> None:
+        for dt in asof_dates:
             for lot in self.lots.values():
                 lot.setdefault(dt, Decimal("0"))
 
     def get_cost(self, date: datetime.date) -> Optional[Decimal]:
         ret = None
         for opened, cost in sorted(self.lots.keys()):
-            if opened.date() > date:
+            if opened > date:
                 break
             ret = cost
         return ret
@@ -1461,7 +1464,7 @@ class HoldingLotsDB:
             last_qty = None
             last_asof = None
             for asof, qty in sorted(quantities.items()):
-                if last_asof and (last_asof.date() < date < asof.date()):
+                if last_asof and (last_asof < date < asof):
                     # the given date falls in this interval
                     sold = last_qty - qty
                     if sold > quantity_sold:
@@ -1485,9 +1488,9 @@ class HoldingLotsDB:
         for (opened, cost), quantities in self.lots.items():
             current_lot: Optional[Tuple[datetime.date, Decimal, Decimal]] = None
             for asof, qty in sorted(quantities.items()):
-                if asof.date() > date:
+                if asof > date:
                     break
-                current_lot = (opened.date(), cost, qty)
+                current_lot = (opened, cost, qty)
             if current_lot is not None and current_lot[2] > Decimal("0"):
                 existing_quantity += current_lot[2]
                 existing_lots.append(current_lot)
@@ -1591,11 +1594,18 @@ def _load_banking_transactions(reader: csv.DictReader, account: str, filename):
     return entries
 
 
+@dataclass(frozen=True)
+class ReverseSplitFirstLine:
+    symbol: str
+    quantity: Decimal
+
+
 def _load_brokerage_transactions(reader: csv.DictReader, account: str,
                                  filename):
     entries = []
     found_total_line = False
     merger_spec = None
+    reverse_split = None
     for lno, row in enumerate(reader):
         # Final row in CSV is not a real transaction
         if row["Date"] == "Transactions Total":
@@ -1619,6 +1629,17 @@ def _load_brokerage_transactions(reader: csv.DictReader, account: str,
             # special logic: next CSV line is the second posting related to the merger
             merger_spec = MergerSpecification(symbol, quantity, description)
             continue
+        elif action == BrokerageAction.REVERSE_SPLIT and reverse_split is None:
+            # reverse splits occupy two lines in CSV
+            assert quantity is not None, quantity
+            reverse_split = ReverseSplitFirstLine(symbol=symbol, quantity=quantity)
+            continue
+        if reverse_split is not None:
+            assert action == BrokerageAction.REVERSE_SPLIT
+            assert quantity is not None, quantity
+            quantity += reverse_split.quantity
+            symbol = reverse_split.symbol
+            reverse_split = None
         entries.append(
             RawBrokerageEntry(
                 account=account,
@@ -1793,6 +1814,24 @@ def _load_lots_csv(filename: str) -> Sequence[RawLot]:
         "Holding Period",
         "",
     ]
+    expected_extended_field_names = [
+        "Open Date",
+        "Transaction Open",
+        "Quantity",
+        "Price",
+        "Cost/Share",
+        "Transaction CPS",
+        "Market Value",
+        "Cost Basis",
+        "Transaction CB",
+        "Gain/Loss $",
+        "Transaction G/L $",
+        "Gain/Loss %",
+        "Transaction G/L %",
+        "Holding Period",
+        "Disallowed Loss",
+        "",
+    ]
     filename = os.path.abspath(filename)
     entries: List[RawLot] = []
     lines: List[str] = []
@@ -1803,11 +1842,13 @@ def _load_lots_csv(filename: str) -> Sequence[RawLot]:
         groups = match.groupdict()
         symbol = groups["symbol"]
         account = groups["account"]
-        asof = _convert_title_datetime(match.groupdict()["datetime"])
+        asof = _convert_title_datetime(match.groupdict()["datetime"]).date()
         empty = csvfile.readline()
         assert not empty.strip(), empty
         reader = csv.DictReader(csvfile)
-        assert reader.fieldnames == expected_field_names, reader.fieldnames
+        assert (
+            reader.fieldnames == expected_field_names or
+            reader.fieldnames == expected_extended_field_names), reader.fieldnames
         for row in reader:
             if row["Open Date"] == "Total":
                 break
@@ -1816,7 +1857,7 @@ def _load_lots_csv(filename: str) -> Sequence[RawLot]:
                     account=account,
                     symbol=symbol,
                     asof=asof,
-                    opened=_convert_datetime(row["Open Date"]),
+                    opened=_convert_datetime(row["Open Date"]).date(),
                     quantity=none_throws(_convert_decimal(row["Quantity"])),
                     price=none_throws(_convert_decimal(row["Price"])),
                     cost=none_throws(_convert_decimal(row["Cost/Share"])),
