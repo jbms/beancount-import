@@ -99,6 +99,7 @@ from typing import List, Optional, Tuple, Dict, Set
 import datetime
 import os
 import collections
+import functools
 import re
 from beancount.core.number import D, ZERO
 from beancount.core.data import Open, Transaction, Posting, Amount, Entries, Directive, EMPTY_SET
@@ -132,19 +133,15 @@ class Config(object):
 
 
 def make_import_result(parse_result: ultipro_google_statement.ParseResult,
-                       accounts: Rules, config: Config,
+                       account_pattern_for_row_name, config: Config,
                        info: dict) -> ImportResult:
     """Generate journal entries based on a payroll statement.
 
     :param all_values: parsed payroll statement.
     :param errors: errors from parsing payroll statement.
-    :param accounts: maps section names to lists of rules specifying the account
-        corresponding to a line entry in the statement.  For the 'Earnings',
-        'Deductions', 'Taxes', and 'Net Pay Distribution' sections, the rules
-        are specified as (description_regex, account) pairs.  The
-        description_regex is matched against the textual description for the
-        line entry (it must match the entire string)..  All account names are
-        first transformed by calling format with the year parameter set to the
+    :param account_pattern_for_row_name: A function that takes (row_name,
+        section) and returns an account pattern. The pattern is later
+        transformed by calling format with the year parameter set to the
         appropriate year.
     :param config: specifies the configuration.
 
@@ -177,32 +174,52 @@ def make_import_result(parse_result: ultipro_google_statement.ParseResult,
     txn.meta[config.period_start_date_key] = start_date
     txn.meta[config.period_end_date_key] = end_date
 
-    for section in ['Earnings', 'Deductions', 'Taxes', 'Net Pay Distribution']:
-        if section == 'Net Pay Distribution':
-            field_name = 'Amount'
-        else:
-            field_name = 'Current'
-        cur_accounts = accounts[section]
+    def add_posting(section, row_name, value):
+        account_pattern = account_pattern_for_row_name(row_name, section)
+        txn.postings.append(
+            Posting(
+                account=account_pattern.format(year=year),
+                units=Amount(currency=currency, number=value),
+                cost=None,
+                meta={config.desc_key: '%s: %s' % (section, row_name)},
+                price=None,
+                flag=None,
+            ))
+
+    for section, field_names, sign in [
+            (
+                'Earnings',
+                [('Current', False)],
+                -1, # Earnings are recorded as negative amounts
+            ),
+            (
+                'Deductions',
+                [('Current', False),
+                 ('Current:Employer', True)],
+                1),
+            (
+                'Taxes',
+                [('Current', False)],
+                1,
+            ),
+            (
+                'Net Pay Distribution',
+                [('Amount', False)],
+                1,
+            ),
+            ]:
         for row_name, fields in all_values[section]:
-            value = fields[field_name]
-            if section == 'Earnings':
-                value = -value
-            if value == ZERO:
-                continue
-            account = FIXME_ACCOUNT
-            for row_re, account_pattern in cur_accounts:
-                if re.fullmatch(row_re, row_name) is not None:
-                    account = account_pattern.format(year=year)
-                    break
-            txn.postings.append(
-                Posting(
-                    account=account,
-                    units=Amount(currency=currency, number=value),
-                    cost=None,
-                    meta={config.desc_key: '%s: %s' % (section, row_name)},
-                    price=None,
-                    flag=None,
-                ))
+            for field_name, employer_match in field_names:
+                value = fields.get(field_name)
+                if value is None or value == ZERO:
+                    continue
+                value *= sign
+                if employer_match:
+                    row_name += ' Employer Match'
+                add_posting(section, row_name, value)
+                if employer_match:
+                    assert section == 'Deductions'
+                    add_posting('Earnings', row_name, -value)
 
     return ImportResult(date=txn.date, entries=[txn], info=info)
 
@@ -249,11 +266,11 @@ class UltiproSource(Config, Source):
 
     def _get_import_result(self,
                            parse_result: ultipro_google_statement.ParseResult,
-                           rules: Rules, path: str):
+                           account_pattern_for_row_name, path: str):
         return make_import_result(
             config=self,
             parse_result=parse_result,
-            accounts=rules,
+            account_pattern_for_row_name=account_pattern_for_row_name,
             info=dict(
                 type='application/pdf',
                 filename=path,
@@ -307,11 +324,34 @@ class UltiproSource(Config, Source):
         rules = self.rules.copy()
         rules.setdefault('Net Pay Distribution', []).extend(net_pay_rules)
 
+        # This cache exists only for the duration of the
+        # self._get_import_result calls that follow.
+        @functools.lru_cache(maxsize=None)
+        def account_pattern_for_row_name(row_name, section):
+            """Returns an account patern.
+
+            Uses `rules, which maps section names to lists of rules
+            specifying the account corresponding to a line entry in the
+            statement.  For the 'Earnings', 'Deductions', 'Taxes', and 'Net Pay
+            Distribution' sections, the rules are specified as
+            (description_regex, account) pairs.  The description_regex is
+            matched against the textual description for the line entry (it must
+            match the entire string).  All account patterns are transformed
+            by calling format with the year parameter set to the appropriate
+            year.
+            """
+            for row_re, account_pattern in rules[section]:
+                if re.fullmatch(row_re, row_name) is not None:
+                    return account_pattern
+            return FIXME_ACCOUNT
+
         parsed_statements.sort(key=lambda x: (x[0], x[1]))
         for pay_date, _, parse_result, filename in parsed_statements:
             results.add_pending_entry(
                 self._get_import_result(
-                    parse_result=parse_result, rules=rules, path=path))
+                    parse_result,
+                    account_pattern_for_row_name,
+                    path))
 
         for seen_key, entries in documents_seen_in_journal.items():
             num_expected = (1 if seen_key in documents_seen_in_directory else 0)
