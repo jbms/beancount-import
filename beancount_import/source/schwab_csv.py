@@ -198,6 +198,7 @@ class BankingEntryType(enum.Enum):
     ATM = "ATM"
     ATMREBATE = "ATMREBATE"
     CHECK = "CHECK"
+    DEPOSIT = "DEPOSIT"
     INTADJUST = "INTADJUST"
     TRANSFER = "TRANSFER"
     VISA = "VISA"

@@ -866,3 +866,24 @@
     schwab_action: "ATMREBATE"
     source_desc: "ATM Fee Rebate"
   Expenses:Bank-Fees:Schwab  -3.00 USD
+
+;; date: 2021-11-01
+;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 16, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "1234.56 USD",
+;               "date": "2021-11-01",
+;               "key_value_pairs": {
+;                 "desc": "Deposit Mobile Banking",
+;                 "schwab_action": "DEPOSIT"
+;               },
+;               "source_account": "Assets:Schwab:Checking"
+;             }
+;           ]
+2021-11-01 * "DEPOSIT - Deposit Mobile Banking"
+  Assets:Schwab:Checking   1234.56 USD
+    date: 2021-11-01
+    schwab_action: "DEPOSIT"
+    source_desc: "Deposit Mobile Banking"
+  Expenses:FIXME          -1234.56 USD
