@@ -41,6 +41,7 @@ expression like the following to specify the Amazon source:
              'Gift Card Amount': 'Assets:Gift-Cards:Amazon',
              'Rewards Points': 'Income:Amazon:Cashback',
          },
+         locale='EN'  # optional, defaults to 'EN'
     )
 
 The `amazon_account` key must be specified, and should be set to the email
@@ -53,6 +54,9 @@ The `posttax_adjustment_accounts` dictionary is optional.  Currently the only
 valid keys are `"Gift Card Amount"` and `"Rewards Points"`.  Even if you don't
 specify these keys in the configuration, the generic automatic account
 prediction will likely handle them.
+
+The `locale` sets country/language specific settings.
+Currently, `EN` and `DE` are available. 
 
 Specifying credit cards
 =======================
@@ -271,7 +275,7 @@ from beancount.core.flags import FLAG_OKAY
 from beancount.core.number import ZERO, ONE
 import beancount.core.amount
 
-from .amazon_invoice import parse_invoice, DigitalItem, Order
+from .amazon_invoice import AmazonInvoice, DigitalItem, Order
 
 from ..matching import FIXME_ACCOUNT, SimpleInventory
 from ..posting_date import POSTING_DATE_KEY, POSTING_TRANSACTION_DATE_KEY
@@ -539,6 +543,7 @@ class AmazonSource(Source):
                  posttax_adjustment_accounts: Dict[str, str] = {},
                  pickle_dir: str = None,
                  earliest_date: datetime.date = None,
+                 locale='EN',
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
@@ -551,6 +556,7 @@ class AmazonSource(Source):
         self.pickler = AmazonPickler(pickle_dir)
 
         self.earliest_date = earliest_date
+        self.amz_inv = AmazonInvoice(locale=locale)
 
         self.invoice_filenames = []  # type: List[Tuple[str, str]]
         for filename in os.listdir(self.directory):
@@ -570,7 +576,7 @@ class AmazonSource(Source):
         invoice = self.pickler.load(results, invoice_path) # type: Optional[Order]
         if invoice is None:
             self.log_status('amazon: processing %s: %s' % (order_id, invoice_path, ))
-            invoice = parse_invoice(invoice_path)
+            invoice = self.amz_inv.parse_invoice(invoice_path)
             self.pickler.dump( results, invoice_path, invoice )
 
         self._cached_invoices[invoice_filename] = invoice, invoice_path
