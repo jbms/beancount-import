@@ -3,9 +3,3 @@
 
 1900-01-01 open Assets:Checking  USD
   mint_id: "My Checking"
-
-1990-01-01 open Expenses:Airlines USD, EUR
-
-2021-01-01 * "Some Airlines" "Some existing transaction"
-  Expenses:Airlines         50.00 EUR @
-  Liabilities:Credit-Card  -56.53 USD
