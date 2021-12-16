@@ -92,6 +92,22 @@ def test_load_file_reduction(tmpdir):
     assert test_util.format_entries(
         editor.entries) == test_util.format_entries(expected_entries)
 
+def test_load_file_price_deduction(tmpdir):
+    """Tests that partial booking leaves the reduction alone."""
+    journal_path = create_journal(
+        tmpdir, """
+2021-01-01 * "Some Airlines" "Some existing transaction"
+  Expenses:Airlines         5000.00 JPY @
+  Liabilities:Credit-Card  -50.00 USD
+""")
+    editor = journal_editor.JournalEditor(journal_path)
+    expected_entries = test_util.parse("""
+        2021-01-01 * "Some Airlines" "Some existing transaction"
+          Expenses:Airlines         5000.00 JPY @
+          Liabilities:Credit-Card  -50.00 USD
+        """)
+    assert test_util.format_entries(
+        editor.entries) == test_util.format_entries(expected_entries)
 
 def test_load_file_buy(tmpdir):
     """Tests that partial booking handles a posting with a cost."""
