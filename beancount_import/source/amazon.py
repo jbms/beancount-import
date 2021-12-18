@@ -41,7 +41,7 @@ expression like the following to specify the Amazon source:
              'Gift Card Amount': 'Assets:Gift-Cards:Amazon',
              'Rewards Points': 'Income:Amazon:Cashback',
          },
-         locale='EN'  # optional, defaults to 'EN'
+         locale='en_EN'  # optional, defaults to 'en_EN'
     )
 
 The `amazon_account` key must be specified, and should be set to the email
@@ -56,7 +56,7 @@ specify these keys in the configuration, the generic automatic account
 prediction will likely handle them.
 
 The `locale` sets country/language specific settings.
-Currently, `EN` and `DE` are available. 
+Currently, `en_EN` and `de_DE` are available. 
 
 Specifying credit cards
 =======================
