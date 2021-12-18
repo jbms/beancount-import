@@ -168,21 +168,14 @@ class Locale_de_DE(Locale_Data):
             # most of translations still missing ...
             pretax_adjustment_fields_pattern=('(?:' + '|'.join([
                 'Verpackung & Versand',
-                'Free Shipping',
-                'Free delivery',
-                'Pantry delivery',
+                # 'Free Shipping', 'Free delivery', 'Pantry delivery',
                 'Gutschein eingelöst', # english version not removed yet
-                'Promotion(?:s| Applied)',
-                'Lightning Deal',
-                'Your Coupon Savings', 
-                '[0-9]+% off savings',
-                'Subscribe & Save',
-                '[0-9]+ Audible Credit Applied',
-                '.*[0-9]+% Off.*',
-                'Courtesy Credit',
-                'Extra Savings',
-                '(?:.*) Discount',
-                'Gift[ -]Wrap',
+                'Geschenkgutschein\(e\)',
+                # 'Promotion(?:s| Applied)', 'Lightning Deal',
+                # 'Your Coupon Savings', '[0-9]+% off savings',
+                # 'Subscribe & Save', '[0-9]+ Audible Credit Applied',
+                # '.*[0-9]+% Off.*', 'Courtesy Credit',
+                # 'Extra Savings', '(?:.*) Discount', 'Gift[ -]Wrap',
             ]) + ') *:'),
             posttax_adjustment_fields_pattern=r'Gift Card Amount:|Rewards Points:|Tip [(]optional[)]:|Recycle Fee \$X',
             
@@ -210,13 +203,11 @@ class Locale_de_DE(Locale_Data):
             shipment_sales_tax='Anzurechnende MwSt.:', # not sure (only old invoices)
             shipment_total='Gesamtsumme:',
             shipment_seller_profile=' (Mitgliedsprofil)',
-            shipment_sold_by=r'(?P<description>.*)\n\s*(?:Verkauf|Provided) durch:? (?P<sold_by>[^\n]+)',
-            # Translation missing: Provided by
+            shipment_sold_by=r'(?P<description>.*)\n\s*(?:Verkauf) durch:? (?P<sold_by>[^\n]+)',
             shipment_condition=r'\n.*\n\s*Zustand: (?P<condition>[^\n]+)',
             regular_total_order='Gesamtsumme:',
             regular_estimated_tax='Anzurechnende MwSt.:',
-            regular_order_placed=r'(?:Subscribe and Save )?Bestellung aufgegeben am:\s+(\d+\. [^\s]+ \d{4})',
-            # Translation missing: Subscribe and Save -> Sparabo??
+            regular_order_placed=r'(?:Getätigte Spar-Abo-Bestellung|Bestellung aufgegeben am):\s+(\d+\. [^\s]+ \d{4})',
             regular_order_id=r'.*Bestellung ([0-9\-]+)',
 
             # digital orders only
