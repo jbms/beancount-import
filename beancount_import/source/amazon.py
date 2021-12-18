@@ -268,6 +268,7 @@ from typing import Dict, List, Tuple, Optional
 import os
 import sys
 import pickle
+import logging
 
 from beancount.core.data import Transaction, Posting, Balance, Commodity, Price, EMPTY_SET, Directive
 from beancount.core.amount import Amount
@@ -275,7 +276,7 @@ from beancount.core.flags import FLAG_OKAY
 from beancount.core.number import ZERO, ONE
 import beancount.core.amount
 
-from .amazon_invoice import AmazonInvoice, DigitalItem, Order
+from .amazon_invoice import LOCALES, parse_invoice, DigitalItem, Order
 
 from ..matching import FIXME_ACCOUNT, SimpleInventory
 from ..posting_date import POSTING_DATE_KEY, POSTING_TRANSACTION_DATE_KEY
@@ -283,6 +284,8 @@ from . import ImportResult, Source, SourceResults, InvalidSourceReference, Assoc
 from ..journal_editor import JournalEditor
 
 import datetime
+
+logger = logging.getLogger('amazon')
 
 ITEM_DESCRIPTION_KEY = 'amazon_item_description'
 ITEM_URL_KEY = 'amazon_item_url'
@@ -543,7 +546,7 @@ class AmazonSource(Source):
                  posttax_adjustment_accounts: Dict[str, str] = {},
                  pickle_dir: str = None,
                  earliest_date: datetime.date = None,
-                 locale='EN',
+                 locale='en_EN',
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
@@ -556,7 +559,7 @@ class AmazonSource(Source):
         self.pickler = AmazonPickler(pickle_dir)
 
         self.earliest_date = earliest_date
-        self.amz_inv = AmazonInvoice(locale=locale)
+        self.locale = LOCALES[locale]()
 
         self.invoice_filenames = []  # type: List[Tuple[str, str]]
         for filename in os.listdir(self.directory):
@@ -576,7 +579,7 @@ class AmazonSource(Source):
         invoice = self.pickler.load(results, invoice_path) # type: Optional[Order]
         if invoice is None:
             self.log_status('amazon: processing %s: %s' % (order_id, invoice_path, ))
-            invoice = self.amz_inv.parse_invoice(invoice_path)
+            invoice = parse_invoice(invoice_path, locale=self.locale)
             self.pickler.dump( results, invoice_path, invoice )
 
         self._cached_invoices[invoice_filename] = invoice, invoice_path

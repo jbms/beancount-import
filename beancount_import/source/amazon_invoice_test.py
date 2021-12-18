@@ -19,8 +19,7 @@ testdata_dir = os.path.abspath(
 ])
 def test_parsing(name: str):
     source_path = os.path.join(testdata_dir, name + '.html')
-    amz_inv = amazon_invoice.AmazonInvoice()
-    invoice = amz_inv.parse_invoice(source_path)
+    invoice = amazon_invoice.parse_invoice(source_path)
     json_path = os.path.join(testdata_dir, name + '.json')
     expected = json.load(
         open(json_path, 'r'), object_pairs_hook=collections.OrderedDict)
