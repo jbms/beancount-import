@@ -1,0 +1,57 @@
+{
+    "order_id": "256-0244967-2403944",
+    "order_date": "2021-09-27",
+    "shipments": [
+        {
+            "shipped_date": "2021-09-28",
+            "items": [
+                {
+                    "quantity": "1",
+                    "description": "FC Bayern M\u00fcnchen Cuddly fleece blanket 150 x 200 cm",
+                    "sold_by": "Offizieller FC Bayern Store",
+                    "condition": "Neu",
+                    "price": {
+                        "number": "23.96",
+                        "currency": "EUR"
+                    }
+                }
+            ],
+            "items_subtotal": null,
+            "pretax_adjustments": [],
+            "total_before_tax": {
+                "number": "23.96",
+                "currency": "EUR"
+            },
+            "posttax_adjustments": [],
+            "tax": [],
+            "total": {
+                "number": "23.96",
+                "currency": "EUR"
+            },
+            "errors": []
+        }
+    ],
+    "credit_card_transactions": [
+        {
+            "date": "2021-09-28",
+            "card_description": "Visa",
+            "card_ending_in": "1234",
+            "amount": {
+                "number": "23.96",
+                "currency": "EUR"
+            }
+        }
+    ],
+    "pretax_adjustments": [
+        {
+            "description": "Verpackung & Versand",
+            "amount": {
+                "number": "0.00",
+                "currency": "EUR"
+            }
+        }
+    ],
+    "tax": null,
+    "posttax_adjustments": [],
+    "errors": []
+}

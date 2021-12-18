@@ -1,0 +1,71 @@
+{
+    "order_id": "393-2608279-9292916",
+    "order_date": "2018-05-15",
+    "shipments": [
+        {
+            "shipped_date": "2018-06-08",
+            "items": [
+                {
+                    "quantity": "1",
+                    "description": "Lavazza Caff\u00e8 Decaffeinato, 2er Pack (2 x 500 g Packung)",
+                    "sold_by": "Amazon EU S.a.r.L.",
+                    "condition": "Neu",
+                    "price": {
+                        "number": "16.98",
+                        "currency": "EUR"
+                    }
+                }
+            ],
+            "items_subtotal": null,
+            "pretax_adjustments": [],
+            "total_before_tax": {
+                "number": "16.98",
+                "currency": "EUR"
+            },
+            "posttax_adjustments": [],
+            "tax": [],
+            "total": {
+                "number": "16.98",
+                "currency": "EUR"
+            },
+            "errors": []
+        }
+    ],
+    "credit_card_transactions": [
+        {
+            "date": "2018-05-15",
+            "card_description": "Visa / Electron",
+            "card_ending_in": "1234",
+            "amount": {
+                "number": "0.00",
+                "currency": "EUR"
+            }
+        }
+    ],
+    "pretax_adjustments": [
+        {
+            "description": "Verpackung & Versand",
+            "amount": {
+                "number": "0.00",
+                "currency": "EUR"
+            }
+        },
+        {
+            "description": "Gutschein eingel\u00f6st",
+            "amount": {
+                "number": "-0.85",
+                "currency": "EUR"
+            }
+        },
+        {
+            "description": "Geschenkgutschein(e)",
+            "amount": {
+                "number": "-16.13",
+                "currency": "EUR"
+            }
+        }
+    ],
+    "tax": null,
+    "posttax_adjustments": [],
+    "errors": []
+}
