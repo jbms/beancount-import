@@ -603,7 +603,6 @@ def parse_shipment_payments(
     output_fields = dict()
     output_fields['pretax_adjustments'] = get_adjustments_in_table(
         shipment_table, locale.pretax_adjustment_fields_pattern, locale=locale)
-    print(output_fields['pretax_adjustments'])
     output_fields['posttax_adjustments'] = get_adjustments_in_table(
         shipment_table, locale.posttax_adjustment_fields_pattern, locale=locale)
     pretax_parts = [items_subtotal or expected_items_subtotal] + [
