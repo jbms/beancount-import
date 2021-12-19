@@ -56,6 +56,8 @@ class Locale_Data():
     regular_order_placed: str
     regular_order_id: str
     gift_card: str
+    gift_card_to: str
+    gift_card_amazon_account: str
 
     # digital orders only
     digital_order: str
@@ -132,6 +134,8 @@ class Locale_en_EN(Locale_Data):
             regular_order_placed=r'(?:Subscribe and Save )?Order Placed:\s+([^\s]+ \d+, \d{4})',
             regular_order_id=r'.*Order ([0-9\-]+)',
             gift_card='Gift Cards', # not confirmed yet!
+            gift_card_to=r'^(?P<type>Gift Card)[\w\s-]*:\s*(?P<sent_to>[\w@._-]*)$', # guess, not confirmed yet!
+            gift_card_amazon_account=r'^[\w\s-]*(?P<type>Amazon-Account)[\w\s-]*(?P<sent_to>charged up)[\w\s-]*$', # guess, not confirmed yet!
 
             # digital orders only
             digital_order='Digital Order: (.*)',
@@ -162,7 +166,7 @@ class Locale_de_DE(Locale_Data):
             tax_included_in_price=True,  # no separate tax transactions
 
             # common fields regular and digital orders
-            items_ordered='Bestellte Artikel|Erhalten|Versendet', # Erhalten|Versendet for gift cards
+            items_ordered='Bestellte Artikel|Erhalten|Versendet|Amazon-Konto erfolgreich aufgeladen', # Erhalten|Versendet for gift cards
             price='Preis|Betrag',
             currency='EUR',
             items_subtotal='Zwischensumme:',
@@ -211,6 +215,8 @@ class Locale_de_DE(Locale_Data):
             regular_order_placed=r'(?:Getätigte Spar-Abo-Bestellung|Bestellung aufgegeben am):\s+(\d+\. [^\s]+ \d{4})',
             regular_order_id=r'.*Bestellung ([0-9\-]+)',
             gift_card='Geschenkgutscheine',
+            gift_card_to=r'^(?P<type>Geschenkgutschein)[\w\s-]*:\s*(?P<sent_to>[\w@._-]*)$',
+            gift_card_amazon_account=r'^[\w\s-]*(?P<type>Amazon-Konto)[\w\s-]*(?P<sent_to>aufgeladen)[\w\s-]*$',
 
             # digital orders only
             digital_order_cancelled='Order Canceled',
@@ -549,8 +555,12 @@ def parse_gift_cards(soup, locale=Locale_en_EN()) -> List[Shipment]:
             else:
                 price = locale.parse_amount(price)
 
-            m = re.search(r'^(?P<type>Geschenkgutschein)[\w\s-]*:\s*(?P<sent_to>[\w@._-]*)$', description_node.text.strip(), re.MULTILINE|re.UNICODE)
-
+            m = re.search(locale.gift_card_to, description_node.text.strip(), re.MULTILINE|re.UNICODE)
+            print(m)
+            if m is None:
+                # check if Amazon account has been charged up
+                m = re.search(locale.gift_card_amazon_account, description_node.text.strip(), re.MULTILINE|re.UNICODE)
+                print(m)
             description = m.group('type').strip() + ' ' + m.group('sent_to').strip()
 
             items.append(
