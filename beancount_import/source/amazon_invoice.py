@@ -913,8 +913,6 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_EN()) -> Optional[Or
         locale.pretax_adjustment_fields_pattern)
     pretax_parts = ([items_subtotal] +
                     [a.amount for a in output_fields['pretax_adjustments']])
-    logger.debug(pretax_parts)
-    logger.debug(total_before_tax)
     expected_total_before_tax = reduce_amounts(pretax_parts)
     if expected_total_before_tax != total_before_tax:
         errors.append('expected total before tax is %s, but parsed value is %s'
@@ -926,8 +924,7 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_EN()) -> Optional[Or
     posttax_parts = ([total_before_tax] + [a.amount for a in tax] +
                      [a.amount for a in output_fields['posttax_adjustments']])
     expected_total = reduce_amounts(posttax_parts)
-    
-    logger.debug(total_for_this_order)
+
     if expected_total != total_for_this_order:
         errors.append('expected total is %s, but parsed value is %s' %
                       (expected_total, total_for_this_order))
