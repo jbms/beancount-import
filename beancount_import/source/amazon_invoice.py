@@ -703,7 +703,7 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_EN()) -> Order:
     if locale.tax_included_in_price:
         # tax is already inlcuded in item prices
         # do not add additional transaction for taxes
-        tax = None
+        tax = []
 
     logger.debug('consistency check grand total...')
     payments_total_adjustment = reduce_amounts(payments_total_adjustments)
@@ -971,7 +971,7 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_EN()) -> Optional[Or
         credit_card_transactions=credit_card_transactions,
         pretax_adjustments=[],
         posttax_adjustments=output_fields['posttax_adjustments'],
-        tax=None,
+        tax=[],
         errors=[])
 
 

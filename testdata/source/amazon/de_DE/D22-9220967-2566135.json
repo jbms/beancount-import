@@ -29,7 +29,7 @@
     ],
     "credit_card_transactions": [],
     "pretax_adjustments": [],
-    "tax": null,
+    "tax": [],
     "posttax_adjustments": [],
     "errors": []
 }
