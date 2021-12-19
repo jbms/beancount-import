@@ -1,0 +1,57 @@
+{
+  "order_id": "399-5779972-5007935",
+  "order_date": "2021-11-21",
+  "shipments": [
+      {
+          "shipped_date": "2021-11-22",
+          "items": [
+              {
+                  "quantity": "1",
+                  "description": "tiptoi\u00ae Mein gro\u00dfes Wimmelbuch, Friese, Inka",
+                  "sold_by": "Amazon EU S.a.r.L.",
+                  "condition": "Neu",
+                  "price": {
+                      "number": "16.99",
+                      "currency": "EUR"
+                  }
+              }
+          ],
+          "items_subtotal": null,
+          "pretax_adjustments": [],
+          "total_before_tax": {
+              "number": "16.99",
+              "currency": "EUR"
+          },
+          "posttax_adjustments": [],
+          "tax": [],
+          "total": {
+              "number": "16.99",
+              "currency": "EUR"
+          },
+          "errors": []
+      }
+  ],
+  "credit_card_transactions": [
+      {
+          "date": "2021-11-21",
+          "card_description": "Bankeinzug",
+          "card_ending_in": "600",
+          "amount": {
+              "number": "16.99",
+              "currency": "EUR"
+          }
+      }
+  ],
+  "pretax_adjustments": [
+      {
+          "description": "Verpackung & Versand",
+          "amount": {
+              "number": "0.00",
+              "currency": "EUR"
+          }
+      }
+  ],
+  "tax": [],
+  "posttax_adjustments": [],
+  "errors": []
+}

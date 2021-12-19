@@ -32,12 +32,13 @@ def test_parsing_en_EN(name: str):
 
 
 @pytest.mark.parametrize('name', [
-    '256-0244967-2403944',
-    '393-2608279-9292916',
-    '898-5185906-0096901',
-    '974-6135682-9358749',
-    'D22-9220967-2566135',
-    'D60-9825125-4795642'
+    '256-0244967-2403944', # regular order
+    '393-2608279-9292916', # Spar-Abo, payed with gift card 
+    '898-5185906-0096901', # Spar-Abo
+    '974-6135682-9358749', # several credit card transactions
+    'D22-9220967-2566135', # digital order, audible subscription
+    'D60-9825125-4795642', # digital order
+    '399-5779972-5007935', # Direct Debit (Bankeinzug)
 ])
 def test_parsing_de_DE(name: str):
     testdata_dir_locale = os.path.join(testdata_dir, 'de_DE')
