@@ -55,6 +55,7 @@ class Locale_Data():
     regular_estimated_tax: str
     regular_order_placed: str
     regular_order_id: str
+    gift_card: str
 
     # digital orders only
     digital_order: str
@@ -130,6 +131,7 @@ class Locale_en_EN(Locale_Data):
             regular_estimated_tax = 'Estimated tax to be collected:',
             regular_order_placed=r'(?:Subscribe and Save )?Order Placed:\s+([^\s]+ \d+, \d{4})',
             regular_order_id=r'.*Order ([0-9\-]+)',
+            gift_card='Gift Cards', # not confirmed yet!
 
             # digital orders only
             digital_order='Digital Order: (.*)',
@@ -160,8 +162,8 @@ class Locale_de_DE(Locale_Data):
             tax_included_in_price=True,  # no separate tax transactions
 
             # common fields regular and digital orders
-            items_ordered='Bestellte Artikel',
-            price='Preis',
+            items_ordered='Bestellte Artikel|Erhalten',
+            price='Preis|Betrag',
             currency='EUR',
             items_subtotal='Zwischensumme:',
             total_before_tax='Summe ohne MwSt.:',
@@ -208,6 +210,7 @@ class Locale_de_DE(Locale_Data):
             regular_estimated_tax='Anzurechnende MwSt.:',
             regular_order_placed=r'(?:Getätigte Spar-Abo-Bestellung|Bestellung aufgegeben am):\s+(\d+\. [^\s]+ \d{4})',
             regular_order_id=r'.*Bestellung ([0-9\-]+)',
+            gift_card='Geschenkgutscheine',
 
             # digital orders only
             digital_order_cancelled='Order Canceled',
@@ -382,6 +385,11 @@ def parse_shipments(soup, locale=Locale_en_EN()) -> List[Shipment]:
 
     header_tables = soup.find_all(is_shipment_header_table)
 
+    if header_tables is []:
+        # e.g. if only gift cards in order
+        logger.debug('no shipment table found')
+        return []
+
     shipments = []  # type: List[Shipment]
     errors = []  # type: Errors
 
@@ -406,8 +414,9 @@ def parse_shipments(soup, locale=Locale_en_EN()) -> List[Shipment]:
             tds = node('td')
             if len(tds) < 2:
                 return False
-            return (tds[0].text.strip() == locale.items_ordered and
-                    tds[1].text.strip() == locale.price)
+            m1 = re.match(locale.items_ordered, tds[0].text.strip())
+            m2 = re.match(locale.price, tds[1].text.strip())
+            return(m1 is not None and m2 is not None)
 
         items_ordered_header = shipment_table.find(is_items_ordered_header)
 
@@ -470,63 +479,160 @@ def parse_shipments(soup, locale=Locale_en_EN()) -> List[Shipment]:
                     price=price,
                 ))
         
-        logger.debug('parsing shipment amounts...')
-        items_subtotal = locale.parse_amount(
-            get_field_in_table(shipment_table, locale.items_subtotal))
-
-        expected_items_subtotal = reduce_amounts(
-            beancount.core.amount.mul(x.price, D(x.quantity)) for x in items)
-        if (items_subtotal is not None and
-            expected_items_subtotal != items_subtotal):
-            errors.append(
-                'expected items subtotal is %r, but parsed value is %r' %
-                (expected_items_subtotal, items_subtotal))
-
-        output_fields = dict()
-        output_fields['pretax_adjustments'] = get_adjustments_in_table(
-            shipment_table, locale.pretax_adjustment_fields_pattern, locale=locale)
-        output_fields['posttax_adjustments'] = get_adjustments_in_table(
-            shipment_table, locale.posttax_adjustment_fields_pattern, locale=locale)
-        pretax_parts = [items_subtotal or expected_items_subtotal] + [
-            a.amount for a in output_fields['pretax_adjustments']
-        ]
-        total_before_tax = locale.parse_amount(
-            get_field_in_table(shipment_table, locale.total_before_tax))
-        expected_total_before_tax = reduce_amounts(pretax_parts)
-        if total_before_tax is None:
-            total_before_tax = expected_total_before_tax
-        elif expected_total_before_tax != total_before_tax:
-            errors.append(
-                'expected total before tax is %s, but parsed value is %s' %
-                (expected_total_before_tax, total_before_tax))
-
-        sales_tax = get_adjustments_in_table(shipment_table, locale.shipment_sales_tax, locale=locale)
-
-        posttax_parts = (
-            [total_before_tax] + [a.amount for a in sales_tax] +
-            [a.amount for a in output_fields['posttax_adjustments']])
-        total = locale.parse_amount(
-            get_field_in_table(shipment_table, locale.shipment_total))
-        expected_total = reduce_amounts(posttax_parts)
-        if total is None:
-            total = expected_total
-        elif expected_total != total:
-            errors.append('expected total is %s, but parsed value is %s' %
-                          (expected_total, total))
-
-        logger.debug('...finshed parsing shipment')
-        shipments.append(
-            Shipment(
-                shipped_date=shipped_date,
-                items=items,
-                items_subtotal=items_subtotal,
-                total_before_tax=total_before_tax,
-                tax=sales_tax,
-                total=total,
-                errors=errors,
-                **output_fields))
+        shipments.append(parse_shipment_payments(
+            shipment_table,
+            items,
+            errors,
+            shipped_date=shipped_date,
+            locale=locale
+        ))
 
     return shipments
+
+def parse_gift_cards(soup, locale=Locale_en_EN()) -> List[Shipment]:
+    """
+    Parses Gift Card Table Part of HTML document (1st Table)
+    """
+    def is_gift_card_header_table(node):
+        if node.name != 'table':
+            return False
+        text = node.text.strip()
+        m = re.match(locale.gift_card, text)
+        if m is not None:
+            # check if a matching subtable exists
+            sub_table = node.find_all(is_gift_card_header_table)
+            if sub_table == []:
+                # only match if it is the innermost table
+                return True
+        return False
+
+    header_tables = soup.find_all(is_gift_card_header_table)
+
+    if header_tables is []:
+        # if no gift cards in order
+        logger.debug('no shipment table found')
+        return []
+
+    shipments = []  # type: List[Shipment]
+    errors = []  # type: Errors
+
+    for header_table in header_tables:
+
+        items = []
+
+        shipment_table = header_table.find_parent('table')
+
+        logger.debug('parsing gift card items...')
+        def is_items_ordered_header(node):
+            if node.name != 'tr':
+                return False
+            tds = node('td')
+            if len(tds) < 2:
+                return False
+            m1 = re.match(locale.items_ordered, tds[0].text.strip())
+            m2 = re.match(locale.price, tds[1].text.strip())
+            return(m1 is not None and m2 is not None)
+
+        items_ordered_header = shipment_table.find(is_items_ordered_header)
+
+        item_rows = [items_ordered_header]
+
+        for item_row in item_rows:
+            tds = item_row('td')
+            description_node = tds[0]
+            price_node = tds[1]
+            price = price_node.text.strip()
+            price = price.split('\n')[1]
+
+            if price is None:
+                price = Amount(D(0), locale.currency)
+            else:
+                price = locale.parse_amount(price)
+
+            m = re.search(r'^(?P<type>Geschenkgutschein)[\w\s-]*:\s*(?P<sent_to>[\w@._-]*)$', description_node.text.strip(), re.MULTILINE|re.UNICODE)
+
+            description = m.group('type').strip() + ' ' + m.group('sent_to').strip()
+
+            items.append(
+                Item(
+                    quantity=D(1),
+                    description=description,
+                    sold_by=None,
+                    condition=None,
+                    price=price,
+                ))
+
+        shipments.append(parse_shipment_payments(
+            shipment_table,
+            items,
+            errors,
+            shipped_date=None,
+            locale=locale
+        ))
+
+    return shipments
+
+
+def parse_shipment_payments(
+    shipment_table, items, errors,
+    shipped_date=None, locale=Locale_en_EN()):
+    """ Parse payment information of single shipments and gift card orders.
+    """
+    logger.debug('parsing shipment amounts...')
+    items_subtotal = locale.parse_amount(
+        get_field_in_table(shipment_table, locale.items_subtotal))
+
+    expected_items_subtotal = reduce_amounts(
+        beancount.core.amount.mul(x.price, D(x.quantity)) for x in items)
+    if (items_subtotal is not None and
+        expected_items_subtotal != items_subtotal):
+        errors.append(
+            'expected items subtotal is %r, but parsed value is %r' %
+            (expected_items_subtotal, items_subtotal))
+
+    output_fields = dict()
+    output_fields['pretax_adjustments'] = get_adjustments_in_table(
+        shipment_table, locale.pretax_adjustment_fields_pattern, locale=locale)
+    print(output_fields['pretax_adjustments'])
+    output_fields['posttax_adjustments'] = get_adjustments_in_table(
+        shipment_table, locale.posttax_adjustment_fields_pattern, locale=locale)
+    pretax_parts = [items_subtotal or expected_items_subtotal] + [
+        a.amount for a in output_fields['pretax_adjustments']
+    ]
+    total_before_tax = locale.parse_amount(
+        get_field_in_table(shipment_table, locale.total_before_tax))
+    expected_total_before_tax = reduce_amounts(pretax_parts)
+    if total_before_tax is None:
+        total_before_tax = expected_total_before_tax
+    elif expected_total_before_tax != total_before_tax:
+        errors.append(
+            'expected total before tax is %s, but parsed value is %s' %
+            (expected_total_before_tax, total_before_tax))
+
+    sales_tax = get_adjustments_in_table(shipment_table, locale.shipment_sales_tax, locale=locale)
+
+    posttax_parts = (
+        [total_before_tax] + [a.amount for a in sales_tax] +
+        [a.amount for a in output_fields['posttax_adjustments']])
+    total = locale.parse_amount(
+        get_field_in_table(shipment_table, locale.shipment_total))
+    expected_total = reduce_amounts(posttax_parts)
+    if total is None:
+        total = expected_total
+    elif expected_total != total:
+        errors.append('expected total is %s, but parsed value is %s' %
+                        (expected_total, total))
+
+    logger.debug('...finshed parsing shipment')
+    return Shipment(
+            shipped_date=shipped_date,
+            items=items,
+            items_subtotal=items_subtotal,
+            total_before_tax=total_before_tax,
+            tax=sales_tax,
+            total=total,
+            errors=errors,
+            **output_fields)
 
 
 def parse_credit_card_transactions_from_payments_table(
@@ -610,7 +716,7 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_EN()) -> Order:
     with open(path, 'rb') as f:
         soup = bs4.BeautifulSoup(f.read(), 'lxml')
     logger.debug('parsing shipments...')
-    shipments = parse_shipments(soup, locale=locale)
+    shipments = parse_shipments(soup, locale=locale) + parse_gift_cards(soup, locale=locale)
     logger.debug('finished parsing shipments')
     logger.debug('parsing payment table...')
     payment_table_header = soup.find(
@@ -816,8 +922,9 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_EN()) -> Optional[Or
         tds = node('td')
         if len(tds) < 2:
             return False
-        return (tds[0].text.strip() == locale.items_ordered and
-                tds[1].text.strip() == locale.price)
+        m1 = re.match(locale.items_ordered, tds[0].text.strip())
+        m2 = re.match(locale.price, tds[1].text.strip())
+        return(m1 is not None and m2 is not None)
 
     items_ordered_header = digital_order_table.find(is_items_ordered_header)
 
