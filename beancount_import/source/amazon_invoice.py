@@ -162,7 +162,7 @@ class Locale_de_DE(Locale_Data):
             tax_included_in_price=True,  # no separate tax transactions
 
             # common fields regular and digital orders
-            items_ordered='Bestellte Artikel|Erhalten',
+            items_ordered='Bestellte Artikel|Erhalten|Versendet', # Erhalten|Versendet for gift cards
             price='Preis|Betrag',
             currency='EUR',
             items_subtotal='Zwischensumme:',

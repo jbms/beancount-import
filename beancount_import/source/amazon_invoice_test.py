@@ -38,6 +38,8 @@ def test_parsing_en_EN(name: str):
     '974-6135682-9358749',
     'D22-9220967-2566135',
     'D60-9825125-4795642'
+    '071-4816388-0694813', # gift card amazon
+    '075-2225405-7594823', # gift card spotify
 ])
 def test_parsing_de_DE(name: str):
     testdata_dir_locale = os.path.join(testdata_dir, 'de_DE')
