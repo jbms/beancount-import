@@ -49,7 +49,10 @@
                 "number": "0.00",
                 "currency": "EUR"
             }
-        },
+        }
+    ],
+    "tax": [],
+    "posttax_adjustments": [
         {
             "description": "Gutschein eingel\u00f6st",
             "amount": {
@@ -58,7 +61,5 @@
             }
         }
     ],
-    "tax": [],
-    "posttax_adjustments": [],
     "errors": []
 }

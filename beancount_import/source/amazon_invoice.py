@@ -169,15 +169,14 @@ class Locale_de_DE(Locale_Data):
             pretax_adjustment_fields_pattern=('(?:' + '|'.join([
                 'Verpackung & Versand',
                 # 'Free Shipping', 'Free delivery', 'Pantry delivery',
-                'Gutschein eingelöst', # english version not removed yet
-                'Geschenkgutschein\(e\)',
                 # 'Promotion(?:s| Applied)', 'Lightning Deal',
                 # 'Your Coupon Savings', '[0-9]+% off savings',
                 # 'Subscribe & Save', '[0-9]+ Audible Credit Applied',
                 # '.*[0-9]+% Off.*', 'Courtesy Credit',
                 # 'Extra Savings', '(?:.*) Discount', 'Gift[ -]Wrap',
             ]) + ') *:'),
-            posttax_adjustment_fields_pattern=r'Gift Card Amount:|Rewards Points:|Tip [(]optional[)]:|Recycle Fee \$X',
+            # most adjustments in DE are posttax:
+            posttax_adjustment_fields_pattern='Gutschein eingelöst:|Geschenkgutschein\(e\):',
             
             # Payment Table & Credit Card Transactions
             grand_total=r'\n\s*(?:Gesamtsumme|Endsumme):\s+(.*)\n', # regular: Gesamtsumme, digital: Endsumme
@@ -185,7 +184,7 @@ class Locale_de_DE(Locale_Data):
             credit_card_last_digits=r'^([^:]+) mit den Endziffern ([0-9]+):\s+([^:]+):$',
             payment_type=[
                 # only first matching regex is used!
-                r'\n\s*([^\s|][^|\n]*[^|\s])\s+\|\s+Die letzten (?:4 )?Ziffern:\s+([0-9]{3,4})\n', # 3 digits for Bankeinzug
+                r'\n\s*([^\s|][^|\n]*[^|\s])\s+\|\s+Die letzten (?:4 )?Ziffern:\s*([0-9]{3,4})', # 3 digits for Bankeinzug
                 r'\n\s*(.+)\s+mit den Endziffern\s+([0-9]{4})\n'
                 ],
             payment_information='^Zahlungsdaten$',
