@@ -1,53 +1,41 @@
 """Schwab.com brokerage transaction source.
-
 Imports transactions from Schwab.com brokerage/banking history CSV files.
-
 To use, first you have to download Schwab CSV data into a directory on your filesystem. If
 you have a structure like this:
-
     financial/
       data/
         schwab/
           transactions/
           positions/
-
 And you download your transaction history CSV into `transactions/` and your positions
 statement CSV into `positions/`, then you could specify your beancount-import source like
 this:
-
     dict(module="beancount_import.source.schwab_csv",
          transaction_csv_filenames=glob.glob("data/schwab/transactions/*.csv"),
          position_csv_filenames=glob.glob("data/schwab/positions/*.csv"),
     )
-
 The importer can also optionally make use of Schwab's lot details CSV downloads in order
 to correctly fill in cost-basis on stock sales, even for sales of stock from multiple
 lots. For this to work reliably, you should ensure that you download the lot details
 regularly (ideally at least once between each transaction involving a given commodity).
 Downloading lot details CSV by hand could be quite tedious; the
 [finance-dl](https://github.com/jbms/finance-dl) package is recommended.
-
 To use lot details, add a `lots_csv_filenames` key to your beancount-import source.
 Finance-dl will place lot details under `positions/lots/` with one directory per date
 downloaded and one file per commodity. So your source spec might look like this:
-
     dict(module="beancount_import.source.schwab_csv",
          transaction_csv_filenames=glob.glob("data/schwab/transactions/*.csv"),
          position_csv_filenames=glob.glob("data/schwab/positions/*.csv"),
          lots_csv_filenames=glob.glob("data/schwab/positions/lots/*/*.csv"),
     )
-
 This importer also makes use of certain metadata keys on your accounts. In order to label
 a beancount account as a Schwab account whose authoritative transaction source is this
 importer, specify the `schwab_account` metadata key as the account ID exactly as it
 appears in your Schwab CSV downloads. For example:
-
     2015-11-09 open Assets:Investments:Schwab:Brokerage-1234
          schwab_account: "XXXX-1234"
-
 You can also optionally specify accounts to be used for recording dividends, capital
 gains, interest, fees, and taxes:
-
     2015-11-09 open Assets:Investments:Schwab:Brokerage-1234
          schwab_account: "XXXX-1234"
          div_income_account: "Income:Dividend:Schwab"
@@ -55,42 +43,33 @@ gains, interest, fees, and taxes:
          capital_gains_account: "Income:Capital-Gains:Schwab"
          fees_account: "Expenses:Brokerage-Fees:Schwab"
          taxes_account: "Expenses:Taxes"
-
 These are all optional and will fall back to `Expenses:FIXME` if not specified.
-
 This importer will add the metadata keys `date`, `source_desc`, and `schwab_action` to the
 imported transactions; these (along with the account and transaction amount) are used to
 match and reconcile/clear already-imported transactions with transactions found in the
 CSV.
-
 Sub-accounts of the asset, dividend, and capital gains accounts will be created per
 security as needed; e.g. `Assets:Investments:Schwab:Brokerage-1234:XYZ` would be created
 to track the balance of `XYZ` shares owned, and `Income:Dividend:Schwab:XYZ` for dividends
 earned from `XYZ`, etc.
-
 Caveats
 =======
-
 * Because Schwab CSV downloads do not provide any unique transaction identifier, and it is
 possible for two identical rows to exist in the CSV and be actual separate but identical
 transactions, no de-duplication is performed on incoming CSV rows. Thus, it's required to
 download non-overlapping CSV statements.
-
 * Not all Schwab "actions" (transaction types) are supported. There's no reference for all
 the possible actions, and Schwab could add new ones any time. If your CSV includes an
 unsupported action, you'll get a `ValueError: 'Foo' is not a valid BrokerageAction` or
 `ValueError: 'Foo' is not a valid BankingEntryType` for banking files. Please
 file an issue (and ideally a pull request!) to add support for that action.
-
 * If you have multiple transactions involving a commodity between two downloads of lot
 details (particularly two different sales), the importer may not be able to infer the lots
 involved in each sale. In this case it will fall back to empty cost-basis on the sale and
 you may have to fill it in manually in order to avoid ambiguity errors from beancount.
-
 * The lot details logic assumes that if you have lot details for any commodity at a given
 point in time, you have downloaded lot details for all commodities. If lot details are
 missing for a commodity, it will assume that's because you no longer hold that commodity.
-
 """
 from __future__ import annotations
 
@@ -154,6 +133,7 @@ class BrokerageAction(enum.Enum):
     # Please keep these alphabetized:
     ADR_MGMT_FEE = "ADR Mgmt Fee"
     BANK_INTEREST = "Bank Interest"
+    BANK_TRANSFER = "Bank Transfer"
     BOND_INTEREST = "Bond Interest"
     BUY = "Buy"
     BUY_TO_CLOSE = "Buy to Close"
@@ -165,10 +145,12 @@ class BrokerageAction(enum.Enum):
     JOURNAL = "Journal"
     JOURNALED_SHARES = "Journaled Shares"
     LONG_TERM_CAP_GAIN = "Long Term Cap Gain"
+    LONG_TERM_CAP_GAIN_REINVEST = "Long Term Cap Gain Reinvest"
     MARGIN_INTEREST = "Margin Interest"
     CREDIT_INTEREST = "Credit Interest"
     MISC_CASH_ENTRY = "Misc Cash Entry"
     MONEYLINK_TRANSFER = "MoneyLink Transfer"
+    MONEYLINK_DEPOSIT = "MoneyLink Deposit"
     PRIOR_YEAR_CASH_DIVIDEND = "Pr Yr Cash Div"
     PRIOR_YEAR_SPECIAL_DIVIDEND = "Pr Yr Special Div"
     PROMOTIONAL_AWARD = "Promotional Award"
@@ -184,6 +166,7 @@ class BrokerageAction(enum.Enum):
     SELL_TO_OPEN = "Sell to Open"
     SERVICE_FEE = "Service Fee"
     SHORT_TERM_CAP_GAIN = "Short Term Cap Gain"
+    SHORT_TERM_CAP_GAIN_REINVEST = "Short Term Cap Gain Reinvest"
     SPECIAL_DIVIDEND = "Special Dividend"
     STOCK_MERGER = "Stock Merger"
     STOCK_PLAN_ACTIVITY = "Stock Plan Activity"
@@ -1357,12 +1340,10 @@ class LotSplit:
 
 class LotsDB:
     """In-memory database of historical lot information from Schwab lot details CSVs.
-
     Can answer these queries:
         - Cost basis of the shares of symbol X in acct Y acquired on date Z?
         - Cost bases of the N shares of symbol X sold from acct Y on date Z?
         - LotSplits for a split of symbol X in acct Y on date Z, adding N shares?
-
     """
     def __init__(self) -> None:
         self.holdings: Dict[Tuple[str, str], HoldingLotsDB] = {}
@@ -1384,7 +1365,6 @@ class LotsDB:
         self, account: str, symbol: str, date: datetime.date,
     ) -> Optional[Decimal]:
         """Get cost of lot of `symbol` opened most recently before `date`.
-
         Return None if it can't be determined given lot info in db.
         """
         db = self.holdings.get((account, symbol))
@@ -1394,15 +1374,12 @@ class LotsDB:
         self, account: str, symbol: str, date: datetime.date, quantity_sold: Decimal,
     ) -> Mapping[Decimal, Decimal]:
         """Get costs of lots of `symbol` from which `quantity_sold` were sold on `date`.
-
         Key of returned mapping is lot cost, value is quantity sold from that lot.
         `quantity_sold` may have come from multiple lots in which case returned mapping
         will have multiple entries.
-
         If the total quantity we have recorded as sold from the holding in that time
         period doesn't match `quantity_sold`, return empty dict; we don't want to guess in
         the face of ambiguity.
-
         The assumption here is that we will download lot details at least once between
         every sale of a given holding, so things should match up exactly; if they don't,
         we revert to unknown cost.
