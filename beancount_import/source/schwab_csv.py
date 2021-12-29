@@ -373,7 +373,7 @@ class RawBrokerageEntry(RawEntry):
         if self.action in (BrokerageAction.BUY,
                            BrokerageAction.BUY_TO_OPEN,
                            BrokerageAction.BUY_TO_CLOSE,
-                           BrokerageAction.REINVEST_SHARES,
+                           BrokerageAction.REINVEST_SHARES
                            ):
             quantity = self.quantity
             assert quantity is not None
@@ -1514,7 +1514,7 @@ def _load_transactions(filename: str) -> List[RawEntry]:
         "Deposit (+)",
         "RunningBalance",
     ]
-    print("FILENAME: ", filename)
+
     filename = os.path.abspath(filename)
     entries = []
     with open(filename, "r", encoding="utf-8", newline="") as csvfile:
