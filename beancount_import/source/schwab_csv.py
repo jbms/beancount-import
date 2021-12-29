@@ -310,6 +310,8 @@ class RawBrokerageEntry(RawEntry):
             BrokerageAction.NON_QUALIFIED_DIVIDEND,
             BrokerageAction.QUAL_DIV_REINVEST,
             BrokerageAction.REINVEST_DIVIDEND,
+            BrokerageAction.LONG_TERM_CAP_GAIN_REINVEST,
+            BrokerageAction.SHORT_TERM_CAP_GAIN_REINVEST
         ):
             return CashDividend(
                 symbol=self.symbol,
@@ -372,9 +374,6 @@ class RawBrokerageEntry(RawEntry):
                            BrokerageAction.BUY_TO_OPEN,
                            BrokerageAction.BUY_TO_CLOSE,
                            BrokerageAction.REINVEST_SHARES,
-                           BrokerageAction.LONG_TERM_CAP_GAIN_REINVEST,
-                           BrokerageAction.SHORT_TERM_CAP_GAIN_REINVEST
-
                            ):
             quantity = self.quantity
             assert quantity is not None
@@ -1515,6 +1514,7 @@ def _load_transactions(filename: str) -> List[RawEntry]:
         "Deposit (+)",
         "RunningBalance",
     ]
+    print("FILENAME: ", filename)
     filename = os.path.abspath(filename)
     entries = []
     with open(filename, "r", encoding="utf-8", newline="") as csvfile:
