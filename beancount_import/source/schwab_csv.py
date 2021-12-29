@@ -340,6 +340,8 @@ class RawBrokerageEntry(RawEntry):
                 **shared_attrs,
             )
         if self.action in (BrokerageAction.MONEYLINK_TRANSFER,
+                           BrokerageAction.MONEYLINK_DEPOSIT,
+                           BrokerageAction.BANK_TRANSFER,
                            BrokerageAction.JOURNAL,
                            BrokerageAction.JOURNALED_SHARES,
                            BrokerageAction.SECURITY_TRANSFER,
@@ -369,7 +371,10 @@ class RawBrokerageEntry(RawEntry):
         if self.action in (BrokerageAction.BUY,
                            BrokerageAction.BUY_TO_OPEN,
                            BrokerageAction.BUY_TO_CLOSE,
-                           BrokerageAction.REINVEST_SHARES
+                           BrokerageAction.REINVEST_SHARES,
+                           BrokerageAction.LONG_TERM_CAP_GAIN_REINVEST,
+                           BrokerageAction.SHORT_TERM_CAP_GAIN_REINVEST
+
                            ):
             quantity = self.quantity
             assert quantity is not None
