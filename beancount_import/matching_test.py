@@ -872,3 +872,32 @@ def test_match_grouped_maximal_differing_signs():
             note2: "C"
         """,
     )
+
+def test_price_deduction_match():
+    # This case corresponds to a transfer between two bank accounts: the transactions created
+    # from each bank statement are duplicates and should be matched.
+    assert_match(
+        pending_candidate="""
+        2016-03-01 * "Narration"
+          Assets:A  -1 USD
+            cleared: TRUE
+            check: 5
+            note1: "A"
+          Assets:B 1 CAD @
+        """,
+        journal="""
+        2016-01-01 * "Wrote check"
+          Assets:A  -1 USD
+            check: 5
+            note2: "A"
+          Assets:B 1 CAD @
+        """,
+        matches="""
+        2016-01-01 * "Wrote check"
+          Assets:A  -1 USD
+            cleared: TRUE
+            check: 5
+            note1: "A"
+            note2: "A"
+          Assets:B 1 CAD @
+        """)
