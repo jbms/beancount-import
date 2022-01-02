@@ -914,8 +914,7 @@ def test_match_ofx_investment_issue113():
     )
 
 def test_price_deduction_match():
-    # This case corresponds to a transfer between two bank accounts: the transactions created
-    # from each bank statement are duplicates and should be matched.
+    # This case is to test @ syntax at the end of line where the price of the other commodity is deducted but will show @ MISSING MISSING in beancount-import
     assert_match(
         pending_candidate="""
         2016-03-01 * "Narration"
