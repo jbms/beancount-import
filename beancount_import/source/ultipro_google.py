@@ -307,7 +307,10 @@ class UltiproSource(Config, Source):
                 documents_seen_in_directory.add(seen_key_from_path)
                 continue
             self.log_status('ultipro_google: processing %s' % (path, ))
-            parse_result = ultipro_google_statement.parse_filename(path)
+            try:
+                parse_result = ultipro_google_statement.parse_filename(path)
+            except ValueError as e:
+                raise ValueError(f'{filename}: {e}')
             general = parse_result.general
             document_number = general['Document']['number']
             pay_date = general['Pay Date']['date']

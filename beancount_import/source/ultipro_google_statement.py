@@ -162,6 +162,19 @@ def parse(text: str) -> ParseResult:
                   ('Current:Employer', parse_currency),
                   ('YTD:Employer', parse_currency)),
              ]),
+            (r'^(Deductions)\nDeduction\sBased\sOn\sPre-\s?Tax Employee Current Employee YTD Employer\sCurrent Employer YTD$',
+             [
+                 (r'^(' + field_name_re + r')' +
+                  (r'\s(' + currency_amount_re + r')') +
+                  (r' (' + yesno_re + r')') + 4 *
+                  (r' (' + currency_amount_re + r')') + r'$',
+                  ('Based On', parse_currency),
+                  ('Pre-tax', parse_yesno),
+                  ('Current', parse_currency),
+                  ('YTD', parse_currency),
+                  ('Current:Employer', parse_currency),
+                  ('YTD:Employer', parse_currency)),
+             ]),
         ],
         (r'^(Taxes)\nTax(?:es)? Based On Current YTD$', [
             (r'^(' + field_name_re + r')' + 3 *
@@ -219,7 +232,7 @@ def parse(text: str) -> ParseResult:
             found_match = True
             break
         if not found_match:
-            raise ValueError('Failed to match section %r' % entry)
+            raise ValueError('Failed to match section\n\n%r\n\nin text\n\n%r' % (entry, text[start_i:]))
 
     all_values = collections.OrderedDict() # type: Dict[str, ParsedValues]
 
