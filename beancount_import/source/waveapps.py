@@ -64,6 +64,7 @@ import json
 import jsonschema
 from beancount.core.number import D, ZERO
 from beancount.core.data import Open, Transaction, Posting, Amount, Pad, Balance, Entries, Directive
+import dateutil.parser
 
 from . import ImportResult, SourceResults, Source, InvalidSourceReference, AssociatedData
 from ..matching import FIXME_ACCOUNT
@@ -90,10 +91,8 @@ schema = {
             'type': 'string',
         },
         'date': {
-            'type': 'string',
         },
         'total': {
-            'type': 'string',
         },
         'status': {
             'type': 'string',
@@ -106,7 +105,10 @@ schema = {
 def make_import_result(receipt: Any, receipt_directory: str,
                        link_prefix: str) -> ImportResult:
     receipt_id = str(receipt['id'])
-    date = datetime.datetime.strptime(receipt['date'], date_format).date()
+    if receipt['date']:
+        date = datetime.datetime.strptime(receipt['date'], date_format).date()
+    else:
+        date = dateutil.parser.parse(receipt['submitted_at']).date()
     merchant = receipt['merchant']
     note = receipt['note']
     if note:
@@ -115,8 +117,12 @@ def make_import_result(receipt: Any, receipt_directory: str,
     else:
         payee = None
         narration = merchant
-    amount = Amount(
-        number=D(receipt['total']), currency=receipt['currency_code'])
+    if receipt['total']:
+        amount = Amount(
+            number=D(receipt['total']), currency=receipt['currency_code'])
+    else:
+        amount = Amount(
+            number=ZERO, currency=receipt['currency_code'])
     postings = [
         Posting(
             account=FIXME_ACCOUNT,

@@ -129,4 +129,6 @@ class DescriptionBasedSource(Source):
     def is_posting_cleared(self, posting: Posting):
         if posting.meta is None:
             return False
+        if posting.meta.get("merge"):
+            return True
         return not MATCHED_METADATA_KEYS.isdisjoint(posting.meta)

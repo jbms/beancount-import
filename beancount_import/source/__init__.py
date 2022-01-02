@@ -121,6 +121,7 @@ class SourceResults:
     def __init__(self):
         self.pending = []  # type: List[ImportResult]
         self.accounts = set()  # type: Set[str]
+        self.skip_training_accounts = set() # type: Set[str]
         self.invalid_references = []  # type: List[InvalidSourceReference]
         self.messages = []  # type: List[Tuple[str, str, Optional[Meta]]]
         self.seen_messages = set(
@@ -137,6 +138,20 @@ class SourceResults:
     def add_account(self, account: str) -> None:
         """Indicates that the source is authoritative for `account`."""
         self.accounts.add(account)
+
+    def add_skip_training_account(self, account: str) -> None:
+        """Ignore postings for `account` when building training examples.
+
+        This applies to `account` and all of its subaccounts.
+
+        As described by the this module, typical training requires exactly
+        two postings, one the source and the second the target. When there are
+        more than two postings, such as for fees and capital gains, this
+        method allows those auxiliary accounts to be ignored so that training
+        example extraction can still work. The resulting set is passed to
+        training.FeatureExtractor.
+        """
+        self.skip_training_accounts.add(account)
 
     def add_accounts(self, accounts: Iterable[str]):
         """Calls `add_account` for each account in `accounts`."""

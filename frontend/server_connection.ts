@@ -10,7 +10,7 @@ export type JournalError = [
 
 export interface UnclearedPosting {
   transaction: BeancountEntry;
-  posting: BeancountEntry;
+  posting: BeancountPosting;
   transaction_formatted: string;
 }
 

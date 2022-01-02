@@ -20,8 +20,10 @@ from typing import Hashable, List, Dict, Optional
 
 from beancount.core.data import Balance, Transaction, Posting,  Directive
 from beancount.core.amount import Amount
+from beancount.core.convert import get_weight
 from beancount.ingest.importer import ImporterProtocol
 from beancount.ingest.cache import get_file
+from beancount.parser.booking_full import convert_costspec_to_cost
 
 from ..matching import FIXME_ACCOUNT, SimpleInventory
 from . import ImportResult, SourceResults
@@ -56,7 +58,7 @@ class ImporterSource(DescriptionBasedSource):
 
     def prepare(self, journal: 'JournalEditor', results: SourceResults) -> None:
         results.add_account(self.account)
-        
+
         entries = OrderedDict() #type: Dict[Hashable, List[Directive]]
         for f in self.files:
             f_entries = self.importer.extract(f, existing_entries=journal.entries)
@@ -113,10 +115,10 @@ class ImporterSource(DescriptionBasedSource):
         if isinstance(entry, Balance):
             return (entry.account, entry.date, entry.amount)
         if not isinstance(entry, Transaction):
-            raise ValueError("currently, ImporterSource only supports Transaction and Balance Directive")
+            raise ValueError("currently, ImporterSource only supports Transaction and Balance Directive. Got entry {}".format(entry))
         source_posting = self._get_source_posting(entry)
         if source_posting is None:
-            raise ValueError("entry has no postings for account: {}".format(self.account))
+            raise ValueError("entry {} has no postings for account: {}".format(entry, self.account))
         return (self.account,
                 entry.date,
                 source_posting.units,
@@ -133,8 +135,12 @@ class ImporterSource(DescriptionBasedSource):
 
 
 def get_info(raw_entry: Directive) -> dict:
+    if raw_entry.meta["filename"].endswith(".beancount"):
+        ftype = "text/plain"
+    else:
+        ftype = get_file(raw_entry.meta['filename']).mimetype()
     return dict(
-        type=get_file(raw_entry.meta['filename']).mimetype(),
+        type=ftype,
         filename=raw_entry.meta['filename'],
         line=raw_entry.meta['lineno'],
     )
@@ -143,7 +149,7 @@ def balance_amounts(txn:Transaction)-> None:
     """Add FIXME account for the remaing amount to balance accounts"""
     inventory = SimpleInventory()
     for posting in txn.postings:
-        inventory += posting.units
+        inventory += get_weight(convert_costspec_to_cost(posting))
     for currency in inventory:
         txn.postings.append(
             Posting(

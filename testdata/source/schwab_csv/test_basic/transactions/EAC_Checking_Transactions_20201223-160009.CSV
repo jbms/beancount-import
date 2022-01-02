@@ -2,6 +2,7 @@ Transactions  for Checking account EAC as of 12/23/2020 16:00:10 ET
 "Date","Type","Check #","Description","Withdrawal (-)","Deposit (+)","RunningBalance"
 "Pending Transactions are not reflected within this sort criterion."
 "Posted Transactions"
+"07/30/2021","ATMREBATE","","ATM Fee Rebate","","$3.00","$20,053.01"
 "02/01/2021","WIRE","","Incoming Wire Transfer","","$20,000.00","$20,050.01"
 "11/13/2020","TRANSFER","","Funds Transfer to Brokerage -9999","$10,500.00","","$50.01"
 "11/13/2020","ACH","","JPMorgan Chase Ext Trnsfr","","$10,500.00","$10,550.01"
@@ -12,3 +13,4 @@ Transactions  for Checking account EAC as of 12/23/2020 16:00:10 ET
 "01/12/2020","VISA","","COMPASS VENDING   BURNABY BC #000000190","$6.14","","$1133.85"
 "01/10/2020","ATM","","ATM AT SOME BANK","$16.69","","$1139.99"
 "11/22/2019","CHECK","1002","Check Paid #1002","$1,234.11","","$1,111.81"
+"11/01/2021","DEPOSIT","","Deposit Mobile Banking","","$1,234.56","$7,890.00"

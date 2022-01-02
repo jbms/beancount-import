@@ -114,6 +114,7 @@ Sending money with credit card:
 from typing import Dict, List, Tuple, Optional, Any
 
 import collections
+import datetime
 import os
 import re
 import json
@@ -418,7 +419,7 @@ class PaypalSource(LinkBasedSource, Source):
 
         counterparty_remainder_account = FIXME_ACCOUNT + ':A'
 
-        if transaction_type_enum == 'TRANSFER_TO_BANK':
+        if transaction_type_enum == 'TRANSFER_TO_BANK' or transaction_type_enum == 'TRANSFER':
             counterparty_remainder_account = self.assets_account
             counterparty_metadata = []
             negate_funding_source_amounts = False
@@ -553,9 +554,15 @@ class PaypalSource(LinkBasedSource, Source):
                 source_type = source['type']
                 if (source_type == 'BALANCE' or
                     (transaction_type_enum == 'SEND_MONEY_SENT' and
-                     source_type != 'CREDIT_CARD')):
+                     source_type != 'CREDIT_CARD' and
+                     (date < datetime.date(2020, 1, 1) or
+                      source_type != 'BANK_ACCOUNT'))):
                     # For SEND_MONEY_SENT, sources other than CREDIT_CARD
                     # are actually handled by a separate transfer transaction.
+                    #
+                    # Additionally, after approximately the specified date,
+                    # Paypal also does not use a separate transaction for
+                    # BANK_ACCOUNT sources.
                     account = self.assets_account
                     meta.update(assets_account_metadata)
                 else:

@@ -547,6 +547,23 @@ inv401k_account_keys = {
     'ROLLOVER': ('rollover_account', 'Rollover'),
 }
 
+# "Auxiliary" accounts are those given to
+# SourceResults.add_skip_training_account because they are neither the source
+# nor the target account, and should be ignored while building training
+# examples.
+AUX_CAPITAL_GAINS_KEY = 'capital_gains'
+AUX_FEE_KEYS = ['fees', 'commission']
+AUX_ACCOUNT_KEYS = [AUX_CAPITAL_GAINS_KEY] + AUX_FEE_KEYS
+
+def get_aux_account_by_key(account: Open, key: str, results: SourceResults) -> str:
+    """Like get_account_by_key. Ensures the account isn't used for training."""
+    subaccount = account.meta.get(key)
+    if subaccount is  None:
+        raise KeyError('%s: must specify %s' % (account.account, key))
+    if subaccount not in results.skip_training_accounts:
+        raise ValueError('%s is an auxiliary account but was not added to SourceResults skip_traing_accounts; this should be done in PrepareState')
+    return subaccount
+
 
 def get_account_by_key(account: Open, key: str, default_suffix: Optional[str] = None) -> str:
     result = account.meta.get(key)
@@ -858,14 +875,16 @@ class ParsedOfxStatement(object):
                     posting_meta[CHECK_KEY] = D(stripped_checknum)
 
             fee_total = ZERO
-            for fee_key in ['fees', 'commission']:
+            for fee_key in AUX_FEE_KEYS:
                 amount = getattr(raw, fee_key, None)
                 if amount is not None and amount != ZERO:
                     fee_total += amount
                     entry.postings.append(
                         Posting(
-                            account=get_account_by_key(account,
-                                                       fee_key + '_account'),
+                            account=get_aux_account_by_key(
+                                account,
+                                fee_key + '_account',
+                                results),
                             units=Amount(number=amount, currency=self.currency),
                             cost=None,
                             price=None,
@@ -995,9 +1014,10 @@ class ParsedOfxStatement(object):
                     entry.postings.append(
                         Posting(
                             meta=None,
-                            account=get_account_by_key(
-                                account, 'capital_gains_account') + ':' +
-                            security,
+                            account=get_aux_account_by_key(
+                                account,
+                                AUX_CAPITAL_GAINS_KEY + '_account',
+                                results) + ':' + security,
                             units=MISSING,
                             cost=None,
                             price=None,
@@ -1246,7 +1266,14 @@ class PrepareState(object):
         self.journal = journal
         self.account_to_ofx_id, self.ofx_id_to_account, self.cash_accounts = get_account_map(
             journal.accounts)
+
         results.add_accounts(self.account_to_ofx_id.keys())
+        for account in self.ofx_id_to_account.values():
+            for key in AUX_ACCOUNT_KEYS:
+                subaccount = account.meta.get(key + '_account')
+                if subaccount is not None:
+                   results.add_skip_training_account(subaccount)
+
         self.commodities_by_cusip = dict()  # type: Dict[str, str]
         self.cash_securities_map = dict() # type: Dict[str, str]
         self.matched_transactions = dict(
@@ -1272,7 +1299,6 @@ class PrepareState(object):
         matched_cash_transfer_transactions = self.matched_cash_transfer_transactions
         account_to_ofx_id = self.account_to_ofx_id
         commodities_by_cusip = self.commodities_by_cusip
-        account_leaf_regexp = '^(.+):([^:]+)$'
         results = self.results
         for entry in self.journal.all_entries:
             if isinstance(entry, Transaction):
@@ -1287,14 +1313,7 @@ class PrepareState(object):
                     last_lineno = new_lineno
                     fitid = meta.get(OFX_FITID_KEY, None)
                     if fitid is None: continue
-                    m = re.fullmatch(account_leaf_regexp, posting.account)
-                    if m is not None:
-                        lookup_account = m.group(1)
-                    else:
-                        lookup_account = posting.account
-                    ofx_id = account_to_ofx_id.get(lookup_account)
-                    if ofx_id is None and lookup_account is not posting.account:
-                        ofx_id = account_to_ofx_id.get(posting.account)
+                    ofx_id = find_ofx_id_for_account(posting.account, account_to_ofx_id)
                     if ofx_id is None:
                         continue
                     results.add_account(posting.account)
@@ -1334,6 +1353,22 @@ class PrepareState(object):
                 if excess_number == 0: continue
                 results.add_invalid_reference(
                     InvalidSourceReference(excess_number, transactions))
+
+
+def find_ofx_id_for_account(account, account_to_ofx_id):
+    """Find the OFX id corresponding to account or one of its parents,
+    searching at most two parents. This is particularly needed for 401(k)
+    sub-accounts. For example, this will search
+    'Assets:Vanguard:401k:PreTax:VGI1' then 'Assets:Vanguard:401k:PreTax' then
+    'Assets:Vanguard:401k'.
+    """
+    for i in range(3):
+        if i != 0:
+            account = account.rsplit(':', 1)[0]
+        ofx_id = account_to_ofx_id.get(account)
+        if ofx_id is not None:
+            return ofx_id
+    return None
 
 
 class OfxSource(Source):

@@ -873,6 +873,45 @@ def test_match_grouped_maximal_differing_signs():
         """,
     )
 
+def test_match_ofx_investment_issue113():
+    assert_match(
+        pending_candidate="""
+        2020-12-30 * "SELLSTOCK - BANK MONTREAL QUEBEC"
+          Assets:Brokerage:BMO         -13 BMO {} @ 76.03 USD
+            date: 2020-12-30
+            ofx_fitid: "XXX"
+            ofx_memo: "BANK MONTREAL QUEBEC"
+            ofx_type: "SELLSTOCK"
+          Income:Capital-gains:BMO
+          Assets:Brokerage:Cash     988.37 USD
+            ofx_fitid: "XXX"
+          Expenses:Fees               0.02 USD
+        """,
+        journal="""
+        2020-12-01 * "BUYSTOCK - BANK MONTREAL QUEBEC"
+          Assets:Brokerage:BMO         13 BMO {50.03 USD}
+          Assets:Brokerage:Cash        -650.39 USD
+
+        2020-12-30 * "SELLSTOCK - BANK MONTREAL QUEBEC"
+          Assets:Brokerage:BMO         -13 BMO {50.03 USD} @ 76.03 USD
+          Income:Capital-gains:BMO   -338.00 USD
+          Assets:Brokerage:Cash     988.37 USD
+          Expenses:Fees               0.02 USD
+        """,
+        matches="""
+        2020-12-30 * "SELLSTOCK - BANK MONTREAL QUEBEC"
+          Assets:Brokerage:BMO         -13 BMO {50.03 USD} @ 76.03 USD
+            date: 2020-12-30
+            ofx_fitid: "XXX"
+            ofx_memo: "BANK MONTREAL QUEBEC"
+            ofx_type: "SELLSTOCK"
+          Income:Capital-gains:BMO   -338.00 USD
+          Assets:Brokerage:Cash     988.37 USD
+            ofx_fitid: "XXX"
+          Expenses:Fees               0.02 USD
+        """,
+    )
+
 def test_price_deduction_match():
     # This case corresponds to a transfer between two bank accounts: the transactions created
     # from each bank statement are duplicates and should be matched.
@@ -901,3 +940,4 @@ def test_price_deduction_match():
             note2: "A"
           Assets:B 1 CAD @
         """)
+    

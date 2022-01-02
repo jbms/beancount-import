@@ -68,6 +68,8 @@ Order = NamedTuple('Order', [
 pretax_adjustment_fields_pattern = ('(?:' + '|'.join([
     'Shipping & Handling',
     'Free Shipping',
+    'Free delivery',
+    'Pantry delivery',
     'Promotion(?:s| Applied)',
     'Lightning Deal',
     'Your Coupon Savings',

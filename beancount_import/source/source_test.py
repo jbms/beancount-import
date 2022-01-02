@@ -156,7 +156,8 @@ def check_source_example(example_dir: str,
     account_source_map = {account: source for account in results.accounts}
     sources = [source]
     extractor = training.FeatureExtractor(
-        sources=sources, account_source_map=account_source_map)
+        sources=sources, account_source_map=account_source_map,
+        skip_accounts=results.skip_training_accounts)
     assert(not [m for m in results.messages if m[0] == 'error'])
     for filename, new_contents in _add_invalid_reference_and_cleared_metadata(
             editor, source,

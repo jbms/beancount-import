@@ -160,6 +160,8 @@ PostingMatch = Tuple[MatchablePosting, MatchablePosting]
 PostingMatches = List[PostingMatch]
 
 SingleSignMatchablePostings = Tuple[MatchablePostings, MatchablePostings]
+
+# Tuple of (negative weight postings, positive weight postings)
 BothSignMatchablePostings = Tuple[SingleSignMatchablePostings,
                                   SingleSignMatchablePostings]
 
@@ -649,7 +651,7 @@ class SimpleInventory(dict):
         return ZERO
 
 
-def get_max_residuals_from_weights(a_weights, b_weights):
+def get_max_residuals_from_weights(a_weights, b_weights) -> SimpleInventory:
     combined_inventory = SimpleInventory()
 
     # If any posting is unweighted, we require all residuals to be 0.
@@ -922,6 +924,77 @@ def are_postings_mergeable(a: MatchablePosting, b: MatchablePosting,
     return True
 
 
+def equal_or_none(a, b):
+    return a is None or b is None or a is MISSING or b is MISSING or a == b
+
+
+def are_amounts_mergeable(a: Amount, b: Amount) -> bool:
+    if a is None or a is MISSING or b is None or b is MISSING: return True
+    if a.currency != b.currency: return False
+    return equal_or_none(a.number, b.number)
+
+
+def are_costspecs_mergeable(a: CostSpec, b: CostSpec) -> bool:
+    return (equal_or_none(a.number_per, b.number_per) and
+            equal_or_none(a.number_total, b.number_total) and
+            equal_or_none(a.currency, b.currency) and
+            equal_or_none(a.date, b.date) and
+            equal_or_none(a.label, b.label) and equal_or_none(a.merge, b.merge))
+
+def are_cost_and_costspec_mergeable(a: Cost, b: CostSpec, b_units: Optional[Amount]) -> bool:
+    if not equal_or_none(a.currency, b.currency): return False
+    if not equal_or_none(a.number, b.number_per): return False
+    if not equal_or_none(a.date, b.date): return False
+    if not equal_or_none(a.label, b.label): return False
+    if b.number_total is None: return True
+    if b_units is None or b_units.number is None:
+        return False
+    return a.number == b.number_total / b_units.number
+
+
+def are_costs_mergeable(a: Optional[Union[Cost, CostSpec]],
+                        a_units: Optional[Amount],
+                        b: Optional[Union[Cost, CostSpec]],
+                        b_units: Optional[Amount]) -> bool:
+    if a is None or b is None: return True
+    if isinstance(a, Cost) and isinstance(b, Cost):
+        return (a.number == b.number and a.currency == b.currency and
+                a.date == b.date and
+                equal_or_none(a.label, b.label))
+    if isinstance(a, CostSpec) and isinstance(b, CostSpec):
+        return are_costspecs_mergeable(a, b)
+    if isinstance(a, Cost):
+        return are_cost_and_costspec_mergeable(a, b, b_units)
+    return are_cost_and_costspec_mergeable(b, a, a_units)
+
+
+def are_unweighted_postings_mergeable(unweighted_posting: Posting,
+                                      matchable_posting: MatchablePosting,
+                                      is_cleared: IsClearedFunction) -> bool:
+    other_postings = matchable_posting.source_postings
+    if len(other_postings) != 1: return False
+    other_posting = other_postings[0]
+    if not are_accounts_mergeable(unweighted_posting.account,
+                                  other_posting.account):
+        return False
+
+    if is_cleared(unweighted_posting) and is_cleared(other_posting):
+        return False
+
+    if not are_amounts_mergeable(unweighted_posting.units, other_posting.units):
+        return False
+
+    if not are_amounts_mergeable(unweighted_posting.price, other_posting.price):
+        return False
+
+    if not are_costs_mergeable(unweighted_posting.cost,
+                               unweighted_posting.units, other_posting.cost,
+                               other_posting.units):
+        return False
+
+    return is_metadata_mergeable(unweighted_posting.meta, other_posting.meta)
+
+
 def get_posting_ids_in_match(m: PostingMatch) -> List[int]:
     return [id(p) for mp in m for p in mp.source_postings]
 
@@ -957,6 +1030,7 @@ def is_removal_candidate(mp: MatchablePosting) -> bool:
 
 def compute_single_sign_match_groups(
         matchable_postings: SingleSignMatchablePostings,
+        unweighted_postings: Tuple[List[Posting],List[Posting]],
         is_cleared: IsClearedFunction,
         max_residual: Decimal) -> SingleSignMatchGroups:
     """Given a list of single-sign matchable postings for each of two transactions,
@@ -995,8 +1069,31 @@ def compute_single_sign_match_groups(
                 continue
             yield b
 
+    def get_possible_unweighted_matches(unweighted_posting: Posting,
+                                        matchable_postings: MatchablePostings):
+        for matchable_posting in matchable_postings:
+            if are_unweighted_postings_mergeable(unweighted_posting,
+                                                 matchable_posting, is_cleared):
+                yield matchable_posting
+
     possible_matches = [(a, b) for a in matchable_postings[0]
                         for b in get_possible_matches_for_posting_a(a)]
+
+    for a_unweighted in unweighted_postings[0]:
+        for b_matchable in get_possible_unweighted_matches(
+                a_unweighted, matchable_postings[1]):
+            possible_matches.append(
+                (MatchablePosting(posting=a_unweighted,
+                                  weight=b_matchable.weight,
+                                  source_postings=[a_unweighted]), b_matchable))
+    for b_unweighted in unweighted_postings[1]:
+        for a_matchable in get_possible_unweighted_matches(
+                b_unweighted, matchable_postings[0]):
+            possible_matches.append(
+                (a_matchable,
+                 MatchablePosting(posting=b_unweighted,
+                                  weight=a_matchable.weight,
+                                  source_postings=[b_unweighted])))
 
     possible_matches_for = {}  # type: Dict[int, List[MatchablePosting]]
     for a, b in possible_matches:
@@ -1150,7 +1247,9 @@ def filter_dominated_match_sets(
 
 # [[neg_a, neg_b], [pos_a, pos_b]]
 def compute_balanced_match_group(
-        matchable_postings: BothSignMatchablePostings, max_residual: Decimal,
+        matchable_postings: BothSignMatchablePostings,
+        unweighted_postings: Tuple[List[Posting],
+                                   List[Posting]], max_residual: Decimal,
         is_cleared: IsClearedFunction) -> Sequence[PostingMatchSet]:
     if any(
             all(not txn_matchable_postings
@@ -1162,6 +1261,7 @@ def compute_balanced_match_group(
         BothSignMatchGroups,
         tuple(
             compute_single_sign_match_groups(single_sign_matchable_postings,
+                                             unweighted_postings,
                                              is_cleared, max_residual)
             for single_sign_matchable_postings in matchable_postings))
 
@@ -1185,12 +1285,26 @@ def get_combined_transactions(txns: Tuple[Transaction, Transaction],
 
     results = []
 
-    weighted_postings = [get_weighted_postings(txn.postings) for txn in txns]
+    # List of weighted postings for each of the two transactions
+    weighted_postings = cast(
+        Tuple[List[WeightedPosting], List[WeightedPosting]],
+        tuple(get_weighted_postings(txn.postings) for txn in txns))
 
-    matchable_posting_groups = [
-        get_matchable_posting_groups(txn_weighted_postings, is_cleared)
-        for txn_weighted_postings in weighted_postings
-    ]
+    # List of matchable postings, by currency and sign, for each of the two transactions
+    matchable_posting_groups = cast(
+        Tuple[Dict[MatchGroupKey, List[MatchablePosting]],
+              Dict[MatchGroupKey, List[MatchablePosting]]],
+        tuple(
+            get_matchable_posting_groups(txn_weighted_postings, is_cleared)
+            for txn_weighted_postings in weighted_postings))
+
+    unweighted_postings = cast(
+        Tuple[List[Posting], List[Posting]],
+        tuple([
+            weighted_posting.posting
+            for weighted_posting in txn_weighted_postings
+            if weighted_posting.weight is None
+        ] for txn_weighted_postings in weighted_postings))
 
     match_groups = collections.OrderedDict(
         (key.currency, None)  # type: ignore
@@ -1203,6 +1317,8 @@ def get_combined_transactions(txns: Tuple[Transaction, Transaction],
           for txn_weighted_postings in weighted_postings])
 
     for currency in match_groups:
+        # matchable_postings[is_positive][i] is the list of matching postings
+        # for `currency` in `txns[i]`.
         matchable_postings = cast(
             BothSignMatchablePostings,
             tuple(
@@ -1213,6 +1329,7 @@ def get_combined_transactions(txns: Tuple[Transaction, Transaction],
                 for is_positive in (False, True)))
         match_groups[currency] = compute_balanced_match_group(
             matchable_postings,
+            unweighted_postings,
             max_residual=max_residuals.get(currency, ZERO),
             is_cleared=is_cleared)
 

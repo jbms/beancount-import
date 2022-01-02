@@ -2,6 +2,7 @@ import os
 
 import pytest
 
+from . import ofx
 from .source_test import check_source_example
 
 testdata_dir = os.path.realpath(
@@ -18,6 +19,7 @@ examples = [
     ('test_vanguard_with_cash_account_matching_missing_primary',
      'vanguard.ofx'),
     ('test_vanguard401k', 'vanguard401k.ofx'),
+    ('test_vanguard_401k_matching', 'vanguard401k.ofx'),
     ('test_fidelity_savings', 'fidelity-savings.ofx'),
     ('test_suncorp', 'suncorp.ofx'),
     ('test_checking', 'checking.ofx'),
@@ -34,6 +36,7 @@ examples = [
     ('test_checking2_matching', 'checking2.ofx'),
     ('test_amex', 'amex.ofx'),
     ('test_fidelity', 'fidelity.ofx'),
+    ('test_non_default_capital_gains', 'vanguard401k.ofx'),
 ]
 
 
@@ -46,3 +49,17 @@ def test_source(name: str, ofx_filename: str):
             'ofx_filenames': [os.path.join(testdata_dir, ofx_filename)],
         },
         replacements=[(testdata_dir, '<testdata>')])
+
+def test_find_ofx_id_for_account():
+    ofx_ids = {
+        'Assets:Vanguard:401k': 1,
+    }
+    for (account, want) in [
+        ('Assets:Vanguard:401k:PreTax:VGI1', 1),
+        ('Assets:Vanguard:401k:PreTax', 1),
+        ('Assets:Vanguard:401k:VG1', 1),
+        ('Assets:Vanguard:401k', 1),
+        ('Assets:Vanguard:Unknown', None),
+        ('Assets:Vanguard:401k:PreTax:Excessive:VGI1', None),
+    ]:
+        assert ofx.find_ofx_id_for_account(account, ofx_ids) == want, account
