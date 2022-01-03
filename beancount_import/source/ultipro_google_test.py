@@ -17,7 +17,7 @@ testdata_dir = os.path.realpath(
 @pytest.mark.skipif(
         sys.platform.startswith('win'),
         reason='parsing does not work with Windows newlines')
-@pytest.mark.parametrize('name', ['test_basic'])
+@pytest.mark.parametrize('name', ['test_basic', 'test_20211223'])
 def test_source(name: str):
     example_dir = os.path.join(testdata_dir, name)
     check_source_example(

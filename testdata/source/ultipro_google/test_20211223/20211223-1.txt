@@ -1,0 +1,49 @@
+Google LLC
+1600 Amphitheatre Parkway
+Mountain View, CA 94043
+650-253-0000
+Pay Statement
+Period Start Date 12/06/2021
+Period End Date 12/19/2021
+Pay Date 12/23/2021
+Document 98765432
+Net Pay $600.00
+Pay Details
+Bean Counter
+123 Import St
+New York, NY 10001
+USA
+Employee Number 000123456
+SSN XXX-XX-XXXX
+Job Accountant
+Pay Rate $100.0000
+Pay Frequency Biweekly
+Pay Group Salaried Employees
+Location US-NYC-NYC
+Cost Center 111 - Finance - Accounting
+Earnings
+Pay Type Hours Pay Rate Current YTD
+Regular Pay 80.0000 $100.0000 $8,000.00 $16,000.00
+Total Hours Worked 80.0000 Total Hours 80.0000
+Deductions
+Deduction Based On Pre-Tax Employee Current Employee YTD Employer Current Employer YTD
+401K Pretax $8,000.00 Yes $6,000.00 $12,000.00 $3,000.00 $6,000.00
+Medical $2.22 Yes $2.22 $4.44 $0.00 $0.00
+Taxes
+Tax Based On Current YTD
+Federal Income Tax $2,000.00 $200.00 $400.00
+Employee Medicare $8,000.00 $50.00 $100.00
+Social Security Employee Tax $8,000.00 $50.00 $150.00
+NY State Income Tax $3,000.00 $100.00 $100.00
+Paid Time Off
+Plan Current Balance
+Vacation 0.0000 0.0000
+Net Pay Distribution
+Account Number Account Type Amount
+xxxxxxxx1234 Checking $600.00
+Total $600.00
+Pay Summary
+Gross FIT Taxable Wages Taxes Deductions Net Pay
+Current $8,050.00 $2,000.00 $400.00 $6,056.66 $600.00
+YTD $16,000 $4,000.00 $800.00 $9,000.00 $1200.00
+
