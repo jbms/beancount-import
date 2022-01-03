@@ -917,7 +917,7 @@ def test_price_deduction_match():
     # This case is to test @ syntax at the end of line where the price of the other commodity is deducted but will show @ MISSING MISSING in beancount-import
     assert_match(
         pending_candidate="""
-        2016-03-01 * "Narration"
+        2016-01-01 * "Narration"
           Assets:A  -1 USD
             cleared: TRUE
             check: 5
