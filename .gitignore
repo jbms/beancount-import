@@ -10,3 +10,4 @@ beancount_import/frontend_dist/*.map
 .coverage
 htmlcov/
 .eggs/
+.idea/
