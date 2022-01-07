@@ -170,6 +170,7 @@ class BrokerageAction(enum.Enum):
     MISC_CASH_ENTRY = "Misc Cash Entry"
     MONEYLINK_TRANSFER = "MoneyLink Transfer"
     PRIOR_YEAR_CASH_DIVIDEND = "Pr Yr Cash Div"
+    PRIOR_YEAR_DIV_REINVEST = "Pr Yr Div Reinvest"
     PRIOR_YEAR_SPECIAL_DIVIDEND = "Pr Yr Special Div"
     PROMOTIONAL_AWARD = "Promotional Award"
     QUAL_DIV_REINVEST = "Qual Div Reinvest"
@@ -321,6 +322,7 @@ class RawBrokerageEntry(RawEntry):
             BrokerageAction.CASH_DIVIDEND,
             BrokerageAction.CASH_IN_LIEU,
             BrokerageAction.PRIOR_YEAR_CASH_DIVIDEND,
+            BrokerageAction.PRIOR_YEAR_DIV_REINVEST,
             BrokerageAction.PRIOR_YEAR_SPECIAL_DIVIDEND,
             BrokerageAction.SPECIAL_DIVIDEND,
             BrokerageAction.QUALIFIED_DIVIDEND,
