@@ -887,3 +887,14 @@
     schwab_action: "DEPOSIT"
     source_desc: "Deposit Mobile Banking"
   Expenses:FIXME          -1234.56 USD
+
+;; date: 2022-04-20
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 20, "type": "text/csv"}
+
+; features: []
+2022-04-20 * "INCOME - DIV - ISHARES GLOBAL CLEAN ENERGY ETF"
+  Assets:Schwab:Brokerage-1234:Cash   2.11 USD
+    date: 2022-04-20
+    schwab_action: "Pr Yr Div Reinvest"
+    source_desc: "ISHARES GLOBAL CLEAN ENERGY ETF"
+  Income:Dividend:Schwab:ICLN        -2.11 USD
