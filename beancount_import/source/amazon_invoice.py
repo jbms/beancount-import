@@ -430,13 +430,15 @@ def parse_shipments(soup, locale=Locale_en_EN()) -> List[Shipment]:
 
             m = re.match(locale.shipment_quantity, description_node.text, re.UNICODE|re.DOTALL)
             
+            quantity = None
             if m is not None:
                 # Amazon will say you got, e.g. 2 broccoli crowns at $1.69/lb - but then this code multiplies the 2 by the price listed
                 # on the invoice, which is the total price in this case (but the per-unit price in other cases) - so if there's a quantity
                 # and a weight, ignore the quantity and treat it as 1
                 # alternately, capture the weight and the per-unit price and multiply out
                 quantity = m.group("quantity") # ignore quantity for weight items
-            else:
+
+            if quantity is None:
                 quantity = 1
                 logger.info("Unable to extract quantity, using 1: %s" % description_node.text)
 
