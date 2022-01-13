@@ -197,7 +197,7 @@ class Locale_de_DE(Locale_Data):
                 'Not Yet Shipped',
                 'Shipping now'
             },
-            shipment_quantity=r'^\s*(?:(?P<quantity>[0-9]+)|(?P<weight1>[0-9.]+\s+(?:lb|kg))|(?:(?P<quantityIgnore>[0-9.]+) [(](?P<weight2>[^)]+)[)]))\s+of:',
+            shipment_quantity=r'^\s*(?:(?P<quantity>[0-9]+)|(?P<weight1>[0-9.]+\s+(?:lb|kg))|(?:(?P<quantityIgnore>[0-9.]+) [(](?P<weight2>[^)]+)[)]))\s+Exemplar\(e\)\svon:',
             shipment_of='Exemplar(e) von:',
             shipment_sales_tax='Anzurechnende MwSt.:', # not sure (only old invoices)
             shipment_total='Gesamtsumme:',
