@@ -162,8 +162,9 @@ def parse(text: str) -> ParseResult:
                   ('Current:Employer', parse_currency),
                   ('YTD:Employer', parse_currency)),
              ]),
-            (r'^(Deductions)\nDeduction\sBased\sOn\sPre-\s?Tax Employee Current Employee YTD Employer\sCurrent Employer YTD$',
+            (r'^(Deductions)\nDeduction\sBased\sOn\sPre-\s?Tax\sEmployee\sCurrent\sEmployee\sYTD\sEmployer\sCurrent\sEmployer\sYTD$',
              [
+                 # These patterns are the same as in the preceding section.
                  (r'^(' + field_name_re + r')' +
                   (r'\s(' + currency_amount_re + r')') +
                   (r' (' + yesno_re + r')') + 4 *
