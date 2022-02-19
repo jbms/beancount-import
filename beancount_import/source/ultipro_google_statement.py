@@ -88,7 +88,7 @@ def parse(text: str) -> ParseResult:
         ]),
         [
             (
-                r'^(Earnings)\nPay Type Hours Pay Rate Current YTD$',
+                r'^(Earnings)\nPay[ \n]Type Hours[ \n]Pay[ \n]Rate Current YTD$',
                 [
                     (r'^(' + field_name_re + r')[ \n](?:(' + decimal_re +
                      r') (' + currency_amount_re + r') )?(' +
@@ -101,7 +101,7 @@ def parse(text: str) -> ParseResult:
                     #(r'^(Total Hours) (' + decimal_re + r')$', ('hours', D)),
                 ]),
             (
-                r'^(Earnings)\nPay Type Week Job Hours[ \n]Pay[ \n]Rate Current YTD$',
+                r'^(Earnings)\nPay[ \n]Type Week Job Hours[ \n]Pay[ \n]Rate Current YTD$',
                 [
                     (r'^(' + field_name_re + r')[ \n](?:[0-5] [a-zA-Z ]+)?(' +
                      decimal_re + r')' + 3 *
@@ -119,7 +119,7 @@ def parse(text: str) -> ParseResult:
                      ('Current', parse_currency)),
                 ]),
             (
-                r'^(Earnings)\nPay Type Hours\nPay\nRate\nPiece\nUnits\nPiece\nRate Current YTD$',
+                r'^(Earnings)\nPay[ \n]Type Hours[ \n]Pay[ \n]Rate\nPiece\nUnits\nPiece\nRate Current YTD$',
                 [
                     (r'^(' + field_name_re + r')[ \n](' + decimal_re + r')' +
                      (r' (' + currency_amount_re + r')') + r' (' + decimal_re +
