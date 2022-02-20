@@ -24,6 +24,7 @@ logger = logging.getLogger('amazon_invoice')
 class Locale_Data():
     LOCALE: str
     tax_included_in_price: bool
+    payee: str
 
     # common fields regular and digital orders
     items_ordered: str
@@ -74,6 +75,7 @@ class Locale_en_EN(Locale_Data):
         super().__init__(
             LOCALE='en_EN',
             tax_included_in_price=False,
+            payee='Amazon.com',
             
             # common fields regular and digital orders
             items_ordered='Items Ordered', # shipment + digital
@@ -158,6 +160,7 @@ class Locale_de_DE(Locale_Data):
         super().__init__(
             LOCALE='de_DE',
             tax_included_in_price=True,  # no separate tax transactions
+            payee='Amazon.de',
 
             # common fields regular and digital orders
             items_ordered='Bestellte Artikel',

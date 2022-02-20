@@ -307,6 +307,7 @@ def make_amazon_transaction(
         posttax_adjustment_accounts,
         credit_card_accounts,
         amazon_account: str,
+        payee='Amazon.com'
 ):
     txn = Transaction(
         date=invoice.order_date,
@@ -314,7 +315,7 @@ def make_amazon_transaction(
             (ORDER_ID_KEY, invoice.order_id),
             (AMAZON_ACCOUNT_KEY, amazon_account),
         ]),
-        payee='Amazon.com',
+        payee=payee,
         narration='Order',
         flag=FLAG_OKAY,
         tags=EMPTY_SET,
@@ -614,7 +615,8 @@ class AmazonSource(Source):
                 invoice=invoice,
                 posttax_adjustment_accounts=self.posttax_adjustment_accounts,
                 amazon_account=self.amazon_account,
-                credit_card_accounts=credit_card_accounts)
+                credit_card_accounts=credit_card_accounts,
+                payee=self.locale.payee)
             results.add_pending_entry(
                 ImportResult(
                     date=transaction.date,
