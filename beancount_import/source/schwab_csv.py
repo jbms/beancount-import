@@ -165,9 +165,11 @@ class BrokerageAction(enum.Enum):
     JOURNAL = "Journal"
     JOURNALED_SHARES = "Journaled Shares"
     LONG_TERM_CAP_GAIN = "Long Term Cap Gain"
+    LONG_TERM_CAP_GAIN_REINVEST = "Long Term Cap Gain Reinvest"
     MARGIN_INTEREST = "Margin Interest"
     CREDIT_INTEREST = "Credit Interest"
     MISC_CASH_ENTRY = "Misc Cash Entry"
+    MONEYLINK_DEPOSIT = "MoneyLink Deposit"
     MONEYLINK_TRANSFER = "MoneyLink Transfer"
     PRIOR_YEAR_CASH_DIVIDEND = "Pr Yr Cash Div"
     PRIOR_YEAR_DIV_REINVEST = "Pr Yr Div Reinvest"
@@ -185,6 +187,7 @@ class BrokerageAction(enum.Enum):
     SELL_TO_OPEN = "Sell to Open"
     SERVICE_FEE = "Service Fee"
     SHORT_TERM_CAP_GAIN = "Short Term Cap Gain"
+    SHORT_TERM_CAP_GAIN_REINVEST = "Short Term Cap Gain Reinvest"
     SPECIAL_DIVIDEND = "Special Dividend"
     STOCK_MERGER = "Stock Merger"
     STOCK_PLAN_ACTIVITY = "Stock Plan Activity"
@@ -329,6 +332,8 @@ class RawBrokerageEntry(RawEntry):
             BrokerageAction.NON_QUALIFIED_DIVIDEND,
             BrokerageAction.QUAL_DIV_REINVEST,
             BrokerageAction.REINVEST_DIVIDEND,
+            BrokerageAction.LONG_TERM_CAP_GAIN_REINVEST,
+            BrokerageAction.SHORT_TERM_CAP_GAIN_REINVEST,
         ):
             return CashDividend(
                 symbol=self.symbol,
@@ -359,6 +364,7 @@ class RawBrokerageEntry(RawEntry):
                 **shared_attrs,
             )
         if self.action in (BrokerageAction.MONEYLINK_TRANSFER,
+                           BrokerageAction.MONEYLINK_DEPOSIT,
                            BrokerageAction.JOURNAL,
                            BrokerageAction.JOURNALED_SHARES,
                            BrokerageAction.SECURITY_TRANSFER,
