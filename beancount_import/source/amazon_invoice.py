@@ -196,6 +196,7 @@ class Locale_de_DE(Locale_Data):
             shipment_shipped_pattern='^versandt am ([^\\n]+)$',
             shipment_nonshipped_headers={
                 'Versand wird vorbereitet',
+                'Versand in Kürze',
                 # Translations missing
                 'Service completed',
                 'Not Yet Shipped',
