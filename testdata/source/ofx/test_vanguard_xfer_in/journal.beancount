@@ -1,0 +1,9 @@
+1900-01-01 open Assets:Investment:Vanguard
+  ofx_org: "Vanguard"
+  ofx_broker_id: "vanguard.com"
+  ofx_account_type: "securities_only"
+  account_id: "12345678"
+1900-01-01 commodity PRBLX
+  cusip: "701769101"
+1900-01-01 commodity PARMX
+  cusip: "701765885"

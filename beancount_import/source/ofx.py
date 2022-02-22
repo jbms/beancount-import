@@ -281,9 +281,9 @@ generated:
         date: 2018-08-01
         ofx_fitid: "aedf1852aa39a54-623ee.4d104.5"
         ofx_type: "BUYSTOCK"
-      Assets:Investment:MyBank:Cash          -4115.86 USD                     
+      Assets:Investment:MyBank:Cash          -4115.86 USD
         ofx_fitid: "aedf1852aa39a54-623ee.4d104.5"
-      Expenses:Investment:MyBank:Fees         63.4869 USD                     
+      Expenses:Investment:MyBank:Fees         63.4869 USD
       Expenses:Investment:MyBank:Commission   23.0233 USD
 
     2018-08-01 * "SELLSTOCK"
@@ -291,10 +291,10 @@ generated:
         date: 2018-08-01
         ofx_fitid: "4a5141ead2c672e8a559.65-80e.b"
         ofx_type: "SELLSTOCK"
-      Income:MyBank:Capital-Gains:EEBHF                                           
-      Assets:Investment:MyBank:Cash            3382.60 USD                        
+      Income:MyBank:Capital-Gains:EEBHF
+      Assets:Investment:MyBank:Cash            3382.60 USD
         ofx_fitid: "4a5141ead2c672e8a559.65-80e.b"
-      Expenses:Investment:MyBank:Fees          31.9944 USD                        
+      Expenses:Investment:MyBank:Fees          31.9944 USD
       Expenses:Investment:MyBank:Commission    57.7239 USD
 
 Note that the cost of the shares is not specified in the generated SELL
@@ -317,8 +317,8 @@ created for posting to the `:Cash` account:
         date: 2011-07-15
         ofx_memo: "THIS IS A MEMO"
         ofx_type: "SELLMF"
-      Income:Vanguard:Capital-Gains:VFINX                            
-      Assets:Investment:Vanguard:Cash      4212.30 USD               
+      Income:Vanguard:Capital-Gains:VFINX
+      Assets:Investment:Vanguard:Cash      4212.30 USD
         ofx_fitid: "01234567890.0123.07152011.0"
 
     2011-07-15 * "Transfer due to: SELLMF - THIS IS A MEMO"
@@ -340,7 +340,7 @@ REINVEST transactions
         date: 2018-06-21
         ofx_fitid: "7c9254b784a.a9bd.edcfa27b.b"
         ofx_type: "REINVEST"
-      Income:Vanguard:Dividends:TYCDT            -93.21 USD             
+      Income:Vanguard:Dividends:TYCDT            -93.21 USD
 
 INCOME transactions
 -------------------
@@ -367,7 +367,7 @@ form are generated:
         ofx_fitid: "1234567890123456795AAA"
         ofx_memo: "Investment Expense"
         ofx_type: "TRANSFER"
-      Income:Vanguard:Capital-Gains:VANGUARD-92202V351                                                           
+      Income:Vanguard:Capital-Gains:VANGUARD-92202V351
       Expenses:FIXME                                                       1.67 USD
 
 The `ofx_memo`/`ofx_name` and `ofx_type` metadata fields provide features for
@@ -950,7 +950,8 @@ class ParsedOfxStatement(object):
                 units = normalize_fraction(raw.units)
                 if quantity_round_digits is not None:
                     units = round(units, quantity_round_digits)
-                unitprice = normalize_fraction(raw.unitprice)
+                if raw.unitprice is not None:
+                    unitprice = normalize_fraction(raw.unitprice)
 
                 cost_spec = None
                 price = None
