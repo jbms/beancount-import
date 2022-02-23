@@ -1,0 +1,45 @@
+;; date: 2022-01-24
+;; info: {"filename": "<testdata>/vanguard_xfer_in.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "223.828 PRBLX",
+;               "date": "2022-01-24",
+;               "key_value_pairs": {
+;                 "desc": "TRANSFER OF ACCOUNTTRANSFER OF ACCOUNT",
+;                 "ofx_memo": "TRANSFER OF ACCOUNTTRANSFER OF ACCOUNT",
+;                 "ofx_type": "TRANSFER"
+;               },
+;               "source_account": "Assets:Investment:Vanguard:PRBLX"
+;             }
+;           ]
+2022-01-24 * "TRANSFER - TRANSFER OF ACCOUNTTRANSFER OF ACCOUNT"
+  Assets:Investment:Vanguard:PRBLX  223.828 PRBLX {1 USD, "FIXME"}
+    date: 2022-01-24
+    ofx_fitid: "987654321"
+    ofx_memo: "TRANSFER OF ACCOUNTTRANSFER OF ACCOUNT"
+    ofx_type: "TRANSFER"
+  Expenses:FIXME
+
+;; date: 2022-01-24
+;; info: {"filename": "<testdata>/vanguard_xfer_in.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "612.584 PARMX",
+;               "date": "2022-01-24",
+;               "key_value_pairs": {
+;                 "desc": "TRANSFER OF ACCOUNTTRANSFER OF ACCOUNT",
+;                 "ofx_memo": "TRANSFER OF ACCOUNTTRANSFER OF ACCOUNT",
+;                 "ofx_type": "TRANSFER"
+;               },
+;               "source_account": "Assets:Investment:Vanguard:PARMX"
+;             }
+;           ]
+2022-01-24 * "TRANSFER - TRANSFER OF ACCOUNTTRANSFER OF ACCOUNT"
+  Assets:Investment:Vanguard:PARMX  612.584 PARMX {1 USD, "FIXME"}
+    date: 2022-01-24
+    ofx_fitid: "123456789"
+    ofx_memo: "TRANSFER OF ACCOUNTTRANSFER OF ACCOUNT"
+    ofx_type: "TRANSFER"
+  Expenses:FIXME

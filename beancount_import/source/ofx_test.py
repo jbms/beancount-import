@@ -20,6 +20,7 @@ examples = [
      'vanguard.ofx'),
     ('test_vanguard401k', 'vanguard401k.ofx'),
     ('test_vanguard_401k_matching', 'vanguard401k.ofx'),
+    ('test_vanguard_xfer_in', 'vanguard_xfer_in.ofx'),
     ('test_fidelity_savings', 'fidelity-savings.ofx'),
     ('test_suncorp', 'suncorp.ofx'),
     ('test_checking', 'checking.ofx'),
