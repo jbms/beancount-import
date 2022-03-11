@@ -402,9 +402,18 @@ class PaypalSource(LinkBasedSource, Source):
             tags=EMPTY_SET,
             postings=[])
         is_credit = data['isCredit']
-        counterparty_amount = parse_amount(data['amount']['grossAmount'])
-        funding_source_amount = parse_amount(data['amount']['netAmount'])
-        fee_amount = parse_amount(data['amount']['feeAmount'])
+
+        # Workaround for PayPal amounts observed to have a new format:
+        #   '5.000,00\xa0EUR',
+        # which is unsupported by parse_amount()
+        def normalize_amount(a):
+            if re.match(r"((?:[0-9\.]*)[0-9]+),[0-9]+\u00a0[A-Z]+", a):
+                return a.replace('.', '').replace(',', '.').replace(u'\xa0', u' ')
+            return a
+
+        counterparty_amount = parse_amount(normalize_amount(data['amount']['grossAmount']))
+        funding_source_amount = parse_amount(normalize_amount(data['amount']['netAmount']))
+        fee_amount = parse_amount(normalize_amount(data['amount']['feeAmount']))
         transaction_type_enum = data['transactionTypeEnum']
 
         # Metadata added to postings to the `self.assets_account` account.
@@ -496,7 +505,7 @@ class PaypalSource(LinkBasedSource, Source):
 
         if 'itemDetails' in data:
             for item in data['itemDetails']['itemList']:
-                units = parse_amount(item['itemTotalPrice'])
+                units = parse_amount(normalize_amount(item['itemTotalPrice']))
                 if 'quantity' in item:
                     quantity = D(item['quantity'])
                 else:
@@ -575,7 +584,7 @@ class PaypalSource(LinkBasedSource, Source):
                         if key in source:
                             meta[self.prefix + '_' + meta_suffix] = source[key]
                 # FIXME handle currencyCode
-                units = parse_amount(source['amount'])
+                units = parse_amount(normalize_amount(source['amount']))
                 if negate_funding_source_amounts:
                     units = -units
                 funding_source_inventory -= units
