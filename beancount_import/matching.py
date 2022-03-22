@@ -869,7 +869,6 @@ def _get_uncleared_aggregate_posting_candidates(
                                  []).append(posting)
 
     results = [] # type: List[Posting]
-    max_subset_size = 4
     sum_to_zero = set()  # type: Set[Tuple[int, ...]]
 
     def posting_set_id(postings):
@@ -905,6 +904,7 @@ def _get_uncleared_aggregate_posting_candidates(
         l.append((aggregate_posting, tuple(subset)))
 
     for (account, currency), posting_list in possible_sets.items():
+        max_subset_size = 4 if len(posting_list) < 25 else 1
         if len(posting_list) == 1:
             continue
         if len(posting_list) > max_subset_size:
