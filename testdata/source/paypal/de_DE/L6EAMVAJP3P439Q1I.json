@@ -1,0 +1,98 @@
+{
+  "itemDetails": {
+    "itemList": [
+      {
+        "name": "Kaufbetrag",
+        "price": "7,89\u00a0EUR",
+        "isNegative": false,
+        "itemTotalPrice": "0,00\u00a0EUR"
+      }
+    ]
+  },
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "BALANCE",
+        "amount": "7,89\u00a0EUR",
+        "currencyCode": "EUR"
+      }
+    ]
+  },
+  "fptiTag": "purchase:refund",
+  "internal_id": "Den89MLDXRzuqho_bSgVAsAcaY61tws7XtxWjRmxjsR0W3kLYuUWUcB6LUa",
+  "counterparty": {
+    "detailsCounterpartyText": "Muster Fachhandel",
+    "name": "eBay - Muster Fachhandel",
+    "isBusiness": true
+  },
+  "counterpartyBizName": "Muster Fachhandel",
+  "p2pRedirect": {},
+  "statusInfo": [
+    "Der <a href=\"/myaccount/transactions/details/84834841UL512324S\" target=\"_refund\" name=\"originalpurchaserefund\" data-pagename=\"main:walletweb:activity:{fptiTag}:td:originalpurchaserefund:\">urspr\u00fcngliche Einkauf</a> fand am 25. Januar 2020 statt."
+  ],
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/resolutioncenter/L6EAMVAJP3P439Q1I"
+    }
+  },
+  "paidWithHeader": "Bezahlt mit",
+  "savingsAccounts": {},
+  "fwcBrandCard": {
+    "productDisplayName": null,
+    "last4": null
+  },
+  "crossCurrencyRefundTooltip": "R\u00fcckzahlungen, die nach einem Tag ausgestellt werden, werden mit dem PayPal-Wechselkurs des R\u00fcckzahlungsdatums ausgezahlt. Der Betrag kann aufgrund von Wechselkursschwankungen variieren.",
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "REFUND",
+  "transactionType": "R\u00fcckzahlung",
+  "txnTypeServiceKey": "REFUND",
+  "status": "COMPLETED",
+  "date": "18. Februar 2020",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": true,
+  "isBuyer": true,
+  "isSeller": false,
+  "buyerConfirmId": "L6EAMVAJP3P439Q1I",
+  "transactionId": "L6EAMVAJP3P439Q1I",
+  "amount": {
+    "grossAmount": "7,89\u00a0EUR",
+    "netAmount": "7,89\u00a0EUR",
+    "fullPageNetAmount": "7,89",
+    "feeAmount": "0,00\u00a0EUR",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Geb\u00fchr",
+    "rawAmounts": {
+      "gross": {
+        "value": "7.89",
+        "currencyCode": "EUR"
+      }
+    }
+  },
+  "flags": {
+    "isRefund": true,
+    "isEbay": true,
+    "hasActions": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/L6EAMVAJP3P439Q1I",
+    "target": "_blank"
+  },
+  "partner": {
+    "contactPhone": "+49 1111111111111111",
+    "contactEmail": "test@test.de"
+  },
+  "isCFPBEligible": false,
+  "isOffersInfoEligible": false,
+  "isCCCreditFailureWithOffersRecovery": false,
+  "merchantLogoUrl": "https://www.paypalobjects.com/webstatic/wallet/merchants/mebay/logo_small-xhdpi.png",
+  "badge": {},
+  "isNeutralAmount": false,
+  "isAmountTooBig": false,
+  "hideEmailShowChat": true,
+  "paymentDetailsReturnUrl": "/myaccount/transactions",
+  "isNewActivityUIEnabled": true
+}

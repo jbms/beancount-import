@@ -1,0 +1,119 @@
+;; date: 2020-02-18
+;; info: {"filename": "<testdata>/L6EAMVAJP3P439Q1I.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "-7.89 EUR",
+;               "date": "2020-02-18",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "eBay - Muster Fachhandel"
+;                 ],
+;                 "paypal_item_name": [
+;                   "Kaufbetrag"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2020-02-18 * "eBay - Muster Fachhandel" "Rückzahlung" ^paypal.L6EAMVAJP3P439Q1I
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.L6EAMVAJP3P439Q1I\", \"path\": \"<testdata>/L6EAMVAJP3P439Q1I.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A  -7.89 EUR
+    paypal_counterparty: "eBay - Muster Fachhandel"
+    paypal_item_name: "Kaufbetrag"
+  Assets:Paypal      7.89 EUR
+    date: 2020-02-18
+    paypal_transaction_id: "L6EAMVAJP3P439Q1I"
+
+;; date: 2020-03-25
+;; info: {"filename": "<testdata>/3BK1B8JPQGQ5V8NVZ.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "-166.00 EUR",
+;               "date": "2020-03-25",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "John Doe"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2020-03-25 * "John Doe" "Geld erhalten - Mietwagen" ^paypal.3BK1B8JPQGQ5V8NVZ
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.3BK1B8JPQGQ5V8NVZ\", \"path\": \"<testdata>/3BK1B8JPQGQ5V8NVZ.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A  -166.00 EUR
+    paypal_counterparty: "John Doe"
+    paypal_counterparty_email: "johndoe@hotmail.de"
+    paypal_note: "Mietwagen"
+  Assets:Paypal      166.00 EUR
+    date: 2020-03-25
+    paypal_transaction_id: "3BK1B8JPQGQ5V8NVZ"
+
+;; date: 2020-12-10
+;; info: {"filename": "<testdata>/CPXAP66JVH5X1PAI5.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "108.71 EUR",
+;               "date": "2020-12-10",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "Test GmbH + Co. KG"
+;                 ],
+;                 "paypal_item_name": [
+;                   "Auftrag 1234567"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "-108.71 EUR",
+;               "date": "2020-12-10",
+;               "key_value_pairs": {
+;                 "paypal_funding_source_institution": [
+;                   "Bank"
+;                 ],
+;                 "paypal_funding_source_last4": [
+;                   "1234"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2020-12-10 * "Test GmbH + Co. KG" "Zahlung" ^paypal.CPXAP66JVH5X1PAI5
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.CPXAP66JVH5X1PAI5\", \"path\": \"<testdata>/CPXAP66JVH5X1PAI5.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A   108.71 EUR
+    paypal_counterparty: "Test GmbH + Co. KG"
+    paypal_counterparty_url: "https://www.test.de"
+    paypal_invoice_id: "1234567"
+    paypal_item_name: "Auftrag 1234567"
+  Expenses:FIXME    -108.71 EUR
+    paypal_funding_source_institution: "Bank"
+    paypal_funding_source_last4: "1234"
+
+;; date: 2022-03-14
+;; info: {"filename": "<testdata>/N40EZGDXBEFI1O3SA.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "-51.50 EUR",
+;               "date": "2022-03-14",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "John Doe"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2022-03-14 * "John Doe" "Geld erhalten - iMac 27“ Parts" ^paypal.N40EZGDXBEFI1O3SA
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.N40EZGDXBEFI1O3SA\", \"path\": \"<testdata>/N40EZGDXBEFI1O3SA.html\", \"type\": \"text/html\"}"
+  Expenses:Financial:Paypal:Fees    1.63 EUR
+  Expenses:FIXME:A                -51.50 EUR
+    paypal_counterparty: "John Doe"
+    paypal_counterparty_email: "johndoe@gmail.com"
+    paypal_note: "iMac 27“ Parts"
+  Assets:Paypal                    49.87 EUR
+    date: 2022-03-14
+    paypal_transaction_id: "N40EZGDXBEFI1O3SA"

@@ -27,6 +27,7 @@ expression like the following to specify the Paypal source:
          assets_account='Assets:Paypal',
          fee_account='Expenses:Financial:Paypal:Fees',
          prefix='paypal',
+         locale='en_EN' # optional, default: 'en_EN'
     )
 
 where `journal_dir` refers to the financial/ directory.
@@ -39,6 +40,10 @@ that associates it with the transaction data, and also serves as a prefix for
 various metadata keys.  The account in your Beancount journal corresponding to
 your Paypal balance should be specified as the `assets_account`.  The
 `fee_account` is the Expense account for fees charged by Paypal.
+
+The `locale` sets some country/language specific settings, e.g. correct
+parsing of the date string and the decimal/thousand separators for numbers.
+Currently, `en_EN` and `de_DE` are available. 
 
 Imported transaction format
 ===========================
@@ -134,6 +139,7 @@ from ..posting_date import POSTING_DATE_KEY
 from ..journal_editor import JournalEditor
 from ..matching import FIXME_ACCOUNT, SimpleInventory
 from ..amount_parsing import parse_amount
+
 
 transaction_schema = {
     '#schema': 'http://json-schema.org/draft-07/schema#',
@@ -346,15 +352,63 @@ transaction_schema = {
     ],
 }
 
+class Locale_en_EN:
+    LOCALE = 'en_EN'
+
+    @staticmethod
+    def parse_date(date_str) -> datetime.date:
+        return dateutil.parser.parse(date_str).date()
+
+    @staticmethod
+    def parse_amount(amount) -> Amount:
+        return parse_amount(amount)
+
+
+class Locale_de_DE:
+    LOCALE = 'de_DE'
+
+    class _parserinfo(dateutil.parser.parserinfo):
+        MONTHS=[
+            ('Jan', 'Januar'), ('Feb', 'Februar'), ('Mär', 'März'),
+            ('Apr', 'April'), ('Mai', 'Mai'), ('Jun', 'Juni'),
+            ('Jul', 'Juli'), ('Aug', 'August'), ('Sep', 'September'),
+            ('Okt', 'Oktober'), ('Nov', 'November'), ('Dez', 'Dezember')
+            ]
+    
+    @staticmethod
+    def parse_date(date_str) -> datetime.date:
+        return dateutil.parser.parse(date_str, parserinfo=Locale_de_DE._parserinfo(dayfirst=True)).date()
+
+    @staticmethod
+    def _format_number_str(value: str) -> str:
+        # 12.345,67 EUR -> 12345.67 EUR
+        thousands_sep = '.'
+        decimal_sep = ','
+        return value.replace(thousands_sep, '').replace(decimal_sep, '.')
+
+    @staticmethod
+    def parse_amount(amount) -> Amount:
+        return parse_amount(Locale_de_DE._format_number_str(amount))
+
+
+LOCALES = {x.LOCALE: x for x in [Locale_en_EN, Locale_de_DE]}
 
 class PaypalSource(LinkBasedSource, Source):
-    def __init__(self, directory: str, assets_account: str, fee_account: str, prefix: str,
+    def __init__(self,
+                 directory: str,
+                 assets_account: str,
+                 fee_account: str,
+                 prefix: str,
+                 earliest_date: datetime.date = None,
+                 locale: str='en_EN',
                  **kwargs) -> None:
         super().__init__(link_prefix=prefix + '.', **kwargs)
         self.directory = directory
         self.prefix = prefix
         self.assets_account = assets_account
         self.fee_account = fee_account
+        self.earliest_date = earliest_date
+        self.locale = LOCALES[locale]
         self.example_transaction_key_extractors[prefix + '_counterparty'] = None
         self.example_posting_key_extractors[prefix + '_counterparty'] = None
         self.example_posting_key_extractors[prefix + '_counterparty_note'] = None
@@ -370,7 +424,7 @@ class PaypalSource(LinkBasedSource, Source):
     def _make_import_result(self, txn_id: str, data: Dict[str, Any],
                             json_path: str):
         if data.get('status') == 'PENDING': return None
-        date = dateutil.parser.parse(data['date']).date()
+        date = self.locale.parse_date(data['date'])
         payee = data['counterparty']['name']
         narration = data['transactionType']
 
@@ -402,9 +456,9 @@ class PaypalSource(LinkBasedSource, Source):
             tags=EMPTY_SET,
             postings=[])
         is_credit = data['isCredit']
-        counterparty_amount = parse_amount(data['amount']['grossAmount'])
-        funding_source_amount = parse_amount(data['amount']['netAmount'])
-        fee_amount = parse_amount(data['amount']['feeAmount'])
+        counterparty_amount = self.locale.parse_amount(data['amount']['grossAmount'])
+        funding_source_amount = self.locale.parse_amount(data['amount']['netAmount'])
+        fee_amount = self.locale.parse_amount(data['amount']['feeAmount'])
         transaction_type_enum = data['transactionTypeEnum']
 
         # Metadata added to postings to the `self.assets_account` account.
@@ -496,13 +550,13 @@ class PaypalSource(LinkBasedSource, Source):
 
         if 'itemDetails' in data:
             for item in data['itemDetails']['itemList']:
-                units = parse_amount(item['itemTotalPrice'])
+                units = self.locale.parse_amount(item['itemTotalPrice'])
                 if 'quantity' in item:
                     quantity = D(item['quantity'])
                 else:
                     quantity = None
                 if units.number == ZERO and 'price' in item:
-                    units = parse_amount(item['price'])
+                    units = self.locale.parse_amount(item['price'])
                 extra_meta = [
                     (self.prefix + '_item_name', item['name']),
                 ]
@@ -515,20 +569,20 @@ class PaypalSource(LinkBasedSource, Source):
                 add_counterparty_posting(amount=units, extra_meta=extra_meta)
                 if 'discounts' in item:
                     for discount in item['discounts']:
-                        units = -parse_amount(discount['price'])
+                        units = -self.locale.parse_amount(discount['price'])
                         add_counterparty_posting(amount=units, extra_meta=[
                             (self.prefix + '_item_discount', discount['name']),
                         ])
             for key in ('salesTax', 'shippingAmount'):
                 if key in data['itemDetails']:
-                    units = parse_amount(data['itemDetails'][key])
+                    units = self.locale.parse_amount(data['itemDetails'][key])
                     add_counterparty_posting(amount=units, extra_meta=[
                         (self.prefix + '_item_type', key),
                     ])
 
             if 'discount' in data['itemDetails']:
                 for discount in data['itemDetails']['discount']:
-                    units = -parse_amount(discount['value'])
+                    units = -self.locale.parse_amount(discount['value'])
                     add_counterparty_posting(amount=units, extra_meta=[
                         (self.prefix + '_item_discount', discount['name']),
                     ])
@@ -575,7 +629,7 @@ class PaypalSource(LinkBasedSource, Source):
                         if key in source:
                             meta[self.prefix + '_' + meta_suffix] = source[key]
                 # FIXME handle currencyCode
-                units = parse_amount(source['amount'])
+                units = self.locale.parse_amount(source['amount'])
                 if negate_funding_source_amounts:
                     units = -units
                 funding_source_inventory -= units
@@ -634,6 +688,10 @@ class PaypalSource(LinkBasedSource, Source):
             import_result = self._make_import_result(
                     txn_id=txn_id, data=txn, json_path=path)
             if import_result is not None:
+                if self.earliest_date is not None and import_result.date < self.earliest_date:
+                    self.log_status("Skipping transaction with date [%s] before [%s]"
+                                    % ( str(import_result.date), self.earliest_date ) )
+                    continue
                 results.add_pending_entry(import_result)
         results.add_account(self.assets_account)
 

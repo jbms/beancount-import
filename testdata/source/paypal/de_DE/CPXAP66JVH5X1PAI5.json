@@ -1,0 +1,117 @@
+{
+  "itemDetails": {
+    "itemList": [
+      {
+        "name": "Auftrag 1234567",
+        "price": "108,71\u00a0EUR",
+        "isNegative": false,
+        "itemTotalPrice": "108,71\u00a0EUR"
+      }
+    ]
+  },
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "BANK_ACCOUNT",
+        "last4": "1234",
+        "institution": "Bank",
+        "amount": "108,71\u00a0EUR",
+        "currencyCode": "EUR"
+      }
+    ]
+  },
+  "shippingDetails": [
+    {
+      "address": {
+        "countryCode": "DE",
+        "line1": "Str 1",
+        "city": "Stadt",
+        "state": "",
+        "postalCode": "12345",
+        "countryName": "Deutschland",
+        "addresseeName": "John Doe"
+      }
+    }
+  ],
+  "fptiTag": "purchase",
+  "internal_id": "---removed---",
+  "counterparty": {
+    "detailsCounterpartyText": "Test GmbH + Co. KG",
+    "name": "Test GmbH + Co. KG",
+    "url": "https://www.test.de",
+    "isBusiness": true
+  },
+  "counterpartyBizName": "Test GmbH + Co. KG",
+  "invoiceId": "1234567",
+  "availableBackupFI": {
+    "type": "CREDIT_CARD_TYPE_CREDIT",
+    "last4": "1234",
+    "institution": "VISA",
+    "nickname": ""
+  },
+  "p2pRedirect": {},
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/resolutioncenter/CPXAP66JVH5X1PAI5"
+    }
+  },
+  "paidWithHeader": "Bezahlt mit",
+  "savingsAccounts": {},
+  "fwcBrandCard": {
+    "productDisplayName": null,
+    "last4": null
+  },
+  "crossCurrencyRefundTooltip": "R\u00fcckzahlungen, die nach einem Tag ausgestellt werden, werden mit dem PayPal-Wechselkurs des R\u00fcckzahlungsdatums ausgezahlt. Der Betrag kann aufgrund von Wechselkursschwankungen variieren.",
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "PAYMENT_SENT",
+  "transactionType": "Zahlung",
+  "txnTypeServiceKey": "PAYMENT",
+  "status": "COMPLETED",
+  "date": "10. Dezember 2020",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": false,
+  "isBuyer": true,
+  "isSeller": false,
+  "buyerConfirmId": "CPXAP66JVH5X1PAI5",
+  "transactionId": "CPXAP66JVH5X1PAI5",
+  "amount": {
+    "grossAmount": "108,71\u00a0EUR",
+    "netAmount": "108,71\u00a0EUR",
+    "fullPageNetAmount": "108,71",
+    "feeAmount": "0,00\u00a0EUR",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Geb\u00fchr",
+    "rawAmounts": {
+      "gross": {
+        "value": "108.71",
+        "currencyCode": "EUR"
+      }
+    }
+  },
+  "isShipped": false,
+  "flags": {
+    "claimStatusMessage": null,
+    "isCheckoutTxn": true,
+    "showPurchaseDetails": true,
+    "hasActions": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/CPXAP66JVH5X1PAI5",
+    "target": "_blank"
+  },
+  "partner": {},
+  "isCFPBEligible": false,
+  "isOffersInfoEligible": false,
+  "isCCCreditFailureWithOffersRecovery": false,
+  "merchantLogoUrl": "https://pics.paypal.com/00/s/---removed---/file.JPG",
+  "badge": {},
+  "isNeutralAmount": false,
+  "isAmountTooBig": false,
+  "hideEmailShowChat": true,
+  "paymentDetailsReturnUrl": "/myaccount/transactions",
+  "isNewActivityUIEnabled": true
+}
