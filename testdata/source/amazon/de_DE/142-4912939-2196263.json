@@ -1,0 +1,57 @@
+{
+    "order_id": "142-4912939-2196263",
+    "order_date": "2022-02-19",
+    "shipments": [
+        {
+            "shipped_date": null,
+            "items": [
+                {
+                    "quantity": "1",
+                    "description": "CS Labs W\u00e4rmeleitpaste & Pad Ersatz-Set, K5-PRO K4-PRO kompatibel mit iPhone, Mac PS4 PS3 Xbox Asus Dell usw.",
+                    "sold_by": "WWW.COMPUTER-SYSTEMS.GR",
+                    "condition": "Neu",
+                    "price": {
+                        "number": "15.99",
+                        "currency": "EUR"
+                    }
+                }
+            ],
+            "items_subtotal": null,
+            "pretax_adjustments": [],
+            "total_before_tax": {
+                "number": "15.99",
+                "currency": "EUR"
+            },
+            "posttax_adjustments": [],
+            "tax": [],
+            "total": {
+                "number": "15.99",
+                "currency": "EUR"
+            },
+            "errors": []
+        }
+    ],
+    "credit_card_transactions": [
+        {
+            "date": "2022-02-19",
+            "card_description": "Bankeinzug",
+            "card_ending_in": "600",
+            "amount": {
+                "number": "15.99",
+                "currency": "EUR"
+            }
+        }
+    ],
+    "pretax_adjustments": [
+        {
+            "description": "Verpackung & Versand",
+            "amount": {
+                "number": "0.00",
+                "currency": "EUR"
+            }
+        }
+    ],
+    "tax": [],
+    "posttax_adjustments": [],
+    "errors": []
+}

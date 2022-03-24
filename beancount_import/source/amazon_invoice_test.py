@@ -39,6 +39,8 @@ def test_parsing_en_EN(name: str):
     'D22-9220967-2566135', # digital order, audible subscription
     'D60-9825125-4795642', # digital order
     '399-5779972-5007935', # Direct Debit (Bankeinzug)
+    '588-8509154-9761865', # preparing shipment 
+    '142-4912939-2196263', # shipping soon
 ])
 def test_parsing_de_DE(name: str):
     testdata_dir_locale = os.path.join(testdata_dir, 'de_DE')
