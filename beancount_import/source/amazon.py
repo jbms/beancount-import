@@ -41,7 +41,7 @@ expression like the following to specify the Amazon source:
              'Gift Card Amount': 'Assets:Gift-Cards:Amazon',
              'Rewards Points': 'Income:Amazon:Cashback',
          },
-         locale='en_EN'  # optional, defaults to 'en_EN'
+         locale='en_US'  # optional, defaults to 'en_US'
     )
 
 The `amazon_account` key must be specified, and should be set to the email
@@ -56,7 +56,7 @@ specify these keys in the configuration, the generic automatic account
 prediction will likely handle them.
 
 The `locale` sets country/language specific settings.
-Currently, `en_EN` and `de_DE` are available. 
+Currently, `en_US` and `de_DE` are available. 
 
 Specifying credit cards
 =======================
@@ -547,7 +547,7 @@ class AmazonSource(Source):
                  posttax_adjustment_accounts: Dict[str, str] = {},
                  pickle_dir: str = None,
                  earliest_date: datetime.date = None,
-                 locale='en_EN',
+                 locale='en_US',
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
