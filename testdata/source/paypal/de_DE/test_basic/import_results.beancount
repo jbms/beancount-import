@@ -1,5 +1,5 @@
 ;; date: 2020-02-18
-;; info: {"filename": "<testdata>/L6EAMVAJP3P439Q1I.json", "type": "application/json"}
+;; info: {"filename": "<testdata>/de_DE/L6EAMVAJP3P439Q1I.json", "type": "application/json"}
 
 ; features: [
 ;             {
@@ -17,7 +17,7 @@
 ;             }
 ;           ]
 2020-02-18 * "eBay - Muster Fachhandel" "Rückzahlung" ^paypal.L6EAMVAJP3P439Q1I
-  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.L6EAMVAJP3P439Q1I\", \"path\": \"<testdata>/L6EAMVAJP3P439Q1I.html\", \"type\": \"text/html\"}"
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.L6EAMVAJP3P439Q1I\", \"path\": \"<testdata>/de_DE/L6EAMVAJP3P439Q1I.html\", \"type\": \"text/html\"}"
   Expenses:FIXME:A  -7.89 EUR
     paypal_counterparty: "eBay - Muster Fachhandel"
     paypal_item_name: "Kaufbetrag"
@@ -26,7 +26,7 @@
     paypal_transaction_id: "L6EAMVAJP3P439Q1I"
 
 ;; date: 2020-03-25
-;; info: {"filename": "<testdata>/3BK1B8JPQGQ5V8NVZ.json", "type": "application/json"}
+;; info: {"filename": "<testdata>/de_DE/3BK1B8JPQGQ5V8NVZ.json", "type": "application/json"}
 
 ; features: [
 ;             {
@@ -41,7 +41,7 @@
 ;             }
 ;           ]
 2020-03-25 * "John Doe" "Geld erhalten - Mietwagen" ^paypal.3BK1B8JPQGQ5V8NVZ
-  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.3BK1B8JPQGQ5V8NVZ\", \"path\": \"<testdata>/3BK1B8JPQGQ5V8NVZ.html\", \"type\": \"text/html\"}"
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.3BK1B8JPQGQ5V8NVZ\", \"path\": \"<testdata>/de_DE/3BK1B8JPQGQ5V8NVZ.html\", \"type\": \"text/html\"}"
   Expenses:FIXME:A  -166.00 EUR
     paypal_counterparty: "John Doe"
     paypal_counterparty_email: "johndoe@hotmail.de"
@@ -51,7 +51,7 @@
     paypal_transaction_id: "3BK1B8JPQGQ5V8NVZ"
 
 ;; date: 2020-12-10
-;; info: {"filename": "<testdata>/CPXAP66JVH5X1PAI5.json", "type": "application/json"}
+;; info: {"filename": "<testdata>/de_DE/CPXAP66JVH5X1PAI5.json", "type": "application/json"}
 
 ; features: [
 ;             {
@@ -82,7 +82,7 @@
 ;             }
 ;           ]
 2020-12-10 * "Test GmbH + Co. KG" "Zahlung" ^paypal.CPXAP66JVH5X1PAI5
-  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.CPXAP66JVH5X1PAI5\", \"path\": \"<testdata>/CPXAP66JVH5X1PAI5.html\", \"type\": \"text/html\"}"
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.CPXAP66JVH5X1PAI5\", \"path\": \"<testdata>/de_DE/CPXAP66JVH5X1PAI5.html\", \"type\": \"text/html\"}"
   Expenses:FIXME:A   108.71 EUR
     paypal_counterparty: "Test GmbH + Co. KG"
     paypal_counterparty_url: "https://www.test.de"
@@ -93,7 +93,7 @@
     paypal_funding_source_last4: "1234"
 
 ;; date: 2022-03-14
-;; info: {"filename": "<testdata>/N40EZGDXBEFI1O3SA.json", "type": "application/json"}
+;; info: {"filename": "<testdata>/de_DE/N40EZGDXBEFI1O3SA.json", "type": "application/json"}
 
 ; features: [
 ;             {
@@ -108,7 +108,7 @@
 ;             }
 ;           ]
 2022-03-14 * "John Doe" "Geld erhalten - iMac 27“ Parts" ^paypal.N40EZGDXBEFI1O3SA
-  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.N40EZGDXBEFI1O3SA\", \"path\": \"<testdata>/N40EZGDXBEFI1O3SA.html\", \"type\": \"text/html\"}"
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.N40EZGDXBEFI1O3SA\", \"path\": \"<testdata>/de_DE/N40EZGDXBEFI1O3SA.html\", \"type\": \"text/html\"}"
   Expenses:Financial:Paypal:Fees    1.63 EUR
   Expenses:FIXME:A                -51.50 EUR
     paypal_counterparty: "John Doe"
