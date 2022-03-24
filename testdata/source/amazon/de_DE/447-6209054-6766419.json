@@ -1,0 +1,49 @@
+{
+  "order_id": "447-6209054-6766419",
+  "order_date": "2017-07-27",
+  "shipments": [
+      {
+          "shipped_date": null,
+          "items": [
+              {
+                  "quantity": "1",
+                  "description": "Amazon-Konto aufgeladen",
+                  "sold_by": null,
+                  "condition": null,
+                  "price": {
+                      "number": "100.00",
+                      "currency": "EUR"
+                  }
+              }
+          ],
+          "items_subtotal": null,
+          "pretax_adjustments": [],
+          "total_before_tax": {
+              "number": "100.00",
+              "currency": "EUR"
+          },
+          "posttax_adjustments": [],
+          "tax": [],
+          "total": {
+              "number": "100.00",
+              "currency": "EUR"
+          },
+          "errors": []
+      }
+  ],
+  "credit_card_transactions": [
+      {
+          "date": "2017-07-27",
+          "card_description": "Visa / Electron",
+          "card_ending_in": "1234",
+          "amount": {
+              "number": "100.00",
+              "currency": "EUR"
+          }
+      }
+  ],
+  "pretax_adjustments": [],
+  "tax": [],
+  "posttax_adjustments": [],
+  "errors": []
+}

@@ -39,6 +39,9 @@ def test_parsing_en_EN(name: str):
     'D22-9220967-2566135', # digital order, audible subscription
     'D60-9825125-4795642', # digital order
     '399-5779972-5007935', # Direct Debit (Bankeinzug)
+    '071-4816388-0694813', # gift card amazon
+    '075-2225405-7594823', # gift card spotify
+    '447-6209054-6766419', # charge up Amazon account
     '588-8509154-9761865', # preparing shipment 
     '142-4912939-2196263', # shipping soon
 ])
