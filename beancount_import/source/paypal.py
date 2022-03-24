@@ -27,7 +27,7 @@ expression like the following to specify the Paypal source:
          assets_account='Assets:Paypal',
          fee_account='Expenses:Financial:Paypal:Fees',
          prefix='paypal',
-         locale='en_EN' # optional, default: 'en_EN'
+         locale='en_US' # optional, default: 'en_US'
     )
 
 where `journal_dir` refers to the financial/ directory.
@@ -43,7 +43,7 @@ your Paypal balance should be specified as the `assets_account`.  The
 
 The `locale` sets some country/language specific settings, e.g. correct
 parsing of the date string and the decimal/thousand separators for numbers.
-Currently, `en_EN` and `de_DE` are available. 
+Currently, `en_US` and `de_DE` are available. 
 
 Imported transaction format
 ===========================
@@ -352,8 +352,8 @@ transaction_schema = {
     ],
 }
 
-class Locale_en_EN:
-    LOCALE = 'en_EN'
+class Locale_en_US(object):
+    LOCALE = 'en_US'
 
     @staticmethod
     def parse_date(date_str) -> datetime.date:
@@ -364,7 +364,7 @@ class Locale_en_EN:
         return parse_amount(amount)
 
 
-class Locale_de_DE:
+class Locale_de_DE(object):
     LOCALE = 'de_DE'
 
     class _parserinfo(dateutil.parser.parserinfo):
@@ -391,7 +391,7 @@ class Locale_de_DE:
         return parse_amount(Locale_de_DE._format_number_str(amount))
 
 
-LOCALES = {x.LOCALE: x for x in [Locale_en_EN, Locale_de_DE]}
+LOCALES = {x.LOCALE: x for x in [Locale_en_US, Locale_de_DE]}
 
 class PaypalSource(LinkBasedSource, Source):
     def __init__(self,
@@ -400,7 +400,7 @@ class PaypalSource(LinkBasedSource, Source):
                  fee_account: str,
                  prefix: str,
                  earliest_date: datetime.date = None,
-                 locale: str='en_EN',
+                 locale: str='en_US',
                  **kwargs) -> None:
         super().__init__(link_prefix=prefix + '.', **kwargs)
         self.directory = directory
