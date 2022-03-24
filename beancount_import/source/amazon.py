@@ -560,7 +560,7 @@ class AmazonSource(Source):
         self.pickler = AmazonPickler(pickle_dir)
 
         self.earliest_date = earliest_date
-        self.locale = LOCALES[locale]()
+        self.locale = LOCALES[locale]
 
         self.invoice_filenames = []  # type: List[Tuple[str, str]]
         for filename in os.listdir(self.directory):

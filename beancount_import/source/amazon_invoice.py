@@ -1,14 +1,13 @@
 """Parses an Amazon.com/.de regular or digital order details HTML file."""
 
-from typing import NamedTuple, Optional, List, Union, Iterable, Dict, Sequence, cast, Any
-import dataclasses
+from typing import NamedTuple, Optional, List, Union, Iterable, Dict, Sequence, cast
+from abc import ABC, abstractmethod
 import collections
 import re
 import os
 import functools
 import datetime
 import logging
-from abc import ABC, abstractmethod
 
 import bs4
 import dateutil.parser
@@ -400,6 +399,7 @@ def parse_shipments(soup, locale=Locale_en_US()) -> List[Shipment]:
     header_tables = soup.find_all(is_shipment_header_table)
 
     if header_tables is []:
+        # no shipment table
         # e.g. if only gift cards in order
         logger.debug('no shipment table found')
         return []
@@ -525,7 +525,7 @@ def parse_gift_cards(soup, locale=Locale_en_US()) -> List[Shipment]:
 
     if header_tables is []:
         # if no gift cards in order
-        logger.debug('no shipment table found')
+        logger.debug('no gift card table found')
         return []
 
     shipments = []  # type: List[Shipment]
