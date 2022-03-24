@@ -123,6 +123,7 @@ import datetime
 import os
 import re
 import json
+from abc import ABC, abstractmethod
 
 import jsonschema
 import dateutil.parser
@@ -352,8 +353,24 @@ transaction_schema = {
     ],
 }
 
-class Locale_en_US(object):
-    LOCALE = 'en_US'
+
+class Locale_Base(ABC):
+    # metaclass
+    LOCALE: str
+
+    @staticmethod
+    @abstractmethod
+    def parse_date(date_str) -> datetime.date:
+        raise NotImplementedError
+
+    @staticmethod
+    @abstractmethod
+    def parse_amount(amount) -> Amount:
+        raise NotImplementedError
+
+
+class Locale_en_US(Locale_Base):
+    LOCALE='en_US'
 
     @staticmethod
     def parse_date(date_str) -> datetime.date:
@@ -364,8 +381,8 @@ class Locale_en_US(object):
         return parse_amount(amount)
 
 
-class Locale_de_DE(object):
-    LOCALE = 'de_DE'
+class Locale_de_DE(Locale_Base):
+    LOCALE='de_DE'
 
     class _parserinfo(dateutil.parser.parserinfo):
         MONTHS=[
@@ -377,7 +394,10 @@ class Locale_de_DE(object):
     
     @staticmethod
     def parse_date(date_str) -> datetime.date:
-        return dateutil.parser.parse(date_str, parserinfo=Locale_de_DE._parserinfo(dayfirst=True)).date()
+        return dateutil.parser.parse(
+            date_str,
+            parserinfo=Locale_de_DE._parserinfo(dayfirst=True)
+            ).date()
 
     @staticmethod
     def _format_number_str(value: str) -> str:
@@ -392,6 +412,7 @@ class Locale_de_DE(object):
 
 
 LOCALES = {x.LOCALE: x for x in [Locale_en_US, Locale_de_DE]}
+
 
 class PaypalSource(LinkBasedSource, Source):
     def __init__(self,
