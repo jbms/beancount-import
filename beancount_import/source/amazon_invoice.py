@@ -269,7 +269,7 @@ Adjustment = NamedTuple('Adjustment', [
 Item = NamedTuple('Item', [
     ('quantity', Decimal),
     ('description', str),
-    ('sold_by', str),
+    ('sold_by', Optional[str]),
     ('condition', Optional[str]),
     ('price', Amount),
 ])
@@ -556,12 +556,15 @@ def parse_gift_cards(soup, locale=Locale_en_EN()) -> List[Shipment]:
                 price = locale.parse_amount(price)
 
             m = re.search(locale.gift_card_to, description_node.text.strip(), re.MULTILINE|re.UNICODE)
-            print(m)
             if m is None:
+                # if no match is found
                 # check if Amazon account has been charged up
                 m = re.search(locale.gift_card_amazon_account, description_node.text.strip(), re.MULTILINE|re.UNICODE)
-                print(m)
-            description = m.group('type').strip() + ' ' + m.group('sent_to').strip()
+            if m is None:
+                errors.append('Failed to extract item description')
+                description=''
+            else:
+                description = m.group('type').strip() + ' ' + m.group('sent_to').strip()
 
             items.append(
                 Item(
