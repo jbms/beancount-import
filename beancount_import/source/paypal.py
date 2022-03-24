@@ -555,7 +555,10 @@ class PaypalSource(LinkBasedSource, Source):
 
 
         if fee_amount.number != ZERO:
-            if negate_counterparty_amounts and transaction_type_enum != 'EBAY_SALE':
+            if (negate_counterparty_amounts
+                and transaction_type_enum != 'EBAY_SALE'
+                and not transaction_type_enum.endswith('_RECEIVED')
+            ):
                 amount = -fee_amount
             else:
                 amount = fee_amount
