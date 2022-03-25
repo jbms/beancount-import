@@ -1,0 +1,145 @@
+{
+  "fundingSource": {
+    "fundingSourceList": [
+      {
+        "type": "BALANCE",
+        "amount": "49,87\u00a0EUR",
+        "currencyCode": "EUR"
+      }
+    ]
+  },
+  "shippingDetails": [
+    {
+      "address": {
+        "countryCode": "DE",
+        "line1": "weg 1",
+        "city": "Musterstadt",
+        "state": "",
+        "postalCode": "12345",
+        "countryName": "Deutschland",
+        "addresseeName": "John Doe"
+      }
+    }
+  ],
+  "fptiTag": "moneyrec",
+  "internal_id": "2ZKAGGazBQZ3BlZIZpUftsBZWRkHvo_vF2WOdhZaFNXTyOdZmBDkFEnPW6q",
+  "counterparty": {
+    "detailsCounterpartyText": "John Doe",
+    "name": "John Doe",
+    "email": "johndoe@gmail.com",
+    "url": "",
+    "isBusiness": true,
+    "shouldShowChat": true,
+    "chatUrl": "/myaccount/transfer/chat/transaction/N40EZGDXBEFI1O3SA",
+    "chatLink": "John Doe schreiben"
+  },
+  "counterpartyBizName": "John Doe REMAC ME",
+  "notesInfo": {
+    "context": "from",
+    "note": "iMac 27\u201c Parts"
+  },
+  "actions": {
+    "printPackingSlip": {
+      "content": "Versandschein drucken",
+      "url": "/shiplabel/packingslip/N40EZGDXBEFI1O3SA"
+    },
+    "printShippingLabel": {
+      "content": "Versandetikett drucken",
+      "url": "/shiplabel/create/N40EZGDXBEFI1O3SA"
+    },
+    "addTracking": {
+      "content": "Sendungsdaten hinzuf\u00fcgen",
+      "url": "/addtracking/add/N40EZGDXBEFI1O3SA"
+    },
+    "refund": {
+      "content": "Diesen Betrag zur\u00fcckzahlen",
+      "url": "/activity/actions/refund/edit/N40EZGDXBEFI1O3SA"
+    }
+  },
+  "summarySpecificActions": {
+    "print_shipping_label": {
+      "action": "SHIP",
+      "url": "/shiplabel/create/N40EZGDXBEFI1O3SA",
+      "actionContent": "Versandetikett drucken"
+    },
+    "add_tracking": {
+      "action": "ADD_TRACKING",
+      "url": "/addtracking/add/N40EZGDXBEFI1O3SA",
+      "actionContent": "Sendungsdaten hinzuf\u00fcgen"
+    },
+    "refund": {
+      "action": "REFUND",
+      "url": "/activity/actions/refund/edit/N40EZGDXBEFI1O3SA",
+      "actionContent": "Diesen Betrag zur\u00fcckzahlen"
+    }
+  },
+  "p2pRedirect": {},
+  "hasActions": true,
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/resolutioncenter/N40EZGDXBEFI1O3SA"
+    },
+    "sellerProtectionPolicy": {
+      "target": "_blank",
+      "linkUrl": "/webapps/mpp/ua/useragreement-full#11"
+    }
+  },
+  "savingsAccounts": {},
+  "fwcBrandCard": {
+    "productDisplayName": null,
+    "last4": null
+  },
+  "crossCurrencyRefundTooltip": "R\u00fcckzahlungen, die nach einem Tag ausgestellt werden, werden mit dem PayPal-Wechselkurs des R\u00fcckzahlungsdatums ausgezahlt. Der Betrag kann aufgrund von Wechselkursschwankungen variieren.",
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "SEND_MONEY_RECEIVED",
+  "transactionType": "Geld erhalten",
+  "txnTypeServiceKey": "PAYMENT",
+  "status": "COMPLETED",
+  "date": "14. M\u00e4rz 2022",
+  "creationTimeBucket": "Between1_2Weeks",
+  "updateTimeBucket": "Between1_2Weeks",
+  "isCredit": true,
+  "isBuyer": false,
+  "isSeller": true,
+  "buyerConfirmId": "N40EZGDXBEFI1O3SA",
+  "transactionId": "N40EZGDXBEFI1O3SA",
+  "amount": {
+    "grossAmount": "51,50\u00a0EUR",
+    "netAmount": "49,87\u00a0EUR",
+    "fullPageNetAmount": "49,87",
+    "feeAmount": "1,63\u00a0EUR",
+    "grossExceedsNet": true,
+    "isZeroFee": false,
+    "feeLabel": "Geb\u00fchr",
+    "rawAmounts": {
+      "gross": {
+        "value": "51.5",
+        "currencyCode": "EUR"
+      }
+    }
+  },
+  "isShipped": false,
+  "sellerProtectionStatus": "ELIGIBLE",
+  "flags": {
+    "isP2PService": true,
+    "showPaymentDetails": true,
+    "hasActions": true,
+    "showSellerSafety": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/N40EZGDXBEFI1O3SA",
+    "target": "_blank"
+  },
+  "partner": {},
+  "isCFPBEligible": false,
+  "isOffersInfoEligible": false,
+  "isCCCreditFailureWithOffersRecovery": false,
+  "badge": {},
+  "isNeutralAmount": false,
+  "isAmountTooBig": false,
+  "hideEmailShowChat": true,
+  "paymentDetailsReturnUrl": "/myaccount/transactions",
+  "isNewActivityUIEnabled": true
+}
