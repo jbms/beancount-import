@@ -1,5 +1,34 @@
-"""Parses an Amazon.com/.de regular or digital order details HTML file."""
+"""Parses an Amazon.com/.de regular or digital order details HTML file.
 
+Hierarchy of functions for parsing Amazon invoices:
+
+main(...)
+    |
+    + parse_invoice(...)
+    |    |
+    |    + parse_digital_order_invoice(...)
+    |    |   |
+    |    |   + parse_credit_card_transactions_from_payments_table(...)
+    |    |   +-> returns Order(..., shipments, ...)
+    |    |
+    |    + parse_regular_order_invoice(...)
+    |        |
+    |        + parse_shipments(...)
+    |        |   + parse_shipment_payments(...)
+    |        |   |   +-> returns Shipment
+    |        |   +-> returns List[Shipment]
+    |        |
+    |        + parse_gift_cards(...)
+    |        |   + parse_shipment_payments(...)
+    |        |   |   +-> returns Shipment
+    |        |   +-> returns List[Shipment]
+    |        |
+    |        + parse_credit_card_transactions(...)
+    |        + parse_credit_card_transactions_from_payments_table(...)
+    |        +-> returns Order(..., shipments, ...)
+    |
+    +-> returns List[Order]
+"""
 from typing import NamedTuple, Optional, List, Union, Iterable, Dict, Sequence, cast
 from abc import ABC, abstractmethod
 import collections
