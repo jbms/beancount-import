@@ -17,7 +17,7 @@ testdata_dir = os.path.abspath(
     '166-7926740-5141621',
     'D56-5204779-4181560',
 ])
-def test_parsing_en_EN(name: str):
+def test_parsing_en_US(name: str):
     source_path = os.path.join(testdata_dir, name + '.html')
     invoice = amazon_invoice.parse_invoice(source_path)
     json_path = os.path.join(testdata_dir, name + '.json')
