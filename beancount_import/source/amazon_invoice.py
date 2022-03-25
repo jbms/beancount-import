@@ -459,11 +459,16 @@ def parse_shipments(soup, locale=Locale_en_US()) -> List[Shipment]:
                 # on the invoice, which is the total price in this case (but the per-unit price in other cases) - so if there's a quantity
                 # and a weight, ignore the quantity and treat it as 1
                 # alternately, capture the weight and the per-unit price and multiply out
-                quantity = m.group("quantity") # ignore quantity for weight items
 
-            if quantity is None:
+                # 'quantity' group: integer, no weight units, no decimals
+                quantity = m.group("quantity")
+                # set silently to 1 if other regex groups match
+                if quantity is None:
+                    quantity = 1
+            else:
+                # regex did not match at all -> log warning
                 quantity = 1
-                logger.info("Unable to extract quantity, using 1: %s" % description_node.text)
+                logger.warning("Unable to extract quantity, using 1: %s" % description_node.text)
 
             quantity = D(quantity)
 
