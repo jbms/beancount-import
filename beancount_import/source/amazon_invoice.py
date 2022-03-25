@@ -417,7 +417,7 @@ def parse_shipments(soup, locale=Locale_en_US()) -> List[Shipment]:
             assert m is not None
             shipped_date = locale.parse_date(m.group(1))
 
-        items = []
+        items = []  # type: List[Item]
 
         shipment_table = header_table.find_parent('table')
 
@@ -468,7 +468,7 @@ def parse_shipments(soup, locale=Locale_en_US()) -> List[Shipment]:
             else:
                 # regex did not match at all -> log warning
                 quantity = 1
-                logger.warning("Unable to extract quantity, using 1: %s" % description_node.text)
+                errors.append("Unable to extract quantity, using 1: %s" % description_node.text)
 
             quantity = D(quantity)
 
@@ -538,7 +538,7 @@ def parse_gift_cards(soup, locale=Locale_en_US()) -> List[Shipment]:
 
     for header_table in header_tables:
 
-        items = []
+        items = []  # type: List[Item]
 
         shipment_table = header_table.find_parent('table')
 
@@ -601,8 +601,10 @@ def parse_gift_cards(soup, locale=Locale_en_US()) -> List[Shipment]:
 
 
 def parse_shipment_payments(
-    shipment_table, items, errors,
-    shipped_date=None, locale=Locale_en_US()):
+        shipment_table,
+        items, errors,
+        shipped_date=None,
+        locale=Locale_en_US()) -> Shipment:
     """ Parse payment information of single shipments and gift card orders.
     """
     logger.debug('parsing shipment amounts...')
@@ -738,7 +740,7 @@ def parse_invoice(path: str, locale=Locale_en_US()) -> Optional[Order]:
 
 
 def parse_regular_order_invoice(path: str, locale=Locale_en_US()) -> Order:
-    errors = []
+    errors = []  # type: Errors
     with open(path, 'rb') as f:
         soup = bs4.BeautifulSoup(f.read(), 'lxml')
     logger.debug('parsing shipments...')
@@ -955,7 +957,7 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US()) -> Optional[Or
     items_ordered_header = digital_order_table.find(is_items_ordered_header)
 
     item_rows = items_ordered_header.find_next_siblings('tr')
-    items = []
+    items = []  # List[Item]
 
     other_fields_td = None
 
