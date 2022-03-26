@@ -288,7 +288,7 @@ class VenmoSource(Source):
             if t == 'Standard Transfer':
                 has_transfer = True
                 has_payment = False
-            elif t == 'Charge' or t == 'Payment':
+            elif t in ['Charge', 'Payment', 'Merchant Transaction']:
                 has_transfer = raw_txn[CSV_FUNDING_SOURCE_KEY] != 'Venmo balance' and raw_txn[CSV_DESTINATION_KEY] != 'Venmo balance'
                 has_payment = True
             else:
@@ -349,7 +349,7 @@ class VenmoSource(Source):
     def _make_transaction(self, raw_txn: RawTransaction, link: bool, is_transfer: bool):
         amount = original_amount = amount_parsing.parse_amount(raw_txn[CSV_AMOUNT_TOTAL_KEY])
         txn_type = raw_txn[CSV_TYPE_KEY]
-        is_payment_txn = txn_type == 'Payment' or txn_type == 'Charge'
+        is_payment_txn = txn_type in ['Payment', 'Charge', 'Merchant Transaction']
         if is_transfer and is_payment_txn:
             amount = -amount
         txn_time = parse_csv_date(raw_txn[CSV_DATETIME_KEY])
@@ -365,7 +365,8 @@ class VenmoSource(Source):
                         (VENMO_TYPE_KEY, txn_type),
                     ]),
                 )
-        note = re.sub(r'\s+', ' ', raw_txn[CSV_NOTE_KEY])
+        # CSV_NOTE_KEY field empty for Merchan Transactions, fall back on TO which contains merchant name
+        note = re.sub(r'\s+', ' ', raw_txn[CSV_NOTE_KEY if txn_type != 'Merchant Transaction' else CSV_TO_KEY])
         payee = 'Venmo'
         if is_payment_txn:
             if original_amount.number > ZERO:
