@@ -412,7 +412,21 @@ def reduce_adjustments(adjustments: List[Adjustment]) -> List[Adjustment]:
     return [
         Adjustment(k, reduce_amounts(v)) for k, v in all_adjustments.items()
     ]
-    
+
+
+def is_items_ordered_header(node, locale=Locale_en_US) -> bool:
+    """
+    Identify Header of Items Ordered table (within shipment table)
+    """
+    if node.name != 'tr':
+        return False
+    tds = node('td')
+    if len(tds) < 2:
+        return False
+    m1 = re.match(locale.items_ordered, tds[0].text.strip())
+    m2 = re.match(locale.price, tds[1].text.strip())
+    return(m1 is not None and m2 is not None)
+
 
 def parse_shipments(soup, locale=Locale_en_US) -> List[Shipment]:
     """
@@ -449,20 +463,8 @@ def parse_shipments(soup, locale=Locale_en_US) -> List[Shipment]:
         items = []  # type: List[Item]
 
         shipment_table = header_table.find_parent('table')
-
-        logger.debug('parsing shipment items...')
-        def is_items_ordered_header(node):
-            if node.name != 'tr':
-                return False
-            tds = node('td')
-            if len(tds) < 2:
-                return False
-            m1 = re.match(locale.items_ordered, tds[0].text.strip())
-            m2 = re.match(locale.price, tds[1].text.strip())
-            return(m1 is not None and m2 is not None)
-
-        items_ordered_header = shipment_table.find(is_items_ordered_header)
-
+        items_ordered_header = shipment_table.find(
+            lambda node: is_items_ordered_header(node, locale))
         item_rows = items_ordered_header.find_next_siblings('tr')
 
         for item_row in item_rows:
@@ -570,20 +572,8 @@ def parse_gift_cards(soup, locale=Locale_en_US) -> List[Shipment]:
         items = []  # type: List[Item]
 
         shipment_table = header_table.find_parent('table')
-
-        logger.debug('parsing gift card items...')
-        def is_items_ordered_header(node):
-            if node.name != 'tr':
-                return False
-            tds = node('td')
-            if len(tds) < 2:
-                return False
-            m1 = re.match(locale.items_ordered, tds[0].text.strip())
-            m2 = re.match(locale.price, tds[1].text.strip())
-            return(m1 is not None and m2 is not None)
-
-        items_ordered_header = shipment_table.find(is_items_ordered_header)
-
+        items_ordered_header = shipment_table.find(
+            lambda node: is_items_ordered_header(node, locale))
         item_rows = [items_ordered_header]
 
         for item_row in item_rows:
@@ -973,18 +963,8 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
     order_date = locale.parse_date(m.group(1))
 
     logger.debug('parsing items...')
-    def is_items_ordered_header(node):
-        if node.name != 'tr':
-            return False
-        tds = node('td')
-        if len(tds) < 2:
-            return False
-        m1 = re.match(locale.items_ordered, tds[0].text.strip())
-        m2 = re.match(locale.price, tds[1].text.strip())
-        return(m1 is not None and m2 is not None)
-
-    items_ordered_header = digital_order_table.find(is_items_ordered_header)
-
+    items_ordered_header = digital_order_table.find(
+        lambda node: is_items_ordered_header(node, locale))
     item_rows = items_ordered_header.find_next_siblings('tr')
     items = []  # List[Item]
 
