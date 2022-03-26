@@ -345,3 +345,75 @@
     venmo_transfer_id: "7315187729"
     venmo_type: "Standard Transfer"
   Expenses:FIXME   1341.23 USD
+
+;; date: 2022-01-09
+;; info: {"filename": "<testdata>/transactions.csv", "line": 10, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-2.24 USD",
+;               "date": "2022-01-09",
+;               "key_value_pairs": {
+;                 "venmo_description": "Local Eats",
+;                 "venmo_payee": "Charlie Chow",
+;                 "venmo_type": "Merchant Transaction"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2022-01-09 * "Charlie Chow" "Local Eats"
+  Assets:Venmo    -2.24 USD
+    date: 2022-01-09
+    venmo_description: "Local Eats"
+    venmo_payee: "Charlie Chow"
+    venmo_payment_id: "1291991306506600548"
+    venmo_type: "Merchant Transaction"
+  Expenses:FIXME   2.24 USD
+
+;; date: 2022-02-18
+;; info: {"filename": "<testdata>/transactions.csv", "line": 11, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "22.84 USD",
+;               "date": "2022-02-18",
+;               "key_value_pairs": {
+;                 "venmo_account_description": "Bank Checking*1234",
+;                 "venmo_type": "Merchant Transaction"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2022-02-18 * "Charlie Chow" "Transfer" ^venmo.1299175267271967461
+  Assets:Venmo     22.84 USD
+    date: 2022-02-18
+    venmo_account_description: "Bank Checking*1234"
+    venmo_description: "Distant Treats"
+    venmo_payee: "Charlie Chow"
+    venmo_transfer_id: "1299175267271967461"
+    venmo_type: "Merchant Transaction"
+  Expenses:FIXME  -22.84 USD
+
+;; date: 2022-02-18
+;; info: {"filename": "<testdata>/transactions.csv", "line": 11, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-22.84 USD",
+;               "date": "2022-02-18",
+;               "key_value_pairs": {
+;                 "venmo_description": "Distant Treats",
+;                 "venmo_payee": "Charlie Chow",
+;                 "venmo_type": "Merchant Transaction"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2022-02-18 * "Charlie Chow" "Distant Treats" ^venmo.1299175267271967461
+  Assets:Venmo    -22.84 USD
+    date: 2022-02-18
+    venmo_description: "Distant Treats"
+    venmo_payee: "Charlie Chow"
+    venmo_payment_id: "1299175267271967461"
+    venmo_type: "Merchant Transaction"
+  Expenses:FIXME   22.84 USD
