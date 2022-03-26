@@ -394,7 +394,7 @@ def get_field_in_table(table, pattern, allow_multiple=False,
     return results
 
 
-def get_adjustments_in_table(table, pattern, assumed_currency=None, locale=Locale_en_US()):
+def get_adjustments_in_table(table, pattern, assumed_currency=None, locale=Locale_en_US):
     adjustments = []
     for label, amount_str in get_field_in_table(
             table, pattern, allow_multiple=True, return_label=True):
@@ -414,7 +414,7 @@ def reduce_adjustments(adjustments: List[Adjustment]) -> List[Adjustment]:
     ]
     
 
-def parse_shipments(soup, locale=Locale_en_US()) -> List[Shipment]:
+def parse_shipments(soup, locale=Locale_en_US) -> List[Shipment]:
     """
     Parses Shipment Table Part of HTML document (1st Table)
     """
@@ -538,7 +538,7 @@ def parse_shipments(soup, locale=Locale_en_US()) -> List[Shipment]:
 
     return shipments
 
-def parse_gift_cards(soup, locale=Locale_en_US()) -> List[Shipment]:
+def parse_gift_cards(soup, locale=Locale_en_US) -> List[Shipment]:
     """
     Parses Gift Card Table Part of HTML document (1st Table)
     """
@@ -633,7 +633,7 @@ def parse_shipment_payments(
         shipment_table,
         items, errors,
         shipped_date=None,
-        locale=Locale_en_US()) -> Shipment:
+        locale=Locale_en_US) -> Shipment:
     """ Parse payment information of single shipments and gift card orders.
     """
     logger.debug('parsing shipment amounts...')
@@ -695,7 +695,7 @@ def parse_shipment_payments(
 def parse_credit_card_transactions_from_payments_table(
         payment_table,
         order_date: datetime.date,
-        locale=Locale_en_US()) -> List[CreditCardTransaction]:
+        locale=Locale_en_US) -> List[CreditCardTransaction]:
     """ Parse payment information from payments table.
     Only type and last digits are given, no amount (assuming grand total).
     Other payment methods than credit card are possible:
@@ -725,7 +725,7 @@ def parse_credit_card_transactions_from_payments_table(
     return credit_card_transactions
 
 
-def parse_credit_card_transactions(soup, locale=Locale_en_US()) -> List[CreditCardTransaction]:
+def parse_credit_card_transactions(soup, locale=Locale_en_US) -> List[CreditCardTransaction]:
     """ Parse Credit Card Transactions from bottom sub-table of payments table.
     Transactions are listed with type, 4 digits, transaction date and amount.
     """
@@ -758,7 +758,7 @@ def parse_credit_card_transactions(soup, locale=Locale_en_US()) -> List[CreditCa
     return transactions
 
 
-def parse_invoice(path: str, locale=Locale_en_US()) -> Optional[Order]:
+def parse_invoice(path: str, locale=Locale_en_US) -> Optional[Order]:
     """ 1st method to call, distinguish between regular and digital invoice.
     """
     if os.path.basename(path).startswith('D'):
@@ -768,7 +768,7 @@ def parse_invoice(path: str, locale=Locale_en_US()) -> Optional[Order]:
     return parse_regular_order_invoice(path, locale=locale)
 
 
-def parse_regular_order_invoice(path: str, locale=Locale_en_US()) -> Order:
+def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     errors = []  # type: Errors
     with open(path, 'rb') as f:
         soup = bs4.BeautifulSoup(f.read(), 'lxml')
@@ -940,7 +940,7 @@ def get_text_lines(parent_node):
     return text_lines
 
 
-def parse_digital_order_invoice(path: str, locale=Locale_en_US()) -> Optional[Order]:
+def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Order]:
     errors = []
     with open(path, 'rb') as f:
         soup = bs4.BeautifulSoup(f.read(), 'lxml')
