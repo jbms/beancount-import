@@ -395,7 +395,7 @@ def make_amazon_transaction(
                         (INVOICE_DESCRIPTION, adjustment.description),
                     ]),
                 ))
-        if len(invoice.tax)>0 and invoice.tax.number != ZERO:
+        if invoice.tax is not None and invoice.tax.number != ZERO:
             txn.postings.append(
                 Posting(
                     account=unknown_account_name,

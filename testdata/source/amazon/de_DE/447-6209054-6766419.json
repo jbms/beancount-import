@@ -43,7 +43,7 @@
       }
   ],
   "pretax_adjustments": [],
-  "tax": [],
+  "tax": null,
   "posttax_adjustments": [],
   "errors": []
 }

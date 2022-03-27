@@ -671,6 +671,11 @@ def parse_shipment_payments(
 
     sales_tax = get_adjustments_in_table(shipment_table, locale.shipment_sales_tax, locale=locale)
 
+    if locale.tax_included_in_price:
+        # tax is already inlcuded in item prices
+        # do not add additional Adjustment for taxes
+        sales_tax = []
+    
     # compare total
     posttax_parts = (
         [total_before_tax] + [a.amount for a in sales_tax] +
@@ -928,7 +933,7 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     if locale.tax_included_in_price:
         # tax is already inlcuded in item prices
         # do not add additional transaction for taxes
-        tax = []
+        tax = None
 
     logger.debug('consistency check grand total...')
     payments_total_adjustment = reduce_amounts(payments_total_adjustments)
@@ -1205,7 +1210,7 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
         # tax given on "shipment level"
         # for digital orders tax is always given on shipment level
         # therefore tax on order level is irrelevant
-        tax=[],
+        tax=None,
         errors=[])
 
 

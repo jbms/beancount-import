@@ -125,7 +125,7 @@
             }
         }
     ],
-    "tax": [],
+    "tax": null,
     "posttax_adjustments": [],
     "errors": []
 }

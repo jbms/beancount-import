@@ -51,7 +51,7 @@
             }
         }
     ],
-    "tax": [],
+    "tax": null,
     "posttax_adjustments": [
         {
             "description": "Gutschein eingel\u00f6st",
