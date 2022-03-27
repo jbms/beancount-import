@@ -782,6 +782,24 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     errors = []  # type: Errors
     with open(path, 'rb') as f:
         soup = bs4.BeautifulSoup(f.read(), 'lxml')
+    
+    # -----------------
+    # Order ID & Order placed date
+    # -----------------
+    logger.debug('parsing order id and order placed date...')
+    title = soup.find('title').text.strip()
+    m = re.fullmatch(locale.regular_order_id, title.strip())
+    assert m is not None
+    order_id=m.group(1)
+
+    def is_order_placed_node(node):
+        m = re.fullmatch(locale.regular_order_placed, node.text.strip())
+        return m is not None
+
+    node = soup.find(is_order_placed_node)
+    m = re.fullmatch(locale.regular_order_placed, node.text.strip())
+    assert m is not None
+    order_date = locale.parse_date(m.group(1))
 
     # ----------------------
     # Shipments & Gift Cards
@@ -921,16 +939,6 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
         errors.append('expected grand total is %s, but parsed value is %s' %
                     (expected_total, adjusted_grand_total))
 
-    logger.debug('parsing order placed date...')
-    def is_order_placed_node(node):
-        m = re.fullmatch(locale.regular_order_placed, node.text.strip())
-        return m is not None
-
-    node = soup.find(is_order_placed_node)
-    m = re.fullmatch(locale.regular_order_placed, node.text.strip())
-    assert m is not None
-    order_date = locale.parse_date(m.group(1))
-
     # ---------------------------------------
     # Payment Table: Credit Card Transactions
     # ---------------------------------------
@@ -952,15 +960,10 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
         errors.append('total payment amount is %s, but grand total is %s' %
                       (total_payments, adjusted_grand_total))
 
-    logger.debug('parsing order ID...')
-    title = soup.find('title').text.strip()
-    m = re.fullmatch(locale.regular_order_id, title.strip())
-    assert m is not None
-
     logger.debug('...finished parsing regular invoice.')
     return Order(
         order_date=order_date,
-        order_id=m.group(1),
+        order_id=order_id,
         shipments=shipments,
         credit_card_transactions=credit_card_transactions,
         tax=tax,
@@ -1021,6 +1024,14 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
     m = re.match(locale.digital_order, digital_order_header.text.strip())
     assert m is not None
     order_date = locale.parse_date(m.group(1))
+
+    order_id_td = soup.find(
+        lambda node: node.name == 'td' and
+        re.match(locale.digital_order_id, node.text.strip())
+        )
+    m = re.match(locale.digital_order_id, order_id_td.text.strip())
+    assert m is not None
+    order_id = m.group(1)
 
     # -----------
     # Parse Items
@@ -1157,14 +1168,6 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
         total=total_for_this_order,
         errors=errors,
         **output_fields)
-
-    order_id_td = soup.find(
-        lambda node: node.name == 'td' and
-        re.match(locale.digital_order_id, node.text.strip())
-        )
-    m = re.match(locale.digital_order_id, order_id_td.text.strip())
-    assert m is not None
-    order_id = m.group(1)
 
     # -------------
     # Payment Table
