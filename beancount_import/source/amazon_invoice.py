@@ -84,9 +84,9 @@ class Locale_Data(ABC):
     regular_estimated_tax: str
     regular_order_placed: str
     regular_order_id: str
-    gift_card: str
-    gift_card_to: str
-    gift_card_amazon_account: str
+    gift_card: Optional[str]
+    gift_card_to: Optional[str]
+    gift_card_amazon_account: Optional[str]
 
     # digital orders only
     digital_order: str
@@ -173,9 +173,6 @@ class Locale_en_US(Locale_Data):
     regular_estimated_tax = 'Estimated tax to be collected:'
     regular_order_placed=r'(?:Subscribe and Save )?Order Placed:\s+([^\s]+ \d+, \d{4})'
     regular_order_id=r'.*Order ([0-9\-]+)'
-    gift_card='Gift Cards' # not confirmed yet!
-    gift_card_to=r'^(?P<type>Gift Card)[\w\s-]*:\s*(?P<sent_to>[\w@._-]*)$' # guess, not confirmed yet!
-    gift_card_amazon_account=r'^[\w\s-]*(?P<type>Amazon-Account)[\w\s-]*(?P<sent_to>charged up)[\w\s-]*$' # guess, not confirmed yet!
 
     # digital orders only
     digital_order='Digital Order: (.*)'
@@ -811,7 +808,9 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     # Shipments & Gift Cards
     # ----------------------
     logger.debug('parsing shipments...')
-    shipments = parse_shipments(soup, locale=locale) + parse_gift_cards(soup, locale=locale)
+    shipments = parse_shipments(soup, locale=locale)
+    if hasattr(locale, 'gift_card'):
+        shipments += parse_gift_cards(soup, locale=locale)
     if len(shipments) == 0:
         # no shipment or gift card tables found
         msg = ('Identified regular order invoice but no items were found '
