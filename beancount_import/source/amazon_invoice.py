@@ -323,10 +323,10 @@ Shipment = NamedTuple('Shipment', [
     ('shipped_date', Optional[datetime.date]),
     ('items', Sequence[Union[Item, DigitalItem]]),
     ('items_subtotal', Amount),
-    ('pretax_adjustments', Sequence[Adjustment]),
+    ('pretax_adjustments', List[Adjustment]),
     ('total_before_tax', Amount),
     ('posttax_adjustments', Sequence[Adjustment]),
-    ('tax', Amount),
+    ('tax', List[Adjustment]),
     ('total', Amount),
     ('errors', Errors),
 ])
@@ -395,7 +395,8 @@ def get_field_in_table(table, pattern, allow_multiple=False,
     return results
 
 
-def get_adjustments_in_table(table, pattern, assumed_currency=None, locale=Locale_en_US):
+def get_adjustments_in_table(
+    table, pattern, assumed_currency=None, locale=Locale_en_US) -> List[Adjustment]:
     """ Parse price adjustments in shipping or payment tables. Returns list of adjustments.
     """
     adjustments = []
@@ -407,7 +408,7 @@ def get_adjustments_in_table(table, pattern, assumed_currency=None, locale=Local
     return adjustments
 
 
-def reduce_adjustments(adjustments: List[Adjustment]) -> List[Adjustment]:
+def reduce_adjustments(adjustments: Sequence[Adjustment]) -> Sequence[Adjustment]:
     """ Takes list of adjustments and reduces duplicates by summing up the amounts.
     """
     # create dict like {adjustment: [amount1, amount2, ...]}
@@ -704,7 +705,7 @@ def parse_shipment_payments(
 def parse_credit_card_transactions_from_payments_table(
         payment_table,
         order_date: datetime.date,
-        locale=Locale_en_US) -> List[CreditCardTransaction]:
+        locale=Locale_en_US) -> Sequence[CreditCardTransaction]:
     """ Parse payment information from payments table.
     Only type and last digits are given, no amount (assuming grand total).
     Other payment methods than credit card are possible:
@@ -735,7 +736,7 @@ def parse_credit_card_transactions_from_payments_table(
     return credit_card_transactions
 
 
-def parse_credit_card_transactions(soup, locale=Locale_en_US) -> List[CreditCardTransaction]:
+def parse_credit_card_transactions(soup, locale=Locale_en_US) -> Sequence[CreditCardTransaction]:
     """ Parse Credit Card Transactions from bottom sub-table of payments table.
     Transactions are listed with type, 4 digits, transaction date and amount.
     """
@@ -748,7 +749,7 @@ def parse_credit_card_transactions(soup, locale=Locale_en_US) -> List[CreditCard
         return []
     sibling = header_node.find_next_sibling('td')
     rows = sibling.find_all('tr')
-    transactions = []
+    transactions = []  # type: List[CreditCardTransaction]
     for row in rows:
         if not row.text.strip():
             continue
@@ -834,11 +835,10 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     payment_table = payment_table_header.find_parent('table')
 
     logger.debug('parsing pretax adjustments...')
-    output_fields = dict()
+    output_fields = dict()  # type: Dict[str, List[Adjustment]]
     output_fields['pretax_adjustments'] = get_adjustments_in_table(
         payment_table, locale.pretax_adjustment_fields_pattern, locale=locale)
-    payment_adjustments = collections.OrderedDict()  # type: Dict[str, Amount]
-
+    
     # older invoices put pre-tax amounts on a per-shipment basis
     # new invoices only put pre-tax amounts on the overall payments section
     # detect which this is
@@ -860,14 +860,15 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
                 % (shipments_pretax_amount, pretax_amount))
 
     logger.debug('parsing posttax adjustments...')
-    payments_total_adjustments = []
-    shipments_total_adjustments = []
-
     # parse first to get an idea of the working currency
     grand_total = locale.parse_amount(
         get_field_in_table(payment_table, locale.regular_total_order))
 
-    def resolve_posttax_adjustments():
+    payment_adjustments = collections.OrderedDict()  # type: Dict[str, Amount]
+    payments_total_adjustments = []  # type: List[Amount]
+    shipments_total_adjustments = []  # type: List[Amount]
+
+    def resolve_posttax_adjustments() -> List[Adjustment]:
         """ Extract and compare posttax adjustments
         from shipment and payment tables.
         Returns list of reduced Adjustments.
@@ -1005,7 +1006,7 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
     2. parse amounts
     3. parse payment table
     """
-    errors = []
+    errors = []  # type: Errors
     with open(path, 'rb') as f:
         soup = bs4.BeautifulSoup(f.read(), 'lxml')
 
@@ -1058,8 +1059,8 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
     items_ordered_header = digital_order_table.find(
         lambda node: is_items_ordered_header(node, locale))
     item_rows = items_ordered_header.find_next_siblings('tr')
-    items = []  # List[Item]
-
+    
+    items = []  # Sequence[DigitalItem]
     other_fields_td = None
 
     for item_row in item_rows:

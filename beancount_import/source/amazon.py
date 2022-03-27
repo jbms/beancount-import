@@ -264,7 +264,7 @@ are not accounted for in your journal.
 """
 
 import collections
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Union
 import os
 import sys
 import pickle
@@ -303,7 +303,7 @@ POSTTAX_DESCRIPTION_KEY = 'amazon_posttax_adjustment'
 
 
 def make_amazon_transaction(
-        invoice,
+        invoice: Order,
         posttax_adjustment_accounts,
         credit_card_accounts,
         amazon_account: str,
@@ -330,7 +330,7 @@ def make_amazon_transaction(
             meta = collections.OrderedDict([
                 (ITEM_DESCRIPTION_KEY, item.description),
                 (SELLER_KEY, item.sold_by),
-            ])
+            ])  # type: Dict[str, Optional[Union[str, datetime.date]]]
             if isinstance(item, DigitalItem):
                 if item.url:
                     meta[ITEM_URL_KEY] = item.url
