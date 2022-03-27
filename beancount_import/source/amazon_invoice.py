@@ -716,17 +716,17 @@ def parse_credit_card_transactions_from_payments_table(
             # only take first matching regex, discard others!
             break
 
-    if m is not None:
-        credit_card_transactions = [
-            CreditCardTransaction(
-                date=order_date,
-                amount=grand_total,
-                card_description=m.group(1).strip(),
-                card_ending_in=m.group(2).strip(),
-            )
-        ]
-    else:
-        credit_card_transactions = []
+    if m is None:
+        return []
+
+    credit_card_transactions = [
+        CreditCardTransaction(
+            date=order_date,
+            amount=grand_total,
+            card_description=m.group(1).strip(),
+            card_ending_in=m.group(2).strip(),
+        )
+    ]
     return credit_card_transactions
 
 
