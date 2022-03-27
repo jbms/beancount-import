@@ -806,6 +806,14 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     # ----------------------
     logger.debug('parsing shipments...')
     shipments = parse_shipments(soup, locale=locale) + parse_gift_cards(soup, locale=locale)
+    if len(shipments) == 0:
+        # no shipment or gift card tables found
+        msg = ('Identified regular order invoice but no items were found '
+               + '(neither shipments nor gift cards). This may be a new type. '
+               + 'Consider opening an issue at jbms/beancount-import on github.')
+        logger.warning(msg)
+        errors.append(msg)
+        # do not throw exception, continue parsing the payment table
     logger.debug('finished parsing shipments')
 
     # -------------------------------------------
@@ -1022,7 +1030,12 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
     digital_order_header = soup.find(is_digital_order_row)
     digital_order_table = digital_order_header.find_parent('table')
     m = re.match(locale.digital_order, digital_order_header.text.strip())
-    assert m is not None
+    if m is None:
+        msg = ('Identified digital order invoice but no digital orders were found.')
+        logger.warning(msg)
+        errors.append(msg)
+        # throw exception since there is no other possibility to get order_date
+        assert m is not None
     order_date = locale.parse_date(m.group(1))
 
     order_id_td = soup.find(
