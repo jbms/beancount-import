@@ -468,6 +468,7 @@ def parse_shipments(soup, locale=Locale_en_US) -> List[Shipment]:
             assert m is not None
             shipped_date = locale.parse_date(m.group(1))
 
+        logger.debug('parsing shipment items...')
         items = []  # type: List[Item]
 
         shipment_table = header_table.find_parent('table')
@@ -518,6 +519,7 @@ def parse_shipments(soup, locale=Locale_en_US) -> List[Shipment]:
             if m is None:
                 m = re.match(locale.shipment_sold_by, text, re.UNICODE | re.DOTALL)
             if m is None:
+                errors.append("Could not extract item from row {}".format(text))
                 raise Exception("Could not extract item from row", text)
             
             description = re.sub(r'\s+', ' ', m.group('description').strip())
@@ -576,7 +578,7 @@ def parse_gift_cards(soup, locale=Locale_en_US) -> List[Shipment]:
     errors = []  # type: Errors
 
     for header_table in header_tables:
-
+        logger.debug('parsing gift card items...')
         items = []  # type: List[Item]
 
         shipment_table = header_table.find_parent('table')
