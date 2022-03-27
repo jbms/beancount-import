@@ -53,11 +53,11 @@ class Locale_Data(ABC):
     LOCALE: str
     tax_included_in_price: bool
     payee: str
+    currency: str  # only used for assumed prices
 
     # common fields regular and digital orders
     items_ordered: str
     price: str
-    currency: str
     items_subtotal: str
     total_before_tax: str
     pretax_adjustment_fields_pattern: str
@@ -115,19 +115,19 @@ class Locale_en_US(Locale_Data):
     LOCALE='en_US'
     tax_included_in_price=False
     payee='Amazon.com'
+    currency='USD'  # only used for assumed prices
     
     # common fields regular and digital orders
-    items_ordered='Items Ordered' # shipment + digital
-    price='Price' # shipment + digital
-    currency='USD' # shipment only
-    items_subtotal=r'Item\(s\) Subtotal:' # shipment +digital
-    total_before_tax='Total Before Tax:' # shipment + digital
+    items_ordered='Items Ordered'
+    price='Price'
+    items_subtotal=r'Item\(s\) Subtotal:'
+    total_before_tax='Total Before Tax:'
     pretax_adjustment_fields_pattern=('(?:' + '|'.join([
-        'Shipping & Handling', # Verpackung & Versand:
+        'Shipping & Handling',
         'Free Shipping',
         'Free delivery',
         'Pantry delivery',
-        'Promotion(?:s| Applied)', # Gutschein eingelöst:
+        'Promotion(?:s| Applied)',
         'Lightning Deal',
         'Your Coupon Savings', 
         '[0-9]+% off savings',
@@ -159,6 +159,8 @@ class Locale_en_US(Locale_Data):
         'Preparing for Shipment',
         'Not Yet Shipped',
         'Shipping now'
+        # unknown shipment statuses will be ignored
+        # transaction total will not match
         ]
     shipment_quantity=r'^\s*(?:(?P<quantity>[0-9]+)|(?P<weight1>[0-9.]+\s+(?:lb|kg))|(?:(?P<quantityIgnore>[0-9.]+) [(](?P<weight2>[^)]+)[)]))\s+of:'
     shipment_of='of:'
@@ -200,11 +202,11 @@ class Locale_de_DE(Locale_Data):
     LOCALE='de_DE'
     tax_included_in_price=True  # no separate tax transactions
     payee='Amazon.de'
+    currency='EUR'  # only used for assumed prices
 
     # common fields regular and digital orders
     items_ordered='Bestellte Artikel|Erhalten|Versendet|Amazon-Konto erfolgreich aufgeladen' # Erhalten|Versendet for gift cards
     price='Preis|Betrag'
-    currency='EUR'
     items_subtotal='Zwischensumme:'
     total_before_tax='Summe ohne MwSt.:'
     # most of translations still missing ...
@@ -236,10 +238,9 @@ class Locale_de_DE(Locale_Data):
     shipment_nonshipped_headers=[
         'Versand wird vorbereitet',
         'Versand in Kürze',
-        # Translations missing
-        'Service completed',
-        'Not Yet Shipped',
-        'Shipping now'
+        # additional cases missing?
+        # unknown shipment statuses will be ignored
+        # transaction total will not match
     ]
     shipment_quantity=r'^\s*(?:(?P<quantity>[0-9]+)|(?P<weight1>[0-9.]+\s+(?:lb|kg))|(?:(?P<quantityIgnore>[0-9.]+) [(](?P<weight2>[^)]+)[)]))\s+Exemplar\(e\)\svon:'
     shipment_of='Exemplar(e) von:'
