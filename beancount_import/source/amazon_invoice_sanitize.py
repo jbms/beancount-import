@@ -51,16 +51,27 @@ def sanitize_other_ids(contents: str):
 
 
 def sanitize_credit_card(contents: str, new_digits: str):
+    # en_EN
     contents = re.sub(r'(ending in\s+)[0-9]{4}',
                       lambda m: m.group(1) + new_digits, contents)
     contents = re.sub(r'(Last (?:[a-zA-Z0-9\s]*)digits:\s*)[0-9]{4}',
+                      lambda m: m.group(1) + new_digits, contents)
+    # de_DE
+    contents = re.sub(r'(mit den Endziffern\s+)[0-9]{4}',
+                      lambda m: m.group(1) + new_digits, contents)
+    contents = re.sub(r'(Die letzten(?:[a-zA-Z0-9\s]*)Ziffern:\s*)[0-9]{4}',
                       lambda m: m.group(1) + new_digits, contents)
     return contents
 
 
 def sanitize_address(contents: str):
-    return re.sub(
-        '^.*address.*$', '', contents, flags=re.IGNORECASE | re.MULTILINE)
+    contents = re.sub(
+        '^.*displayaddress.*$', '', contents, flags=re.IGNORECASE | re.MULTILINE)
+ 
+    # some invoices have shipping address given in payment table in different format (e.g. de_DE digital)
+    contents = re.sub(
+        r'<ul class=\"[a-z\-\s]*\"><li class=*\"[a-z\s\-]*address[a-z\s\-]*\">.*<\/ul>', '', contents)
+    return contents
 
 
 def remove_tag(soup: bs4.BeautifulSoup, tag: str):

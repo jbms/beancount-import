@@ -1,0 +1,35 @@
+{
+    "order_id": "D22-9220967-2566135",
+    "order_date": "2020-05-31",
+    "shipments": [
+        {
+            "shipped_date": "2020-05-31",
+            "items": [
+                {
+                    "description": "Audible Flexi-Abo [Digitales Abo]",
+                    "url": "https://www.amazon.de/dp/B08H5XW8SJ/ref=docs-os-doi_0",
+                    "sold_by": "Audible",
+                    "by": null,
+                    "price": {
+                        "number": "9.95",
+                        "currency": "EUR"
+                    }
+                }
+            ],
+            "items_subtotal": null,
+            "pretax_adjustments": [],
+            "total_before_tax": null,
+            "posttax_adjustments": [],
+            "tax": [],
+            "total": null,
+            "errors": [
+                "expected total is 0.65 EUR, but parsed value is None"
+            ]
+        }
+    ],
+    "credit_card_transactions": [],
+    "pretax_adjustments": [],
+    "tax": null,
+    "posttax_adjustments": [],
+    "errors": []
+}

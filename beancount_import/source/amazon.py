@@ -41,6 +41,7 @@ expression like the following to specify the Amazon source:
              'Gift Card Amount': 'Assets:Gift-Cards:Amazon',
              'Rewards Points': 'Income:Amazon:Cashback',
          },
+         locale='en_US'  # optional, defaults to 'en_US'
     )
 
 The `amazon_account` key must be specified, and should be set to the email
@@ -53,6 +54,9 @@ The `posttax_adjustment_accounts` dictionary is optional.  Currently the only
 valid keys are `"Gift Card Amount"` and `"Rewards Points"`.  Even if you don't
 specify these keys in the configuration, the generic automatic account
 prediction will likely handle them.
+
+The `locale` sets country/language specific settings.
+Currently, `en_US` and `de_DE` are available. 
 
 Specifying credit cards
 =======================
@@ -260,10 +264,11 @@ are not accounted for in your journal.
 """
 
 import collections
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Union
 import os
 import sys
 import pickle
+import logging
 
 from beancount.core.data import Transaction, Posting, Balance, Commodity, Price, EMPTY_SET, Directive
 from beancount.core.amount import Amount
@@ -271,7 +276,7 @@ from beancount.core.flags import FLAG_OKAY
 from beancount.core.number import ZERO, ONE
 import beancount.core.amount
 
-from .amazon_invoice import parse_invoice, DigitalItem, Order
+from .amazon_invoice import LOCALES, parse_invoice, DigitalItem, Order
 
 from ..matching import FIXME_ACCOUNT, SimpleInventory
 from ..posting_date import POSTING_DATE_KEY, POSTING_TRANSACTION_DATE_KEY
@@ -279,6 +284,8 @@ from . import ImportResult, Source, SourceResults, InvalidSourceReference, Assoc
 from ..journal_editor import JournalEditor
 
 import datetime
+
+logger = logging.getLogger('amazon')
 
 ITEM_DESCRIPTION_KEY = 'amazon_item_description'
 ITEM_URL_KEY = 'amazon_item_url'
@@ -296,10 +303,11 @@ POSTTAX_DESCRIPTION_KEY = 'amazon_posttax_adjustment'
 
 
 def make_amazon_transaction(
-        invoice,
+        invoice: Order,
         posttax_adjustment_accounts,
         credit_card_accounts,
         amazon_account: str,
+        payee='Amazon.com'
 ):
     txn = Transaction(
         date=invoice.order_date,
@@ -307,7 +315,7 @@ def make_amazon_transaction(
             (ORDER_ID_KEY, invoice.order_id),
             (AMAZON_ACCOUNT_KEY, amazon_account),
         ]),
-        payee='Amazon.com',
+        payee=payee,
         narration='Order',
         flag=FLAG_OKAY,
         tags=EMPTY_SET,
@@ -322,7 +330,7 @@ def make_amazon_transaction(
             meta = collections.OrderedDict([
                 (ITEM_DESCRIPTION_KEY, item.description),
                 (SELLER_KEY, item.sold_by),
-            ])
+            ])  # type: Dict[str, Optional[Union[str, datetime.date]]]
             if isinstance(item, DigitalItem):
                 if item.url:
                     meta[ITEM_URL_KEY] = item.url
@@ -539,6 +547,7 @@ class AmazonSource(Source):
                  posttax_adjustment_accounts: Dict[str, str] = {},
                  pickle_dir: str = None,
                  earliest_date: datetime.date = None,
+                 locale='en_US',
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
@@ -551,6 +560,7 @@ class AmazonSource(Source):
         self.pickler = AmazonPickler(pickle_dir)
 
         self.earliest_date = earliest_date
+        self.locale = LOCALES[locale]
 
         self.invoice_filenames = []  # type: List[Tuple[str, str]]
         for filename in os.listdir(self.directory):
@@ -570,7 +580,7 @@ class AmazonSource(Source):
         invoice = self.pickler.load(results, invoice_path) # type: Optional[Order]
         if invoice is None:
             self.log_status('amazon: processing %s: %s' % (order_id, invoice_path, ))
-            invoice = parse_invoice(invoice_path)
+            invoice = parse_invoice(invoice_path, locale=self.locale)
             self.pickler.dump( results, invoice_path, invoice )
 
         self._cached_invoices[invoice_filename] = invoice, invoice_path
@@ -605,7 +615,8 @@ class AmazonSource(Source):
                 invoice=invoice,
                 posttax_adjustment_accounts=self.posttax_adjustment_accounts,
                 amazon_account=self.amazon_account,
-                credit_card_accounts=credit_card_accounts)
+                credit_card_accounts=credit_card_accounts,
+                payee=self.locale.payee)
             results.add_pending_entry(
                 ImportResult(
                     date=transaction.date,

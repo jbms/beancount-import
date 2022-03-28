@@ -1,0 +1,35 @@
+{
+    "order_id": "D60-9825125-4795642",
+    "order_date": "2019-12-22",
+    "shipments": [
+        {
+            "shipped_date": "2019-12-22",
+            "items": [
+                {
+                    "description": "Das erstaunliche Leben des Walter Mitty [dt./OV]",
+                    "url": "https://www.amazon.de/dp/B00JZPPGNC/ref=docs-os-doi_0",
+                    "sold_by": "Amazon Digital Germany GmbH",
+                    "by": "Ben Stiller, Kristen Wiig, Jon Daly",
+                    "price": {
+                        "number": "4.98",
+                        "currency": "EUR"
+                    }
+                }
+            ],
+            "items_subtotal": null,
+            "pretax_adjustments": [],
+            "total_before_tax": null,
+            "posttax_adjustments": [],
+            "tax": [],
+            "total": null,
+            "errors": [
+                "expected total is 0.80 EUR, but parsed value is None"
+            ]
+        }
+    ],
+    "credit_card_transactions": [],
+    "pretax_adjustments": [],
+    "tax": null,
+    "posttax_adjustments": [],
+    "errors": []
+}
