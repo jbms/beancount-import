@@ -20,6 +20,7 @@ from typing import Hashable, List, Dict, Optional
 
 from beancount.core import interpolate
 from beancount.core.data import Balance, Transaction, Posting,  Directive, Options
+from beancount.core.number import MISSING
 from beancount.ingest.importer import ImporterProtocol
 from beancount.ingest.cache import get_file
 
@@ -147,7 +148,12 @@ def get_info(raw_entry: Directive) -> dict:
 
 def balance_amounts(txn: Transaction, options_map: Options) -> None:
     """Add FIXME account for the remaing amount to balance accounts"""
-    residual = interpolate.compute_residual(txn.postings)
+    for posting in txn.postings:
+        if posting.units is None or posting.units is MISSING:
+            # If one of the postings has no amount specified then the entry is
+            # automatically balanced.
+            return
+    residual = interpolate.compute_residual(filter(lambda p: p.units, txn.postings))
     tolerances = interpolate.infer_tolerances(txn.postings, options_map)
     if residual.is_small(tolerances):
         return

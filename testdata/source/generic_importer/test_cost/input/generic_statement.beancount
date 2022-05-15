@@ -6,3 +6,7 @@
 2020-01-02 * "convert currency with a rounding error"
   Assets:Bank      -1.00 USD
   Assets:Saving     3.00 EUR @ 0.3333 USD
+
+2020-01-03 * "atomatically balanced transaction"
+  Assets:Bank      -5 USD
+  Assets:Saving
