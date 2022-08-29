@@ -1,0 +1,155 @@
+;; source: amazon
+;; date: 2021-09-07
+;; info: {"filename": "<testdata>/source/amazon_large/112-8112713-5521064.html", "type": "text/html"}
+
+2021-09-07 * "Amazon.com" "Order"
+  amazon_account: "a@example.com"
+  amazon_order_id: "014-7850844-8225895"
+  Expenses:FIXME:A     3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "LATE JULY Snacks Restaurant Style Sea Salt Thin & Crispy Tortilla Chips, 11 oz. Bag"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A    16.48 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Truly Lemonade Hard Seltzer Variety Pack, 12-pk, 12 fl oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A    10.98 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Hime Seaweed Sushi Nori, 10 Sheets, Net. Wt.,1 Ounce (Pack of 1)"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.98 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Brand - Happy Belly Frozen Edamame, 12 Ounce"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     5.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Jif Creamy Peanut Butter, 40 Ounces"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     4.39 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Rhythm Superfoods Kale Chips, Original, Organic and Non-GMO, 2.0 Oz, Vegan/Gluten-Free Superfood Snacks (164846)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.49 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Large Organic Hass Avocado"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     5.49 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Dave’s Killer Bread Organic 21 Whole Grains and Seeds Bread - 20.5 oz Loaf"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     1.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "365 by WFM, Mustard Yellow Organic, 8 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.29 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Ball Park Hot Dog Buns, 8 count, 14oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.35 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Now & Later, Shell Shocked, 8 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Kitchen, Mashed Potatoes, 16 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.26 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "English Cucumber, One Count"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     3.26 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Clara's Kitchen Bean & Cheese Burrito, 8 Oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Annie's Organic Original Crispy Snack Bars, Gluten Free, 3.9 oz, 5 ct"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     3.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Hormel Spam, Classic, 12 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.09 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "GimMe, Organic Roasted Seaweed Sea Salt .35 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.62 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Mrs. Cubbison's Cheese Crisps | Parmesan Flavor | 1.98 Ounce | 100% Real Cheese | Keto Friendly | Great for Snacking and Salad Topper"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A    13.34 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Fresh Brand – Cut Watermelon, 32 oz"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.29 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "gimMe Snacks | Organic Roasted Seaweed | Teriyaki | (10g) - (Pack of 1) | non-GMO & Gluten-Free"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Nature's Bakery Bakery Gluten Free Fig Bars, Raspberry, Real Fruit, Vegan, Non-GMO, Snack bar, 1 box with 6 twin packs (6 twin packs)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     3.79 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Happy Belly Crunchy Peanut Butter, 40 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     4.29 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Rice Krispies Treats Marshmallow Snack Bars, Kids Snacks, School Lunch, Value Pack, Original, 12.4oz Box (16 Bars)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     1.68 USD
+    amazon_invoice_description: "Sales Tax"
+  Expenses:FIXME       7.00 USD
+    amazon_posttax_adjustment: "Tip (optional)"
+  Expenses:FIXME      -7.00 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-09-09
+  Expenses:FIXME    -109.80 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-09-08
