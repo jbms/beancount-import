@@ -123,6 +123,8 @@ set.  The resulting sum must equal 0 within a small tolerance.
 import datetime
 import collections
 import itertools
+import functools
+import bisect
 from typing import Sequence, Tuple, List, NamedTuple, Dict, Callable, Optional, Iterable, Set, cast, FrozenSet, Union, Any
 
 from beancount.core.number import MISSING, ZERO, Decimal
@@ -220,7 +222,16 @@ SourcePostingIds = Tuple[int, ...]
 # Keyed by the sequence of source_posting ids.
 DatabaseValues = Dict[SourcePostingIds, Tuple[Transaction, MatchablePosting]]
 
+SearchPosting = NamedTuple('SearchPosting', [
+    ('number', Decimal),
+    ('key', Tuple),
+    ('entry', Transaction),
+    ('mp', MatchablePosting),])
+
+DateCurrencyKey = Tuple[datetime.date, str]
+
 CHECK_KEY = 'check'
+
 
 class PostingDatabase(object):
     def __init__(self, fuzzy_match_days: int,
@@ -231,6 +242,7 @@ class PostingDatabase(object):
         self.fuzzy_match_amount = fuzzy_match_amount
         self.is_cleared = is_cleared
         self._postings = {}  # type: Dict[DatabaseDateKey, DatabaseValues]
+        self._date_currency = collections.defaultdict(list) # type: Dict[DateCurrencyKey, List[SearchPosting]]
         self._keyed_postings = {
         }  # type: Dict[DatabaseMetadataKey, DatabaseValues]
         self.metadata_keys = metadata_keys
@@ -239,6 +251,20 @@ class PostingDatabase(object):
         for day_offset in range(-self.fuzzy_match_days,
                                 self.fuzzy_match_days + 1):
             yield orig_date + datetime.timedelta(days=day_offset)
+
+    def fuzz_date_currency_key(self, key: Tuple):
+        for d in self.get_fuzzy_date_range(key[0]):
+            yield d, key[1]
+
+    def _date_currency_key(self, entry: Transaction, mp: MatchablePosting):
+        return (_date_key(entry, mp), get_posting_weight(mp.posting).currency)
+
+    def _search_posting(self, entry: Transaction, mp: MatchablePosting):
+        return SearchPosting(
+            number=get_posting_weight(mp.posting).number,
+            key=_entry_and_posting_ids_key(entry, mp),
+            entry=entry,
+            mp=mp)
 
     def add_posting(self, entry: Transaction, mp: MatchablePosting):
         source_posting_ids = _entry_and_posting_ids_key(entry, mp)
@@ -254,6 +280,81 @@ class PostingDatabase(object):
 
         group = self._postings.setdefault(_date_key(entry, mp), {})
         group[source_posting_ids] = (entry, mp)
+
+        weight = get_posting_weight(mp.posting)
+        if weight is None:
+            return
+
+        for dc in self.fuzz_date_currency_key(self._date_currency_key(entry, mp)):
+            bisect.insort(
+                self._date_currency[dc],
+                self._search_posting(entry, mp))
+
+    def search_postings(self,
+                        entry: Transaction,
+                        mps: List[MatchablePosting],
+                        cmp_callable: Callable,
+                        negate=False) -> Iterable[SearchPosting]:
+        # Prepare postings for searching
+        postings_date_currency = collections.defaultdict(list)
+        
+        for mp in mps:
+            weight = get_posting_weight(mp.posting)
+            if weight is None:
+                continue
+            if negate:
+                weight = -weight
+            bisect.insort(
+                postings_date_currency[self._date_currency_key(entry, mp)],
+                (weight, id(mp), mp.posting))
+
+        keys = sorted(postings_date_currency.keys())
+
+        for key in keys:
+            db = self._date_currency[key]
+            s = slice(0,1)
+            for weight, _, p in postings_date_currency[key]:
+                # Do meta lookup first
+                if not negate and not is_unknown_account(p.account):
+                    meta = p.meta
+                    if meta:
+                        # Look for metadata matches
+                        yielded = False
+                        for meta_key in self.metadata_keys:
+                            value = meta.get(meta_key)
+                            if value is None: continue
+                            cur_matches = self._get_weight_matches(
+                                weight, self._keyed_postings.get(
+                                    (posting.account, meta_key, value)))
+                            if cur_matches:
+                                for (k, (t, mp)) in cur_matches.items():
+                                    # Stop searching if we match a keyed posting
+                                    newsp = SearchPosting(
+                                        number=None, key=k, entry=t, mp=mp)
+                                    if cmp_callable(p, newsp):
+                                        yielded = True
+                                        yield newsp
+                        if yielded:
+                            continue
+
+                upper = weight.number + self.fuzzy_match_amount
+                lower = weight.number - self.fuzzy_match_amount
+                # Expand window for fuzzy match
+                while db[s.stop-1].number <= upper:
+                    if s.stop >= len(db):
+                        break
+                    s = slice(s.start, s.stop+1)
+                # Contract window for fuzzy match
+                while db[s.start].number < lower:
+                    if s.start >= len(db):
+                        break
+                    s = slice(s.start+1, s.stop)
+
+                for i in db[s]:
+                    # Because of slice shenanigans, we want to double check
+                    # upper and lower
+                    if lower <= i.number <= upper and cmp_callable(p, i):
+                        yield i
 
     def add_transaction(self, transaction: Transaction):
         for mp in get_matchable_postings_from_transaction(
@@ -276,6 +377,10 @@ class PostingDatabase(object):
         group = self._postings.get(_date_key(entry, mp))
         if group is not None:
             group.pop(source_posting_ids, None)
+
+        for dc in self.fuzz_date_currency_key(
+                self._date_currency_key(entry, mp)):
+            self._date_currency[dc].remove(self._search_posting(entry, mp))
 
     def remove_transaction(self, transaction: Transaction):
         for mp in get_matchable_postings_from_transaction(
@@ -871,6 +976,7 @@ def is_metadata_mergeable(*metas: Optional[Meta]) -> bool:
     return True
 
 
+@functools.lru_cache
 def are_accounts_mergeable(account_a: str, account_b: str) -> bool:
     """Returns `True` if the two accounts may be equivalent."""
     return account_a == account_b or is_unknown_account(
@@ -1502,16 +1608,29 @@ def get_single_step_extended_transactions(
         get_matchable_postings_from_transaction(transaction,
                                                 posting_db.is_cleared))
     transaction_constraint = IsTransactionMergeablePredicate(transaction)
-    for mp in matchable_postings:
-        for orig_matching_transaction, _ in _get_valid_posting_matches(
-                transaction_constraint,
-                mp.posting,
-                negate=False,
-                posting_db=posting_db,
-                excluded_transaction_ids=excluded_transaction_ids,
-        ):
-            matching_transactions[id(
-                orig_matching_transaction)] = orig_matching_transaction
+
+    def _postings_match(posting: Posting, sp: SearchPosting):
+        if id(sp.entry) in excluded_transaction_ids:
+            return False
+        if not transaction_constraint(sp.entry):
+            return False
+
+        if not are_accounts_mergeable(sp.mp.posting.account, posting.account):
+            return False
+
+        sp_posting_date = sp.mp.posting.meta and sp.mp.posting.meta.get(
+            POSTING_DATE_KEY)
+        posting_date = posting.meta and posting.meta.get(
+            POSTING_DATE_KEY)
+        if posting_date and sp_posting_date and posting_date != sp_posting_date:
+            return False
+
+        return True
+
+    results = posting_db.search_postings(
+        transaction, matchable_postings, cmp_callable=_postings_match)
+    for sp in results:
+        matching_transactions[id(sp.entry)] = sp.entry
 
     postings_matched = set()  # type: Set[int]
 
