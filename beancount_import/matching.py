@@ -148,6 +148,8 @@ MERGEABLE_FIXME_ACCOUNT_PREFIX = FIXME_ACCOUNT + ':'
 
 DEBUG = False
 
+MAX_AGGREGATE_POSTINGS = 20000
+
 IsClearedFunction = Callable[[Posting], bool]
 MatchGroupKey = NamedTuple('MatchGroupKey', [('currency', str),
                                              ('is_positive', bool)])
@@ -831,6 +833,7 @@ def get_aggregate_posting_candidates(
         possible_sets.setdefault((posting.account, posting.units.currency),
                                  []).append(posting)
     results = []
+    results_by_subset_size = collections.defaultdict(list)
     max_subset_size = 4
     sum_to_zero = set()  # type: Set[Tuple[int, ...]]
 
@@ -864,7 +867,7 @@ def get_aggregate_posting_candidates(
             price=None,
             flag=None,
             meta=None)
-        results.append((aggregate_posting, tuple(subset)))
+        results_by_subset_size[len(subset)].append((aggregate_posting, tuple(subset)))
 
     for (account, currency), posting_list in possible_sets.items():
         if len(posting_list) == 1:
@@ -877,6 +880,11 @@ def get_aggregate_posting_candidates(
                 2, min(len(posting_list) + 1, max_subset_size + 1)):
             for subset in itertools.combinations(posting_list, subset_size):
                 add_subset(account, currency, subset)
+
+    for size in sorted(results_by_subset_size.keys()):
+        if len(results) + len(results_by_subset_size[size]) > MAX_AGGREGATE_POSTINGS:
+            break
+        results.extend(results_by_subset_size[size])
     return results
 
 
