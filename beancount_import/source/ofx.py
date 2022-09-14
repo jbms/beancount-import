@@ -497,6 +497,8 @@ RawTransactionEntry = NamedTuple('RawTransactionEntry', [
     ('tferaction', Optional[str]),
     ('fees', Optional[Decimal]),
     ('commission', Optional[Decimal]),
+    ('opttradetype', Optional[str]),
+    ('optsharesperctrct', Optional[Decimal]),
     ('checknum', Optional[str]),
 ])
 
@@ -607,6 +609,7 @@ def get_securities(soup: bs4.BeautifulSoup) -> List[SecurityInfo]:
 STOCK_BUY_SELL_TYPES = set(
     ['BUYMF', 'SELLMF', 'SELLSTOCK', 'BUYSTOCK', 'REINVEST'])
 SELL_TYPES = set(['SELLMF', 'SELLSTOCK'])
+OPT_TYPES = set(['BUYOPT', 'SELLOPT'])
 
 RELATED_ACCOUNT_KEYS = ['aftertax_account', 'pretax_account', 'match_account']
 
@@ -665,6 +668,13 @@ class ParsedOfxStatement(object):
                 else:
                     total = find_child(tran, 'total', D)
 
+                opttrantype = None
+                shares_per_contract = find_child(tran, 'shperctrct', D)
+                if trantype == 'BUYOPT':
+                    opttrantype = find_child(tran, 'optbuytype')
+                elif trantype == 'SELLOPT':
+                    opttrantype = find_child(tran, 'optselltype')
+
                 raw = RawTransactionEntry(
                     trantype=trantype,
                     fitid=fitid,
@@ -682,6 +692,8 @@ class ParsedOfxStatement(object):
                     fees=find_child(tran, 'fees', D),
                     commission=find_child(tran, 'commission', D),
                     checknum=find_child(tran, 'checknum'),
+                    opttradetype=opttrantype,
+                    optsharesperctrct=shares_per_contract,
                     filename=filename)
                 raw_transactions.append(raw)
 
@@ -955,10 +967,28 @@ class ParsedOfxStatement(object):
 
                 cost_spec = None
                 price = None
-                is_sale = False
-                if raw.trantype in SELL_TYPES or (raw.trantype == 'TRANSFER' and
+                is_closing_txn = False
+                if raw.trantype in OPT_TYPES:
+                    assert(raw.optsharesperctrct is not None)
+
+                    if raw.opttradetype.find('TOCLOSE') == -1:
+                        price_per = unitprice * raw.optsharesperctrct
+                    else:
+                        is_closing_txn = True
+                        price_per = None
+
+                    cost_spec = CostSpec(
+                        number_per=price_per,
+                        number_total=None,
+                        currency=MISSING,
+                        date=None,
+                        label=None,
+                        merge=False)
+                    price = Amount(number=unitprice, currency=self.currency)
+
+                elif raw.trantype in SELL_TYPES or (raw.trantype == 'TRANSFER' and
                                                   units < ZERO):
-                    is_sale = True
+                    is_closing_txn = True
                     units = -abs(units)
                     # For sell transactions, rely on beancount to determine the matching lot.
                     cost_spec = CostSpec(
@@ -1010,7 +1040,7 @@ class ParsedOfxStatement(object):
                         flag=None,
                     ))
 
-                if is_sale:
+                if is_closing_txn:
                     # Add capital gains posting.
                     entry.postings.append(
                         Posting(
