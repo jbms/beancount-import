@@ -245,6 +245,7 @@ class PostingDatabase(object):
         self.is_cleared = is_cleared
         self._postings = {}  # type: Dict[DatabaseDateKey, DatabaseValues]
         self._date_currency = collections.defaultdict(list) # type: Dict[DateCurrencyKey, List[SearchPosting]]
+        self._date_currency_dirty = collections.defaultdict(bool)
         self._keyed_postings = {
         }  # type: Dict[DatabaseMetadataKey, DatabaseValues]
         self.metadata_keys = metadata_keys
@@ -254,11 +255,11 @@ class PostingDatabase(object):
                                 self.fuzzy_match_days + 1):
             yield orig_date + datetime.timedelta(days=day_offset)
 
-    def fuzz_date_currency_key(self, key: Tuple):
+    def fuzz_date_currency_key(self, key: DateCurrencyKey) -> Iterable[DateCurrencyKey]:
         for d in self.get_fuzzy_date_range(key[0]):
             yield d, key[1]
 
-    def _date_currency_key(self, entry: Transaction, mp: MatchablePosting):
+    def _date_currency_key(self, entry: Transaction, mp: MatchablePosting) -> DateCurrencyKey:
         return (_date_key(entry, mp), get_posting_weight(mp.posting).currency)
 
     def _search_posting(self, entry: Transaction, mp: MatchablePosting):
@@ -288,9 +289,14 @@ class PostingDatabase(object):
             return
 
         for dc in self.fuzz_date_currency_key(self._date_currency_key(entry, mp)):
-            bisect.insort(
-                self._date_currency[dc],
-                self._search_posting(entry, mp))
+            self._date_currency[dc].append(self._search_posting(entry, mp))
+            self._date_currency_dirty[dc] = True
+
+    def get_date_currency_postings(self, key: DateCurrencyKey) -> List[SearchPosting]:
+        if self._date_currency_dirty[key]:
+            self._date_currency[key].sort()
+            self._date_currency_dirty[key] = False
+        return self._date_currency[key]
 
     def search_postings(self,
                         entry: Transaction,
@@ -306,14 +312,14 @@ class PostingDatabase(object):
                 continue
             if negate:
                 weight = -weight
-            bisect.insort(
-                postings_date_currency[self._date_currency_key(entry, mp)],
-                (weight, id(mp), mp.posting))
+            postings_date_currency[self._date_currency_key(entry, mp)].append((weight, id(mp), mp.posting))
+        for dc, items in postings_date_currency.items():
+            items.sort()
 
         keys = sorted(postings_date_currency.keys())
 
         for key in keys:
-            db = self._date_currency[key]
+            db = self.get_date_currency_postings(key)
             s = slice(0,1)
             for weight, _, p in postings_date_currency[key]:
                 # Do meta lookup first
