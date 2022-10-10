@@ -783,3 +783,27 @@
   Expenses:FIXME    -108.24 USD
     amazon_credit_card_description: "Visa ending in 1111"
     transaction_date: 2021-09-15
+
+;; source: fixme
+;; date: 2021-08-29
+;; info: null
+
+2021-08-29 * "Transaction 1" "Order"
+  Expenses:FIXME           5.00 USD
+  Liabilities:CreditCard  -5.00 USD
+
+;; source: fixme
+;; date: 2021-08-31
+;; info: null
+
+2021-08-31 * "Transaction 2" "Order"
+  Expenses:FIXME           60.35 USD
+  Liabilities:CreditCard  -60.35 USD
+
+;; source: fixme
+;; date: 2021-09-11
+;; info: null
+
+2021-09-11 * "Transaction 3" "Order"
+  Expenses:FIXME           7.00 USD
+  Liabilities:CreditCard  -7.00 USD

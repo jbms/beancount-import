@@ -1,4 +1,5 @@
 <journal-dir>/journal.beancount
++
 +2021-08-02 * "Amazon.com" "Order"
 +  amazon_account: "a@example.com"
 +  amazon_order_id: "494-0575539-0474804"
@@ -152,4 +153,5 @@
 +  [3]Expenses:FIXME  -90.36 USD
 +    amazon_credit_card_description: "Visa ending in 1111"
 +    transaction_date: 2021-08-03
++
 +2021-08-02 open Expenses:FIXME                                  USD
