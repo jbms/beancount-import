@@ -148,7 +148,7 @@ MERGEABLE_FIXME_ACCOUNT_PREFIX = FIXME_ACCOUNT + ':'
 
 DEBUG = False
 
-MAX_AGGREGATE_POSTINGS = 20000
+MAX_AGGREGATE_POSTINGS = 30000
 
 IsClearedFunction = Callable[[Posting], bool]
 MatchGroupKey = NamedTuple('MatchGroupKey', [('currency', str),
@@ -839,7 +839,6 @@ def get_aggregate_posting_candidates(
         possible_sets.setdefault((posting.account, posting.units.currency),
                                  []).append(posting)
     results = []
-    results_by_subset_size = collections.defaultdict(list)
     max_subset_size = 4
     sum_to_zero = set()  # type: Set[Tuple[int, ...]]
 
@@ -856,7 +855,7 @@ def get_aggregate_posting_candidates(
                 f.append(p)
         return t, f
 
-    def add_subset(account, currency, subset, check_zero=True):
+    def add_subset(l, account, currency, subset, check_zero=True):
         total = sum(x.units.number for x in subset)
         if check_zero:
             if total == ZERO:
@@ -873,7 +872,7 @@ def get_aggregate_posting_candidates(
             price=None,
             flag=None,
             meta=None)
-        results_by_subset_size[len(subset)].append((aggregate_posting, tuple(subset)))
+        l.append((aggregate_posting, tuple(subset)))
 
     for (account, currency), posting_list in possible_sets.items():
         if len(posting_list) == 1:
@@ -881,16 +880,16 @@ def get_aggregate_posting_candidates(
         if len(posting_list) > max_subset_size:
             for samesign_list in partition(lambda p: p.units.number > ZERO, posting_list):
                 if len(samesign_list) > max_subset_size:
-                    add_subset(account, currency, samesign_list, check_zero=False)
+                    add_subset(results, account, currency, samesign_list, check_zero=False)
         for subset_size in range(
                 2, min(len(posting_list) + 1, max_subset_size + 1)):
+            potential_results = []
             for subset in itertools.combinations(posting_list, subset_size):
-                add_subset(account, currency, subset)
+                add_subset(potential_results, account, currency, subset)
+            if len(results) + len(potential_results) > MAX_AGGREGATE_POSTINGS:
+                break
+            results.extend(potential_results)
 
-    for size in sorted(results_by_subset_size.keys()):
-        if len(results) + len(results_by_subset_size[size]) > MAX_AGGREGATE_POSTINGS:
-            break
-        results.extend(results_by_subset_size[size])
     return results
 
 
