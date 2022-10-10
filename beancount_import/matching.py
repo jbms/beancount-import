@@ -248,7 +248,7 @@ class PostingDatabase(object):
         self.is_cleared = is_cleared
         self._postings = {}  # type: Dict[DatabaseDateKey, DatabaseValues]
         self._date_currency = collections.defaultdict(list) # type: Dict[DateCurrencyKey, List[SearchPosting]]
-        self._date_currency_dirty = collections.defaultdict(bool)
+        self._date_currency_dirty = collections.defaultdict(bool) # type: Dict[DateCurrencyKey, bool]
         self._keyed_postings = {
         }  # type: Dict[DatabaseMetadataKey, DatabaseValues]
         self.metadata_keys = metadata_keys
@@ -263,11 +263,19 @@ class PostingDatabase(object):
             yield d, key[1]
 
     def _date_currency_key(self, entry: Transaction, mp: MatchablePosting) -> DateCurrencyKey:
-        return (_date_key(entry, mp), get_posting_weight(mp.posting).currency)
+        pw = get_posting_weight(mp.posting)
+        currency = ""
+        if pw:
+            currency = pw.currency
+        return (_date_key(entry, mp), currency)
 
     def _search_posting(self, entry: Transaction, mp: MatchablePosting):
+        pw = get_posting_weight(mp.posting)
+        number = None
+        if pw:
+            number = pw.number
         return SearchPosting(
-            number=get_posting_weight(mp.posting).number,
+            number=number,
             key=_entry_and_posting_ids_key(entry, mp),
             entry=entry,
             mp=mp)
@@ -847,7 +855,7 @@ def get_aggregate_posting_candidates(
             continue
         possible_sets.setdefault((posting.account, posting.units.currency),
                                  []).append(posting)
-    results = []
+    results = [] # type: List[Posting]
     max_subset_size = 4
     sum_to_zero = set()  # type: Set[Tuple[int, ...]]
 
@@ -892,7 +900,7 @@ def get_aggregate_posting_candidates(
                     add_subset(results, account, currency, samesign_list, check_zero=False)
         for subset_size in range(
                 2, min(len(posting_list) + 1, max_subset_size + 1)):
-            potential_results = []
+            potential_results = [] # type: List[Posting]
             for subset in itertools.combinations(posting_list, subset_size):
                 add_subset(potential_results, account, currency, subset)
             if len(results) + len(potential_results) > MAX_AGGREGATE_POSTINGS:
