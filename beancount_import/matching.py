@@ -120,6 +120,7 @@ set.  The resulting sum must equal 0 within a small tolerance.
 
 """
 
+import sys
 import datetime
 import collections
 import itertools
@@ -145,6 +146,8 @@ CHECK_KEY = 'check'
 CLEARED_KEY = 'cleared'
 
 MERGEABLE_FIXME_ACCOUNT_PREFIX = FIXME_ACCOUNT + ':'
+
+SEARCH_POSTINGS_WITH_ITERATOR = True
 
 DEBUG = False
 
@@ -333,7 +336,7 @@ class PostingDatabase(object):
                             if value is None: continue
                             cur_matches = self._get_weight_matches(
                                 weight, self._keyed_postings.get(
-                                    (posting.account, meta_key, value)))
+                                    (p.account, meta_key, value)))
                             if cur_matches:
                                 for (k, (t, mp)) in cur_matches.items():
                                     # Stop searching if we match a keyed posting
@@ -431,24 +434,30 @@ class PostingDatabase(object):
             self, account: str, date: datetime.date, amount: Amount,
             is_date_exact: bool) -> DatabaseValues:
         matches = dict() # type: DatabaseValues
-        for adjusted_date in self.get_fuzzy_date_range(date):
-            cur_matches = self._postings.get(adjusted_date)
-            if cur_matches is not None:
-                for key, (entry, mp) in cur_matches.items():
-                    posting = mp.posting
-                    # Verify that the account is compatible.
-                    if not are_accounts_mergeable(account, posting.account):
+        dc = (date, amount.currency)
+        upper = amount.number + self.fuzzy_match_amount
+        lower = amount.number - self.fuzzy_match_amount
+
+        cur_matches = self.get_date_currency_postings(dc)
+        if cur_matches is not None:
+            lower_bound = bisect.bisect_left(cur_matches, (lower, tuple(), None, None))
+            upper_bound = bisect.bisect_right(cur_matches, (upper, (sys.maxsize,), None, None), lo=lower_bound)
+            for sp in cur_matches[lower_bound-1 if lower_bound > 0 else 0:upper_bound]:
+                posting = sp.mp.posting
+                # Verify that the account is compatible.
+                if not are_accounts_mergeable(account, posting.account):
+                    continue
+
+                # Verify that the date is compatible.
+                if is_date_exact:
+                    posting_date = posting.meta and posting.meta.get(
+                        POSTING_DATE_KEY)
+                    if posting_date and posting_date != date:
                         continue
 
-                    # Verify that the date is compatible.
-                    if is_date_exact:
-                        posting_date = posting.meta and posting.meta.get(
-                            POSTING_DATE_KEY)
-                        if posting_date and posting_date != date:
-                            continue
-
-                    matches[key] = (entry, mp)
-        return self._get_weight_matches(amount, matches)
+                key = _entry_and_posting_ids_key(sp.entry, sp.mp)
+                matches[key] = (sp.entry, sp.mp)
+        return matches
 
     def _get_weight_matches(
             self,
@@ -1640,10 +1649,22 @@ def get_single_step_extended_transactions(
 
         return True
 
-    results = posting_db.search_postings(
-        transaction, matchable_postings, cmp_callable=_postings_match)
-    for sp in results:
-        matching_transactions[id(sp.entry)] = sp.entry
+    if SEARCH_POSTINGS_WITH_ITERATOR:
+        results = posting_db.search_postings(
+            transaction, matchable_postings, cmp_callable=_postings_match)
+        for sp in results:
+            matching_transactions[id(sp.entry)] = sp.entry
+    else:
+        for mp in matchable_postings:
+            for orig_matching_transaction, _ in _get_valid_posting_matches(
+                    transaction_constraint,
+                    mp.posting,
+                    negate=False,
+                    posting_db=posting_db,
+                    excluded_transaction_ids=excluded_transaction_ids,
+            ):
+                matching_transactions[id(orig_matching_transaction)] = orig_matching_transaction
+
 
     postings_matched = set()  # type: Set[int]
 
