@@ -169,7 +169,7 @@ setuptools.setup(
         'tornado',
         'numpy',
         'scipy',
-        'scikit-learn',
+        'scikit-learn~=1.2',
         'nltk',
         'python-dateutil',
         'atomicwrites>=1.3.0',
