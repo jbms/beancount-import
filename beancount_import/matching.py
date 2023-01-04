@@ -994,8 +994,16 @@ def is_metadata_mergeable(*metas: Optional[Meta]) -> bool:
     """Returns `True` if a sequence of metadata dictionaries can all be merged
     without conflicts.
     """
-    combined = {}  # type: Meta
-    for meta in metas:
+    # Filter out all None metas:
+    complete_metas = [x for x in metas if x is not None]
+    # No use processing if there is only one meta
+    if len(complete_metas) < 2:
+        return True
+
+    # Save ourselves one loop of setdefault calls
+    # Reduces time spent in is_metadata_mergeable by about half
+    combined = complete_metas[0].copy()  # type: Meta
+    for meta in complete_metas[1:]:
         if not meta:
             continue
         for k, v in meta.items():
