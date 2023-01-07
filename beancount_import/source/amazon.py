@@ -545,8 +545,8 @@ class AmazonSource(Source):
                  directory: str,
                  amazon_account: str,
                  posttax_adjustment_accounts: Dict[str, str] = {},
-                 pickle_dir: str = None,
-                 earliest_date: datetime.date = None,
+                 pickle_dir: Optional[str] = None,
+                 earliest_date: Optional[datetime.date] = None,
                  locale='en_US',
                  **kwargs) -> None:
         super().__init__(**kwargs)
