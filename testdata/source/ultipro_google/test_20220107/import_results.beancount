@@ -1,0 +1,83 @@
+;; date: 2022-01-07
+;; info: {"filename": "<testdata>/test_20220107/20220107-1.pdf", "type": "application/pdf"}
+
+; features: [
+;             {
+;               "amount": "6000.00 USD",
+;               "date": "2022-01-07",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Deductions: 401K Pretax"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "3000.00 USD",
+;               "date": "2022-01-07",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Deductions: 401K Pretax Employer Match"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "-3000.00 USD",
+;               "date": "2022-01-07",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Earnings: 401K Pretax Employer Match"
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "1.23 USD",
+;               "date": "2022-01-07",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Deductions: Accident Ins."
+;                 ]
+;               },
+;               "source_account": ""
+;             },
+;             {
+;               "amount": "100.00 USD",
+;               "date": "2022-01-07",
+;               "key_value_pairs": {
+;                 "google_payroll_desc": [
+;                   "Taxes: NY State Income Tax"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2022-01-07 * "Google" "Payroll"
+  associated_data0: "{\"description\": \"Google payroll statement\", \"meta\": [\"google_payroll_document\", \"19260817\"], \"path\": \"<testdata>/test_20220107/20220107-1.pdf\", \"type\": \"application/pdf\"}"
+  google_payroll_document: "19260817"
+  google_payroll_pay_date: 2022-01-07
+  google_payroll_period_end_date: 2022-01-02
+  google_payroll_period_start_date: 2021-12-20
+  Income:Google:Salary                                  -8000.00 USD
+    google_payroll_desc: "Earnings: Regular Pay"
+  Expenses:FIXME                                         6000.00 USD
+    google_payroll_desc: "Deductions: 401K Pretax"
+  Expenses:FIXME                                         3000.00 USD
+    google_payroll_desc: "Deductions: 401K Pretax Employer Match"
+  Expenses:FIXME                                        -3000.00 USD
+    google_payroll_desc: "Earnings: 401K Pretax Employer Match"
+  Expenses:Health:Medical:Insurance                         2.22 USD
+    google_payroll_desc: "Deductions: Medical"
+  Expenses:FIXME                                            1.23 USD
+    google_payroll_desc: "Deductions: Accident Ins."
+  Income:Expenses:Taxes:TY2022:Federal:Income             200.00 USD
+    google_payroll_desc: "Taxes: Federal Income Tax"
+  Income:Expenses:Taxes:TY2022:Federal:Medicare            50.00 USD
+    google_payroll_desc: "Taxes: Employee Medicare"
+  Income:Expenses:Taxes:TY2022:Federal:Social-Security     50.00 USD
+    google_payroll_desc: "Taxes: Social Security Employee Tax"
+  Expenses:FIXME                                          100.00 USD
+    google_payroll_desc: "Taxes: NY State Income Tax"
+  Assets:Checking:My-Bank                                 600.00 USD
+    google_payroll_desc: "Net Pay Distribution: xxxxxxxx1234"

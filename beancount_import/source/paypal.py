@@ -420,7 +420,7 @@ class PaypalSource(LinkBasedSource, Source):
                  assets_account: str,
                  fee_account: str,
                  prefix: str,
-                 earliest_date: datetime.date = None,
+                 earliest_date: Optional[datetime.date] = None,
                  locale: str='en_US',
                  **kwargs) -> None:
         super().__init__(link_prefix=prefix + '.', **kwargs)

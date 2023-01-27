@@ -318,11 +318,11 @@ DigitalItem = NamedTuple('DigitalItem', [
 
 Shipment = NamedTuple('Shipment', [
     ('shipped_date', Optional[datetime.date]),
-    ('items', Sequence[Union[Item, DigitalItem]]),
+    ('items', List[Union[Item, DigitalItem]]),
     ('items_subtotal', Amount),
     ('pretax_adjustments', List[Adjustment]),
     ('total_before_tax', Amount),
-    ('posttax_adjustments', Sequence[Adjustment]),
+    ('posttax_adjustments', List[Adjustment]),
     ('tax', List[Adjustment]),
     ('total', Amount),
     ('errors', Errors),
@@ -336,11 +336,11 @@ CreditCardTransaction = NamedTuple('CreditCardTransaction', [
 Order = NamedTuple('Order', [
     ('order_id', str),
     ('order_date', datetime.date),
-    ('shipments', Sequence[Shipment]),
-    ('credit_card_transactions', Sequence[CreditCardTransaction]),
-    ('pretax_adjustments', Sequence[Adjustment]),
+    ('shipments', List[Shipment]),
+    ('credit_card_transactions', List[CreditCardTransaction]),
+    ('pretax_adjustments', List[Adjustment]),
     ('tax', Amount),
-    ('posttax_adjustments', Sequence[Adjustment]),
+    ('posttax_adjustments', List[Adjustment]),
     ('errors', Errors),
 ])
 
@@ -405,7 +405,7 @@ def get_adjustments_in_table(
     return adjustments
 
 
-def reduce_adjustments(adjustments: Sequence[Adjustment]) -> Sequence[Adjustment]:
+def reduce_adjustments(adjustments: Sequence[Adjustment]) -> List[Adjustment]:
     """ Takes list of adjustments and reduces duplicates by summing up the amounts.
     """
     # create dict like {adjustment: [amount1, amount2, ...]}
@@ -702,7 +702,7 @@ def parse_shipment_payments(
 def parse_credit_card_transactions_from_payments_table(
         payment_table,
         order_date: datetime.date,
-        locale=Locale_en_US) -> Sequence[CreditCardTransaction]:
+        locale=Locale_en_US) -> List[CreditCardTransaction]:
     """ Parse payment information from payments table.
     Only type and last digits are given, no amount (assuming grand total).
     Other payment methods than credit card are possible:
@@ -733,7 +733,7 @@ def parse_credit_card_transactions_from_payments_table(
     return credit_card_transactions
 
 
-def parse_credit_card_transactions(soup, locale=Locale_en_US) -> Sequence[CreditCardTransaction]:
+def parse_credit_card_transactions(soup, locale=Locale_en_US) -> List[CreditCardTransaction]:
     """ Parse Credit Card Transactions from bottom sub-table of payments table.
     Transactions are listed with type, 4 digits, transaction date and amount.
     """
@@ -1179,7 +1179,7 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
 
     shipment = Shipment(
         shipped_date=order_date,
-        items=items,
+        items=cast(List[Union[Item, DigitalItem]], items),
         items_subtotal=items_subtotal,
         total_before_tax=total_before_tax,
         tax=tax,

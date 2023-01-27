@@ -431,7 +431,6 @@ from beancount.core.number import Decimal
 from beancount.core.amount import Amount
 from beancount.core.position import CostSpec
 from beancount.core.number import MISSING
-from beancount.ingest.importers.ofx import parse_ofx_time
 
 from ..posting_date import get_posting_date, POSTING_DATE_KEY
 from . import ImportResult, Source, SourceResults, InvalidSourceReference
@@ -440,7 +439,7 @@ from ..matching import FIXME_ACCOUNT, CHECK_KEY
 from ..training import ExampleKeyValuePairs
 
 
-# find_child function was derived from implementation in beancount/ingest/importers/ofx.pytest
+# find_child and parse_ofx_time were derived from implementation in beancount/ingest/importers/ofx.py{,test}
 # Copyright (C) 2016  Martin Blais
 # GNU GPLv2
 def find_child(node, name, conversion=None):
@@ -463,6 +462,19 @@ def find_child(node, name, conversion=None):
     if conversion:
         value = conversion(value)
     return value
+
+
+def parse_ofx_time(date_str):
+    """Parse an OFX time string and return a datetime object.
+
+    Args:
+      date_str: A string, the date to be parsed.
+    Returns:
+      A datetime.datetime instance.
+    """
+    if len(date_str) < 14:
+        return datetime.datetime.strptime(date_str[:8], '%Y%m%d')
+    return datetime.datetime.strptime(date_str[:14], '%Y%m%d%H%M%S')
 
 
 RawBalanceEntry = NamedTuple('RawBalanceEntry', [

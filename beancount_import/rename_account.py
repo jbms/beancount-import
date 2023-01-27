@@ -7,8 +7,7 @@ from beancount.query import (query_compile, query_env, query_execute, query_pars
 from beancount.core import inventory
 from beancount.core.data import Transaction
 from beancount.parser import options
-from beancount.core import getters
-from beancount.ops import prices
+from beancount.core import (getters, prices)
 from . import journal_editor
 import pdb
 
