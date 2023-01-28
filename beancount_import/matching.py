@@ -851,7 +851,9 @@ def get_aggregate_posting_candidates(
 
     return _get_uncleared_aggregate_posting_candidates(tuple(uncleared_postings))
 
-@cachetools.cached(cache=cachetools.LFUCache(maxsize=1024), key=lambda x: tuple(id(y) for y in x))
+uncleared_aggreregate_posting_candidate_cache = cachetools.LFUCache(maxsize=1024)  # type: cachetools.Cache
+
+@cachetools.cached(cache=uncleared_aggreregate_posting_candidate_cache, key=lambda x: tuple(id(y) for y in x))
 def _get_uncleared_aggregate_posting_candidates(
         postings: Iterable[Posting]) -> List[Tuple[Posting, Tuple[Posting, ...]]]:
 
