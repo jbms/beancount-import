@@ -230,7 +230,7 @@ DatabaseValues = Dict[SourcePostingIds, Tuple[Transaction, MatchablePosting]]
 
 SearchPosting = NamedTuple('SearchPosting', [
     ('number', Decimal),
-    ('key', Tuple),
+    ('key', SourcePostingIds),
     ('entry', Transaction),
     ('mp', MatchablePosting),])
 
@@ -247,7 +247,6 @@ class PostingDatabase(object):
         self.fuzzy_match_days = fuzzy_match_days
         self.fuzzy_match_amount = fuzzy_match_amount
         self.is_cleared = is_cleared
-        self._postings = {}  # type: Dict[DatabaseDateKey, DatabaseValues]
         self._date_currency = collections.defaultdict(list) # type: Dict[DateCurrencyKey, List[SearchPosting]]
         self._date_currency_dirty = collections.defaultdict(bool) # type: Dict[DateCurrencyKey, bool]
         self._keyed_postings = {
@@ -292,9 +291,6 @@ class PostingDatabase(object):
                 if value is None: continue
                 group = self._keyed_postings.setdefault((account, key, value), {})
                 group[source_posting_ids] = (entry, mp)
-
-        group = self._postings.setdefault(_date_key(entry, mp), {})
-        group[source_posting_ids] = (entry, mp)
 
         weight = get_posting_weight(mp.posting)
         if weight is None:
@@ -393,10 +389,6 @@ class PostingDatabase(object):
                 group = self._keyed_postings.get((account, key, value))
                 if group is not None:
                     group.pop(source_posting_ids, None)
-
-        group = self._postings.get(_date_key(entry, mp))
-        if group is not None:
-            group.pop(source_posting_ids, None)
 
         for dc in self.fuzz_date_currency_key(
                 self._date_currency_key(entry, mp)):
