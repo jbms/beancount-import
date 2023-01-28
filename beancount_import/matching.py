@@ -122,6 +122,7 @@ set.  The resulting sum must equal 0 within a small tolerance.
 
 import sys
 import datetime
+import cachetools
 import collections
 import itertools
 import functools
@@ -847,14 +848,28 @@ def get_aggregate_posting_candidates(
     """
     possible_sets = collections.OrderedDict(
     )  # type: Dict[Tuple[str, str], List[Posting]]
+    uncleared_postings = []
     for posting in postings:
         if (posting.price is not None or posting.cost is not None or
                 posting.units is None or posting.units is MISSING):
             continue
         if is_cleared(posting):
             continue
+        uncleared_postings.append(posting)
+
+    return _get_uncleared_aggregate_posting_candidates(tuple(uncleared_postings))
+
+@cachetools.cached(cache=cachetools.LFUCache(maxsize=1024), key=lambda x: tuple(id(y) for y in x))
+def _get_uncleared_aggregate_posting_candidates(
+        postings: Iterable[Posting]) -> List[Tuple[Posting, Tuple[Posting, ...]]]:
+
+    possible_sets = collections.OrderedDict(
+    )  # type: Dict[Tuple[str, str], List[Posting]]
+
+    for posting in postings:
         possible_sets.setdefault((posting.account, posting.units.currency),
                                  []).append(posting)
+
     results = [] # type: List[Posting]
     max_subset_size = 4
     sum_to_zero = set()  # type: Set[Tuple[int, ...]]
