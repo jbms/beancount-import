@@ -1023,7 +1023,7 @@ def is_metadata_mergeable(*metas: Optional[Meta]) -> bool:
     return True
 
 
-@functools.lru_cache
+@functools.lru_cache()
 def are_accounts_mergeable(account_a: str, account_b: str) -> bool:
     """Returns `True` if the two accounts may be equivalent."""
     return account_a == account_b or is_unknown_account(
