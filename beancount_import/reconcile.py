@@ -136,7 +136,7 @@ def get_prediction_explanation(classifier, features: Dict[str, bool]):
 
     converted_features = classifier._vectorizer.transform([features])
     class_names = classifier._encoder.classes_
-    feature_names = classifier._vectorizer.get_feature_names()
+    feature_names = classifier._vectorizer.get_feature_names_out()
 
     node_id = 0
     while True:
@@ -495,7 +495,7 @@ class LoadedReconciler(object):
                     if not renamed:
                         os.remove(cache_f.name)
             # sklearn.tree.export_graphviz(self.classifier._clf,
-            #                              feature_names=self.classifier._vectorizer.get_feature_names(),
+            #                              feature_names=self.classifier._vectorizer.get_feature_names_out(),
             #                              class_names=self.classifier._encoder.classes_,
             #                              out_file='/tmp/tree.dot')
             # print('Evaluating accuracy of classifier')
