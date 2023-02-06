@@ -1,0 +1,45 @@
+;; date: 2022-11-23
+;; info: {"filename": "<testdata>/fidelity_treasury.ofx", "type": "application/x-ofx"}
+
+; features: [
+;             {
+;               "amount": "1111.00 USD",
+;               "date": "2022-11-23",
+;               "key_value_pairs": {
+;                 "desc": "ELECTRONIC FUNDS TRANSFER RCVD",
+;                 "ofx_memo": "ELECTRONIC FUNDS TRANSFER RCVD",
+;                 "ofx_type": "INVBANKTRAN"
+;               },
+;               "source_account": "Assets:Savings:Fidelity:Cash"
+;             }
+;           ]
+2022-11-23 * "INVBANKTRAN - ELECTRONIC FUNDS TRANSFER RCVD"
+  Assets:Savings:Fidelity:Cash   1111.00 USD
+    date: 2022-11-23
+    ofx_fitid: "Z0000000000000000000003"
+    ofx_memo: "ELECTRONIC FUNDS TRANSFER RCVD"
+    ofx_type: "INVBANKTRAN"
+  Expenses:FIXME                -1111.00 USD
+
+;; date: 2023-01-19
+;; info: {"filename": "<testdata>/fidelity_treasury.ofx", "type": "application/x-ofx"}
+
+; features: []
+2023-01-19 * "BUYDEBT - YOU BOUGHT"
+  Assets:Savings:Fidelity:T912796Z77        960 T912796Z77 {99.296889 USD}
+    date: 2023-01-19
+    ofx_fitid: "Z0000000000000000000009"
+    ofx_memo: "YOU BOUGHT"
+    ofx_type: "BUYDEBT"
+  Assets:Savings:Fidelity:Cash        -95325.01 USD
+    ofx_fitid: "Z0000000000000000000009"
+
+;; date: 2023-01-21
+;; info: {"filename": "<testdata>/fidelity_treasury.ofx", "type": "application/x-ofx"}
+
+2023-01-21 balance Assets:Savings:Fidelity:T912796Z77              960.00000 T912796Z77
+
+;; date: 2023-01-21
+;; info: {"filename": "<testdata>/fidelity_treasury.ofx", "type": "application/x-ofx"}
+
+2023-01-21 price T912796Z77                     99.2920000 USD

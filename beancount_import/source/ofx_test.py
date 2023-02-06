@@ -37,6 +37,7 @@ examples = [
     ('test_checking2_matching', 'checking2.ofx'),
     ('test_amex', 'amex.ofx'),
     ('test_fidelity', 'fidelity.ofx'),
+    ('test_fidelity_treasury', 'fidelity_treasury.ofx'),
     ('test_non_default_capital_gains', 'vanguard401k.ofx'),
 ]
 
@@ -49,7 +50,8 @@ def test_source(name: str, ofx_filename: str):
             'module': 'beancount_import.source.ofx',
             'ofx_filenames': [os.path.join(testdata_dir, ofx_filename)],
         },
-        replacements=[(testdata_dir, '<testdata>')])
+        replacements=[(testdata_dir, '<testdata>')],
+    )
 
 def test_find_ofx_id_for_account():
     ofx_ids = {

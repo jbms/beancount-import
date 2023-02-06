@@ -617,8 +617,9 @@ def get_securities(soup: bs4.BeautifulSoup) -> List[SecurityInfo]:
 
 
 STOCK_BUY_SELL_TYPES = set(
-    ['BUYMF', 'SELLMF', 'SELLSTOCK', 'BUYSTOCK', 'REINVEST'])
-SELL_TYPES = set(['SELLMF', 'SELLSTOCK'])
+    ['BUYMF', 'SELLMF', 'SELLSTOCK', 'BUYSTOCK', 'REINVEST', 'BUYDEBT',
+     'SELLDEBT'])
+SELL_TYPES = set(['SELLMF', 'SELLSTOCK', 'SELLDEBT'])
 
 RELATED_ACCOUNT_KEYS = ['aftertax_account', 'pretax_account', 'match_account']
 
@@ -652,7 +653,7 @@ class ParsedOfxStatement(object):
         for invtranlist in stmtrs.find_all(re.compile('invtranlist|banktranlist')):
             for tran in invtranlist.find_all(
                     re.compile(
-                        '^(buymf|sellmf|reinvest|buystock|sellstock|buyopt|sellopt|transfer|income|invbanktran|stmttrn)$'
+                        '^(buymf|sellmf|reinvest|buystock|sellstock|buyopt|sellopt|buydebt|selldebt|transfer|income|invbanktran|stmttrn)$'
                     )):
                 fitid = find_child(tran, 'fitid')
                 date = parse_ofx_time(
@@ -785,6 +786,10 @@ class ParsedOfxStatement(object):
                 return None
             sec = securities_map[unique_id]
             ticker = sec.ticker
+            # Treasury bill and bond start with 912
+            if ticker.startswith("912"):
+                # Append "T" to make it a valid ticker
+                ticker = "T" + ticker
             if ticker is None:
                 results.add_error(
                     'Missing ticker for security %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
@@ -964,6 +969,9 @@ class ParsedOfxStatement(object):
                     units = round(units, quantity_round_digits)
                 if raw.unitprice is not None:
                     unitprice = normalize_fraction(raw.unitprice)
+                # For fidelity ofx, the unit of bond has been multiplied by 100
+                if self.org == "fidelity.com" and raw.uniqueid.startswith("912") and units % 100 == 0:
+                    units /= 100
 
                 cost_spec = None
                 price = None
@@ -1151,6 +1159,10 @@ class ParsedOfxStatement(object):
             security = get_security(raw.uniqueid)
             if security is None:
                 continue
+            units = raw.units
+            # For fidelity ofx, the unit of bond has been multiplied by 100
+            if self.org == "fidelity.com" and raw.uniqueid.startswith("912") and units % 100 == 0:
+                units /= 100
             associated_currency = cash_securities_map.get(security)
             if associated_currency is not None:
                 if raw.date not in cash_activity_dates:
@@ -1159,7 +1171,7 @@ class ParsedOfxStatement(object):
                         meta=None,
                         account=get_subaccount_cash(raw.inv401ksource),
                         amount=Amount(
-                            number=round(raw.units + self.availcash, 2),
+                            number=round(units + self.availcash, 2),
                             currency=associated_currency),
                         tolerance=None,
                         diff_amount=None,
@@ -1176,7 +1188,7 @@ class ParsedOfxStatement(object):
                         date=raw.date,
                         meta=None,
                         account=security_account_name,
-                        amount=Amount(number=raw.units, currency=security),
+                        amount=Amount(number=units, currency=security),
                         tolerance=None,
                         diff_amount=None,
                     )
