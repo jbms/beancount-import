@@ -725,6 +725,18 @@ class ParsedOfxStatement(object):
         for invposlist in stmtrs.find_all('invposlist'):
             for invpos in invposlist.find_all('invpos'):
                 time_str = find_child(invpos, 'dtpriceasof')
+                units=find_child(invpos, 'units', D)
+                unitprice=find_child(invpos, 'unitprice', D)
+                mktval=find_child(invpos, 'mktval', D)
+                if mktval and mktval > 0:
+                    ratio = units*unitprice/mktval
+                    # these thresholds are arbitrary and could be tightened
+                    if (ratio < 0.2) or (ratio > 5):
+                        id_type = find_child(invpos, 'uniqueidtype')
+                        unique_id = find_child(invpos, 'uniqueid')
+                        unitprice = mktval / units if units > 0 else None
+                        print(
+                            f"[{id_type} {unique_id}]: Mismatch between UNITS * UNITPRICE = {units*unitprice:.2f} and  MKTVAL = {mktval:.2f}. Inferring price: {unitprice:.3f}")
                 t = parse_ofx_time(time_str)
                 date = t.date()
                 raw_balance_entries.append(
@@ -732,7 +744,7 @@ class ParsedOfxStatement(object):
                         date=date,
                         uniqueid=find_child(invpos, 'uniqueid'),
                         units=find_child(invpos, 'units', D),
-                        unitprice=find_child(invpos, 'unitprice', D),
+                        unitprice=unitprice,
                         inv401ksource=find_child(invpos, 'inv401ksource'),
                         filename=filename))
 
@@ -788,7 +800,7 @@ class ParsedOfxStatement(object):
             ticker = sec.ticker
             # Treasury bill and bond start with 912
             if ticker.startswith("912"):
-                # Append "T" to make it a valid ticker
+                # Prepend "T" to make it a valid ticker
                 ticker = "T" + ticker
             if ticker is None:
                 results.add_error(
@@ -969,9 +981,6 @@ class ParsedOfxStatement(object):
                     units = round(units, quantity_round_digits)
                 if raw.unitprice is not None:
                     unitprice = normalize_fraction(raw.unitprice)
-                # For fidelity ofx, the unit of bond has been multiplied by 100
-                if self.org == "fidelity.com" and raw.uniqueid.startswith("912") and units % 100 == 0:
-                    units /= 100
 
                 cost_spec = None
                 price = None
@@ -1160,9 +1169,6 @@ class ParsedOfxStatement(object):
             if security is None:
                 continue
             units = raw.units
-            # For fidelity ofx, the unit of bond has been multiplied by 100
-            if self.org == "fidelity.com" and raw.uniqueid.startswith("912") and units % 100 == 0:
-                units /= 100
             associated_currency = cash_securities_map.get(security)
             if associated_currency is not None:
                 if raw.date not in cash_activity_dates:

@@ -26,7 +26,7 @@
 
 ; features: []
 2023-01-19 * "BUYDEBT - YOU BOUGHT"
-  Assets:Savings:Fidelity:T912796Z77        960 T912796Z77 {99.296889 USD}
+  Assets:Savings:Fidelity:T912796Z77      96000 T912796Z77 {0.9929688541666666666666666667 USD}
     date: 2023-01-19
     ofx_fitid: "Z0000000000000000000009"
     ofx_memo: "YOU BOUGHT"
@@ -37,9 +37,9 @@
 ;; date: 2023-01-21
 ;; info: {"filename": "<testdata>/fidelity_treasury.ofx", "type": "application/x-ofx"}
 
-2023-01-21 balance Assets:Savings:Fidelity:T912796Z77              960.00000 T912796Z77
+2023-01-21 balance Assets:Savings:Fidelity:T912796Z77              96000.00000 T912796Z77
 
 ;; date: 2023-01-21
 ;; info: {"filename": "<testdata>/fidelity_treasury.ofx", "type": "application/x-ofx"}
 
-2023-01-21 price T912796Z77                     99.2920000 USD
+2023-01-21 price T912796Z77                        0.99292 USD
