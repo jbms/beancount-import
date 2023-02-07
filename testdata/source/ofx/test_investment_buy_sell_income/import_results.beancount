@@ -173,7 +173,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price FCSNO                          47.5020085 USD
+2018-08-04 price FCSNO                  0.9096295696637586707365384542 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -183,7 +183,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price DSNTH                          45.6437641 USD
+2018-08-04 price DSNTH                  0.9355978515414792829046193951 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -193,7 +193,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price MCYFM                          43.6188596 USD
+2018-08-04 price MCYFM                  1.433211947229007178415011552 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -203,7 +203,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price URMFO                          19.9728700 USD
+2018-08-04 price URMFO                  0.4551200219710029279760823805 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -213,7 +213,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price DGTGU                          25.3577699 USD
+2018-08-04 price DGTGU                  0.7518815041951127002058296873 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -223,7 +223,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price MXMUK                          81.7052756 USD
+2018-08-04 price MXMUK                  0.8247564557666200903791577938 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -233,7 +233,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price XBFMS                          97.2183155 USD
+2018-08-04 price XBFMS                  1.172175503071948878775077293 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -243,7 +243,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price OMCNS                          93.7687778 USD
+2018-08-04 price OMCNS                  1.026535152297954102146195540 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -253,7 +253,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price RDTAF                          80.9348507 USD
+2018-08-04 price RDTAF                  0.7630804932322338789445969589 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -263,7 +263,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price IQVJK                          27.7635148 USD
+2018-08-04 price IQVJK                  1.714967820408059013623574335 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -273,7 +273,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price SDVMV                          62.3900924 USD
+2018-08-04 price SDVMV                  2.701922663604487647914913999 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -283,7 +283,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price SVDIE                          85.7179472 USD
+2018-08-04 price SVDIE                  0.6290928685066971211291035958 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -293,7 +293,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price WDUZQ                          52.1515218 USD
+2018-08-04 price WDUZQ                  1.572680550648546949931623568 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
@@ -303,4 +303,4 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price WKPSD                          24.7722967 USD
+2018-08-04 price WKPSD                  0.5949031797625979166755953164 USD
