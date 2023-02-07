@@ -1,0 +1,9 @@
+<journal-dir>/journal.beancount
++
++2016-08-10 * "STARBUCKS STORE 12345"
++  Liabilities:Credit-Card  -2.45 CAD
++    date: 2016-08-10
++    source_desc: "STARBUCKS STORE 12345"
++  [0]Expenses:FIXME      2.45 CAD
++
++2016-08-10 open Expenses:FIXME                                  CAD
