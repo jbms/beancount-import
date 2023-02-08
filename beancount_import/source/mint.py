@@ -175,7 +175,7 @@ def get_info(raw_entry: Union[MintEntry, RawBalance]) -> dict:
 mint_date_format = '%m/%d/%Y'
 
 
-def load_transactions(filename: str, currency: str = 'USD') -> List[MintEntry]:
+def load_transactions(filename: str, currency: str) -> List[MintEntry]:
     expected_field_names = [
         'Date', 'Description', 'Original Description', 'Amount',
         'Transaction Type', 'Category', 'Account Name', 'Labels', 'Notes'
@@ -309,7 +309,7 @@ class MintSource(description_based_source.DescriptionBasedSource):
 
         # In these entries, account refers to the mint_id, not the journal account.
         self.log_status('mint: loading %s' % filename)
-        self.mint_entries = load_transactions(filename)
+        self.mint_entries = load_transactions(filename, kwargs.get("currency", 'USD'))
 
         self.balances = [] # type: List[RawBalance]
         if balances_directory:
