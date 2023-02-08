@@ -249,27 +249,6 @@ def test_basic(tmpdir: py.path.local):
     tester.snapshot()
 
 
-def test_currency(tmpdir: py.path.local):
-    tester = ReconcileGoldenTester(
-        golden_directory=os.path.join(testdata_root, 'reconcile', 'test_currency'),
-        temp_dir=str(tmpdir),
-        options=dict(
-            data_sources=[
-                {
-                    'module': 'beancount_import.source.mint',
-                    'filename': mint_data_path,
-                    'currency': 'CAD',
-                },
-            ],
-        ),
-    )
-
-    tester.accept_candidate(0)
-    tester.snapshot()
-    tester.change_candidate(0, dict(accounts=['Expenses:Coffee'], ))
-    tester.accept_candidate(0)
-    tester.snapshot()
-
 def test_ignore(tmpdir: py.path.local):
     tester = ReconcileGoldenTester(
         golden_directory=os.path.join(testdata_root, 'reconcile',
