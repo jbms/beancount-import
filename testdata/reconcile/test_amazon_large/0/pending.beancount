@@ -1,0 +1,809 @@
+;; source: amazon
+;; date: 2021-08-02
+;; info: {"filename": "<testdata>/source/amazon_large/113-3282794-2881819.html", "type": "text/html"}
+
+2021-08-02 * "Amazon.com" "Order"
+  amazon_account: "a@example.com"
+  amazon_order_id: "494-0575539-0474804"
+  Expenses:FIXME:A    1.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Organic Honeycrisp Apple"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    2.39 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "SKITTLES Sours Grab N Go, 7.2-Ounce Bag"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    5.49 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Fresh Brand – Organic Fuji Apples, 2 lb"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    4.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Keebler Cookies and Cheez-It Crackers Snacks Variety Pack, 12 Ounce, 12 Count"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    5.91 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Lucky Charms, Gluten Free Breakfast Cereal, 17.8 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    3.98 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Brand - Happy Belly 2% Reduced Fat Milk, Half Gallon, 64 Ounces"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    1.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Little Debbie Strawberry Shortcake Rolls, 13 Oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    5.78 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "English Cucumber, One Count"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    3.19 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Bomb Pop, Original, 12 Count (Frozen)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    5.60 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Envy Apples, 2 lb Bag"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    2.79 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Brand - Happy Belly Cookies 'N Cream Ice Cream, 48 Fl Oz (Frozen)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    5.79 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "DIGIORNO Pepperoni Frozen Pizza with Rising Crust, 27.5 oz."
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    3.58 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Ocean Spray Red Seedless Grapes, 2 lb"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Outshine, Watermelon Frozen Fruit Bars, 6 Count (Frozen)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    2.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Strawberries, 1 lb"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    3.59 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "MARS Chocolate Favorites (SNICKERS, TWIX, 3 MUSKETEERS & MILKY WAY) Minis Size Candy Bars Assorted Variety Mix, 8.9 Ounce Bag (Packaging may vary)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    2.70 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Mother's Circus Animal Cookies, 11 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    1.69 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Dole, Organic Bananas, 2 lb Bag"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    4.49 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Dietz & Watson Kosher Pickles, 32 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    3.59 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Post Fruity Pebbles, 15 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    7.98 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Airheads Candy Bars, Variety Bulk Box, Chewy Full Size Fruit Taffy, Gifts, Easter Candy Basket, Non Melting, Party, 60 Count (Packaging May Vary)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    3.58 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "D'Anjou Pears, 2 lb Bag"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A    3.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Pop-Tarts Toaster Pastries Variety Pack, Breakfast Foods, Baked in the USA, 20.3oz Box (12 Toaster Pastries)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-03
+  Expenses:FIXME:A   -0.50 USD
+    amazon_invoice_description: "Your Coupon Savings"
+  Expenses:FIXME:A   -1.00 USD
+    amazon_invoice_description: "Your Coupon Savings"
+  Expenses:FIXME      7.00 USD
+    amazon_posttax_adjustment: "Tip (optional)"
+  Expenses:FIXME     -7.00 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-08-04
+  Expenses:FIXME    -90.36 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-08-03
+
+;; source: amazon
+;; date: 2021-08-31
+;; info: {"filename": "<testdata>/source/amazon_large/112-1784496-5402621.html", "type": "text/html"}
+
+2021-08-31 * "Amazon.com" "Order"
+  amazon_account: "a@example.com"
+  amazon_order_id: "041-8257240-2303710"
+  Expenses:FIXME:A    3.19 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Joy Cone, Cake Cups, 24 ct"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    2.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Capri Sun Fruit Punch Ready-to-Drink Juice (10 Pouches)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    2.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Capri Sun Fruit Punch Ready-to-Drink Juice (10 Pouches)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    5.98 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Franz Bake Shoppe Seasonal Birthday Cake Donuts, 12 oz"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    1.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Little Debbie Strawberry Shortcake Rolls, 13 Oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    6.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Starbucks Frappuccino, Mocha, Coffee Drink, 9.5 oz (Pack of 4)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    3.98 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Hostess Frosted Donettes, 10.75 Ounce"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    4.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Sierra Mist, Lemon Lime Soda, 12 oz (pack of 12)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    7.07 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Basics Reusable Silicone Baking Cups, Pack of 12, Multicolor"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    3.41 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Fresh Brand – Mini Cucumbers, 16 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    2.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "365 Everyday Value, Florida Orange Juice, Not From Concentrate, 59 fl oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    3.79 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Hershey's, Simply Chocolate Syrup, 21.8 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    3.69 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Tostitos, Salsa Medium, 15.5 oz (Pack of 1)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Tostitos Dips, Medium Con Queso Dip, 15 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A    2.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "English Cucumber, One Count"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-08-31
+  Expenses:FIXME:A   -0.50 USD
+    amazon_invoice_description: "Your Coupon Savings"
+  Expenses:FIXME:A   -0.74 USD
+    amazon_invoice_description: "Your Coupon Savings"
+  Expenses:FIXME:A   -0.80 USD
+    amazon_invoice_description: "Your Coupon Savings"
+  Expenses:FIXME:A    1.76 USD
+    amazon_invoice_description: "Sales Tax"
+  Expenses:FIXME      5.00 USD
+    amazon_posttax_adjustment: "Tip (optional)"
+  Expenses:FIXME     -5.00 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-09-01
+  Expenses:FIXME    -60.35 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-08-31
+
+;; source: amazon
+;; date: 2021-09-07
+;; info: {"filename": "<testdata>/source/amazon_large/112-8112713-5521064.html", "type": "text/html"}
+
+2021-09-07 * "Amazon.com" "Order"
+  amazon_account: "a@example.com"
+  amazon_order_id: "014-7850844-8225895"
+  Expenses:FIXME:A     3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "LATE JULY Snacks Restaurant Style Sea Salt Thin & Crispy Tortilla Chips, 11 oz. Bag"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A    16.48 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Truly Lemonade Hard Seltzer Variety Pack, 12-pk, 12 fl oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A    10.98 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Hime Seaweed Sushi Nori, 10 Sheets, Net. Wt.,1 Ounce (Pack of 1)"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.98 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Brand - Happy Belly Frozen Edamame, 12 Ounce"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     5.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Jif Creamy Peanut Butter, 40 Ounces"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     4.39 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Rhythm Superfoods Kale Chips, Original, Organic and Non-GMO, 2.0 Oz, Vegan/Gluten-Free Superfood Snacks (164846)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.49 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Large Organic Hass Avocado"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     5.49 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Dave’s Killer Bread Organic 21 Whole Grains and Seeds Bread - 20.5 oz Loaf"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     1.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "365 by WFM, Mustard Yellow Organic, 8 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.29 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Ball Park Hot Dog Buns, 8 count, 14oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.35 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Now & Later, Shell Shocked, 8 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Kitchen, Mashed Potatoes, 16 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.26 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "English Cucumber, One Count"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     3.26 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Clara's Kitchen Bean & Cheese Burrito, 8 Oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Annie's Organic Original Crispy Snack Bars, Gluten Free, 3.9 oz, 5 ct"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     3.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Hormel Spam, Classic, 12 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.09 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "GimMe, Organic Roasted Seaweed Sea Salt .35 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.62 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Mrs. Cubbison's Cheese Crisps | Parmesan Flavor | 1.98 Ounce | 100% Real Cheese | Keto Friendly | Great for Snacking and Salad Topper"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A    13.34 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Fresh Brand – Cut Watermelon, 32 oz"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.29 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "gimMe Snacks | Organic Roasted Seaweed | Teriyaki | (10g) - (Pack of 1) | non-GMO & Gluten-Free"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     2.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Nature's Bakery Bakery Gluten Free Fig Bars, Raspberry, Real Fruit, Vegan, Non-GMO, Snack bar, 1 box with 6 twin packs (6 twin packs)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     3.79 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Happy Belly Crunchy Peanut Butter, 40 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     4.29 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Rice Krispies Treats Marshmallow Snack Bars, Kids Snacks, School Lunch, Value Pack, Original, 12.4oz Box (16 Bars)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-08
+  Expenses:FIXME:A     1.68 USD
+    amazon_invoice_description: "Sales Tax"
+  Expenses:FIXME       7.00 USD
+    amazon_posttax_adjustment: "Tip (optional)"
+  Expenses:FIXME      -7.00 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-09-09
+  Expenses:FIXME    -109.80 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-09-08
+
+;; source: amazon
+;; date: 2021-09-11
+;; info: {"filename": "<testdata>/source/amazon_large/112-4949356-2356241.html", "type": "text/html"}
+
+2021-09-11 * "Amazon.com" "Order"
+  amazon_account: "a@example.com"
+  amazon_order_id: "840-3161905-1049369"
+  Expenses:FIXME:A    11.02 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Cascadian Farm Organic Cherry Berry Blend, Premium Frozen Fruit, Non-GMO, 32 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A    18.49 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Stretch Island Fruit Leather Snacks Variety Pack, Cherry, apple, strawberry, apricot, grape, respberry, (Pack of 48)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     1.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Pepperidge Farm Goldfish Cheddar Crackers, 6.6 oz. Bag"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A    25.98 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Cascadian Farm Organic Mango Strawberry Blend, Frozen Fruit, Non-GMO, 32 oz Bag"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Brand - Happy Belly Restaurant Tortilla Chips, 20 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     2.79 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Brand - Happy Belly Mint Chocolate Chip Ice Cream, 48 Fl Oz (Frozen)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     4.29 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "365 by WFM, Cheddar Sharp Bar Organic, 8 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     3.72 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Gluten Free by Glutino Chocolate Vanilla Creme Cookies, Decadent Cookie, 10.5 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A    10.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "The Original Cakerie Inspired by Happiness, Cravin' for Cookies & Cream Layered Cake, 16.5 oz (Frozen)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Fresh Brand – Cut Mango, 10 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     4.98 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "365 Everyday Value, Organic Rainbow Peeled Baby Carrots, 12 oz"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     2.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Fresh Brand – Mini Cucumbers, 16 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     2.59 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Mott's Original Apple 100% Juice, 64 Fluid Ounce Bottle"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "365 Everyday Value, Organic Orange Peach Mango Juice, 59 fl oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     2.39 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Ball Park Hot Dog Buns, 8 count, 14oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     4.67 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Stonemill Kitchens, Spinach, Artichoke & Parmesan Dip, 10 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     1.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Calidad White Corn Tortilla Chips, Gluten Free, Trans Fat Free, Mexican Restaurant Style Chips, 12 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     2.79 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "365 by WFM, Juice Apple Organic, 64 Fl Oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     1.39 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Dole Bananas, 2 lb Bag"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     7.22 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "SALUMI ITALIANI Italian Prosciutto, 4 Oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     6.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Naturalissima, Prosciutto Panino, 5 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     4.46 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Fresh Brand – Tropical Fruit Mix, 10 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     4.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Tate's Bake Shop Gluten Free Chocolate Chip Cookies, 7 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     2.69 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "TROPICANA RFG PINEAPPLE MANGO W/LM JUICE DRINK 52 OZ - 0048500202721"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     2.89 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Capri Sun Fruit Punch Ready-to-Drink Juice (10 Pouches)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     3.29 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Good Thins Sea Salt & Pepper Rice Snacks Gluten Free Crackers, 3.5 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     1.69 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Dole, Organic Bananas, 2 lb Bag"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-12
+  Expenses:FIXME:A     0.56 USD
+    amazon_invoice_description: "Sales Tax"
+  Expenses:FIXME       7.00 USD
+    amazon_posttax_adjustment: "Tip (optional)"
+  Expenses:FIXME      -7.00 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-09-13
+  Expenses:FIXME    -149.81 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-09-12
+
+;; source: amazon
+;; date: 2021-09-15
+;; info: {"filename": "<testdata>/source/amazon_large/112-5611048-5043463.html", "type": "text/html"}
+
+2021-09-15 * "Amazon.com" "Order"
+  amazon_account: "a@example.com"
+  amazon_order_id: "639-2582363-4453496"
+  Expenses:FIXME:A     6.56 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Dietz & Watson Sliced Salumeria Pepperoni Salsiccia, 0.5 lbs"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     3.59 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Brand - Happy Belly Entertainment Crackers, 8.8 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     4.18 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Sabra, Roasted Garlic Hummus, 10 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     2.59 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Hormel Chili, No Beans, 15 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     3.69 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Athenos Traditional Crumbled Feta Cheese (4 oz Tub)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     4.49 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Oscar Mayer Deli Fresh Oven Roasted Turkey Breast Sliced Lunch Meat (9 oz Package)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     3.49 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Blackberries, 6 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     2.79 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Sargento Sliced Sharp Natural Cheddar Cheese, 11 slices"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     2.49 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Brand - Happy Belly Shredded Sharp Cheddar Cheese, 8 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     2.59 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "365 Everyday Value, Broccoli Florets, 12 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A    27.51 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Vega Protein and Greens, Berry, Vegan Protein Powder, 20g Plant Based Protein, Low Carb, Keto, Dairy Free, Gluten Free, Non GMO, Pea Protein for Women and Men, 1.7 Pounds (26 Servings)"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Sparkle Pick-A-Size Paper Towels, 2 Rolls = 3 Regular Rolls, 116 2-Ply Sheets Per Roll"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     3.59 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Post Fruity Pebbles, 15 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     1.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Hostess Frosted Donettes, 10.75 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     2.19 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Broccoli Crowns, 16 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     2.79 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Brand - Happy Belly Mozzarella String Cheese Light, 12 Count, 10 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     2.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Gold Pineapple"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     5.48 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "M&M's, Peanut Milk Chocolate Candies Family Size , 19.2 Oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     2.59 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "365 Everyday Value, Cauliflower Florets, 12 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     2.50 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Amazon Brand - Happy Belly Shredded Mexican Four Cheese Blend, 8 Ounce"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     0.93 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Skittles, Sour, 1.8 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     3.18 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Taylor Farms Classic Garden Salad, 12 oz Bag"
+    amazon_item_quantity: 2
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     1.69 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Dole, Organic Bananas, 2 lb Bag"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     4.56 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Franz Bake Shoppe Seasonal Pumpkin Spice Donuts, 12 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     3.99 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "365 EVERYDAY VALUE Organic 365 Stringless Snap Peas, 8 OZ"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A     2.50 USD
+    amazon_item_condition: "New"
+    amazon_item_description: "Franz Bake Shoppe Old Fashioned Chocolate Donuts, 6 ct, 12 oz"
+    amazon_item_quantity: 1
+    amazon_seller: "Prime Now LLC"
+    shipped_date: 2021-09-15
+  Expenses:FIXME:A    -0.80 USD
+    amazon_invoice_description: "Your Coupon Savings"
+  Expenses:FIXME:A    -0.22 USD
+    amazon_invoice_description: "Your Coupon Savings"
+  Expenses:FIXME:A     0.33 USD
+    amazon_invoice_description: "Sales Tax"
+  Expenses:FIXME       7.00 USD
+    amazon_posttax_adjustment: "Tip (optional)"
+  Expenses:FIXME      -7.00 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-09-16
+  Expenses:FIXME    -108.24 USD
+    amazon_credit_card_description: "Visa ending in 1111"
+    transaction_date: 2021-09-15
+
+;; source: fixme
+;; date: 2021-08-29
+;; info: null
+
+2021-08-29 * "Transaction 1" "Order"
+  Expenses:FIXME           5.00 USD
+  Liabilities:CreditCard  -5.00 USD
+
+;; source: fixme
+;; date: 2021-08-31
+;; info: null
+
+2021-08-31 * "Transaction 2" "Order"
+  Expenses:FIXME           60.35 USD
+  Liabilities:CreditCard  -60.35 USD
+
+;; source: fixme
+;; date: 2021-09-11
+;; info: null
+
+2021-09-11 * "Transaction 3" "Order"
+  Expenses:FIXME           7.00 USD
+  Liabilities:CreditCard  -7.00 USD

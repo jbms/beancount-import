@@ -176,6 +176,7 @@ setuptools.setup(
         'jsonschema',
         'watchdog',
         'typing_extensions',
+        'cachetools',
     ],
     test_requirements=[
         'pytest',

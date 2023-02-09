@@ -1,0 +1,157 @@
+<journal-dir>/journal.beancount
++
++2021-08-02 * "Amazon.com" "Order"
++  amazon_account: "a@example.com"
++  amazon_order_id: "494-0575539-0474804"
++  [0]Expenses:FIXME    1.99 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Organic Honeycrisp Apple"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    2.39 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "SKITTLES Sours Grab N Go, 7.2-Ounce Bag"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    5.49 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Fresh Brand – Organic Fuji Apples, 2 lb"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    4.99 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Keebler Cookies and Cheez-It Crackers Snacks Variety Pack, 12 Ounce, 12 Count"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    5.91 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Lucky Charms, Gluten Free Breakfast Cereal, 17.8 oz"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    3.98 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Amazon Brand - Happy Belly 2% Reduced Fat Milk, Half Gallon, 64 Ounces"
++    amazon_item_quantity: 2
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    1.89 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Little Debbie Strawberry Shortcake Rolls, 13 Oz"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    5.78 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "English Cucumber, One Count"
++    amazon_item_quantity: 2
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    3.19 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Bomb Pop, Original, 12 Count (Frozen)"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    5.60 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Envy Apples, 2 lb Bag"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    2.79 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Amazon Brand - Happy Belly Cookies 'N Cream Ice Cream, 48 Fl Oz (Frozen)"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    5.79 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "DIGIORNO Pepperoni Frozen Pizza with Rising Crust, 27.5 oz."
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    3.58 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Ocean Spray Red Seedless Grapes, 2 lb"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    3.99 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Outshine, Watermelon Frozen Fruit Bars, 6 Count (Frozen)"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    2.99 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Strawberries, 1 lb"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    3.59 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "MARS Chocolate Favorites (SNICKERS, TWIX, 3 MUSKETEERS & MILKY WAY) Minis Size Candy Bars Assorted Variety Mix, 8.9 Ounce Bag (Packaging may vary)"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    2.70 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Mother's Circus Animal Cookies, 11 Ounce"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    1.69 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Dole, Organic Bananas, 2 lb Bag"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    4.49 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Dietz & Watson Kosher Pickles, 32 oz"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    3.59 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Post Fruity Pebbles, 15 Ounce"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    7.98 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Airheads Candy Bars, Variety Bulk Box, Chewy Full Size Fruit Taffy, Gifts, Easter Candy Basket, Non Melting, Party, 60 Count (Packaging May Vary)"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    3.58 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "D'Anjou Pears, 2 lb Bag"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME    3.89 USD
++    amazon_item_condition: "New"
++    amazon_item_description: "Pop-Tarts Toaster Pastries Variety Pack, Breakfast Foods, Baked in the USA, 20.3oz Box (12 Toaster Pastries)"
++    amazon_item_quantity: 1
++    amazon_seller: "Prime Now LLC"
++    shipped_date: 2021-08-03
++  [0]Expenses:FIXME   -0.50 USD
++    amazon_invoice_description: "Your Coupon Savings"
++  [0]Expenses:FIXME   -1.00 USD
++    amazon_invoice_description: "Your Coupon Savings"
++  [1]Expenses:FIXME    7.00 USD
++    amazon_posttax_adjustment: "Tip (optional)"
++  [2]Expenses:FIXME   -7.00 USD
++    amazon_credit_card_description: "Visa ending in 1111"
++    transaction_date: 2021-08-04
++  [3]Expenses:FIXME  -90.36 USD
++    amazon_credit_card_description: "Visa ending in 1111"
++    transaction_date: 2021-08-03
++
++2021-08-02 open Expenses:FIXME                                  USD

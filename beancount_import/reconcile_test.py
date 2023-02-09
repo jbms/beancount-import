@@ -329,3 +329,20 @@ def test_ofx_cleared(tmpdir: py.path.local):
             ],
         ),
     )
+
+def test_amazon_large_matching(tmpdir: py.path.local):
+    tester = ReconcileGoldenTester(
+        golden_directory=os.path.join(testdata_root, 'reconcile',
+                                      'test_amazon_large'),
+        temp_dir=str(tmpdir),
+        options=dict(
+            data_sources=[
+                {
+                    'module': 'beancount_import.source.amazon',
+                    'directory':
+                        os.path.join(testdata_root, 'source', 'amazon_large'),
+                    'amazon_account': 'a@example.com',
+                },
+            ],
+        ),
+    )

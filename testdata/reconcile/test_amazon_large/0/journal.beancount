@@ -1,0 +1,17 @@
+plugin "beancount.plugins.auto_accounts"
+
+2021-08-29 * "Transaction 1" "Order"
+  Expenses:FIXME
+  Liabilities:CreditCard     -5.00 USD
+
+2021-08-31 * "Transaction 2" "Order"
+  Expenses:FIXME
+  Liabilities:CreditCard    -60.35 USD
+
+2021-09-11 * "Transaction 3" "Order"
+  Expenses:FIXME
+  Liabilities:CreditCard      -7.00 USD
+
+2021-09-14 * "Transaction 4" "Order"
+  Expenses:Groceries
+  Liabilities:CreditCard    -149.81 USD

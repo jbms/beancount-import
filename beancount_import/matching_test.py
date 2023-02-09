@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import decimal
 import os
 import unittest
 
@@ -50,7 +51,7 @@ def assert_match(pending_candidate: str = '',
 
     posting_db = matching.PostingDatabase(
         fuzzy_match_days=3,
-        fuzzy_match_amount=0.01,
+        fuzzy_match_amount=decimal.Decimal("0.01"),
         is_cleared=is_cleared,
         metadata_keys=frozenset([matching.CHECK_KEY]),
     )
