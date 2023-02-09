@@ -17,7 +17,7 @@ interface TransactionLineParseResult {
   tagsAndLinksEnd: number;
 }
 
-export type TransactionEditAction = "link" | "tag" | "narration";
+export type TransactionEditAction = "link" | "tag" | "narration" | "payee";
 
 interface TransactionLineEditorProps {
   candidate: Candidate;
@@ -200,6 +200,8 @@ export class TransactionLineEditorComponent extends React.PureComponent<
         return this.addTagOrLink("^");
       case "narration":
         return this.editNarration();
+      case "payee":
+        return this.editPayee();
     }
   }
 
@@ -211,6 +213,17 @@ export class TransactionLineEditorComponent extends React.PureComponent<
     this.select(
       parseResult.result.narrationStart + 1,
       parseResult.result.narrationEnd - 1
+    );
+  }
+
+  editPayee() {
+    const { parseResult } = this.state;
+    if (parseResult === undefined || parseResult.result === null) {
+      return;
+    }
+    this.select(
+      parseResult.result.payeeStart + 1,
+      parseResult.result.payeeEnd - 1
     );
   }
 }
