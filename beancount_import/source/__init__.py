@@ -255,7 +255,7 @@ class Source:
     """
 
     def __init__(self, log_status: Callable[[str], None], **kwargs) -> None:
-        super().__init__(**kwargs)  # type: ignore
+        super().__init__()
         self.log_status = log_status
         self.example_posting_key_extractors = dict(
         )  # type: Dict[str, ExampleKeyExtractor]

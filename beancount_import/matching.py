@@ -120,9 +120,13 @@ set.  The resulting sum must equal 0 within a small tolerance.
 
 """
 
+import sys
 import datetime
+import cachetools
 import collections
 import itertools
+import functools
+import bisect
 from typing import Sequence, Tuple, List, NamedTuple, Dict, Callable, Optional, Iterable, Set, cast, FrozenSet, Union, Any
 
 from beancount.core.number import MISSING, ZERO, Decimal
@@ -144,7 +148,11 @@ CLEARED_KEY = 'cleared'
 
 MERGEABLE_FIXME_ACCOUNT_PREFIX = FIXME_ACCOUNT + ':'
 
+SEARCH_POSTINGS_WITH_ITERATOR = True
+
 DEBUG = False
+
+MAX_AGGREGATE_POSTINGS = 30000
 
 IsClearedFunction = Callable[[Posting], bool]
 MatchGroupKey = NamedTuple('MatchGroupKey', [('currency', str),
@@ -220,7 +228,16 @@ SourcePostingIds = Tuple[int, ...]
 # Keyed by the sequence of source_posting ids.
 DatabaseValues = Dict[SourcePostingIds, Tuple[Transaction, MatchablePosting]]
 
+SearchPosting = NamedTuple('SearchPosting', [
+    ('number', Decimal),
+    ('key', SourcePostingIds),
+    ('entry', Transaction),
+    ('mp', MatchablePosting),])
+
+DateCurrencyKey = Tuple[datetime.date, str]
+
 CHECK_KEY = 'check'
+
 
 class PostingDatabase(object):
     def __init__(self, fuzzy_match_days: int,
@@ -230,7 +247,8 @@ class PostingDatabase(object):
         self.fuzzy_match_days = fuzzy_match_days
         self.fuzzy_match_amount = fuzzy_match_amount
         self.is_cleared = is_cleared
-        self._postings = {}  # type: Dict[DatabaseDateKey, DatabaseValues]
+        self._date_currency = collections.defaultdict(list) # type: Dict[DateCurrencyKey, List[SearchPosting]]
+        self._date_currency_dirty = collections.defaultdict(bool) # type: Dict[DateCurrencyKey, bool]
         self._keyed_postings = {
         }  # type: Dict[DatabaseMetadataKey, DatabaseValues]
         self.metadata_keys = metadata_keys
@@ -239,6 +257,28 @@ class PostingDatabase(object):
         for day_offset in range(-self.fuzzy_match_days,
                                 self.fuzzy_match_days + 1):
             yield orig_date + datetime.timedelta(days=day_offset)
+
+    def fuzz_date_currency_key(self, key: DateCurrencyKey) -> Iterable[DateCurrencyKey]:
+        for d in self.get_fuzzy_date_range(key[0]):
+            yield d, key[1]
+
+    def _date_currency_key(self, entry: Transaction, mp: MatchablePosting) -> DateCurrencyKey:
+        pw = get_posting_weight(mp.posting)
+        currency = ""
+        if pw:
+            currency = pw.currency
+        return (_date_key(entry, mp), currency)
+
+    def _search_posting(self, entry: Transaction, mp: MatchablePosting):
+        pw = get_posting_weight(mp.posting)
+        number = None
+        if pw:
+            number = pw.number
+        return SearchPosting(
+            number=number,
+            key=_entry_and_posting_ids_key(entry, mp),
+            entry=entry,
+            mp=mp)
 
     def add_posting(self, entry: Transaction, mp: MatchablePosting):
         source_posting_ids = _entry_and_posting_ids_key(entry, mp)
@@ -252,8 +292,85 @@ class PostingDatabase(object):
                 group = self._keyed_postings.setdefault((account, key, value), {})
                 group[source_posting_ids] = (entry, mp)
 
-        group = self._postings.setdefault(_date_key(entry, mp), {})
-        group[source_posting_ids] = (entry, mp)
+        weight = get_posting_weight(mp.posting)
+        if weight is None:
+            return
+
+        for dc in self.fuzz_date_currency_key(self._date_currency_key(entry, mp)):
+            self._date_currency[dc].append(self._search_posting(entry, mp))
+            self._date_currency_dirty[dc] = True
+
+    def get_date_currency_postings(self, key: DateCurrencyKey) -> List[SearchPosting]:
+        if self._date_currency_dirty[key]:
+            self._date_currency[key].sort()
+            self._date_currency_dirty[key] = False
+        return self._date_currency[key]
+
+    def search_postings(self,
+                        entry: Transaction,
+                        mps: List[MatchablePosting],
+                        cmp_callable: Callable,
+                        negate=False) -> Iterable[SearchPosting]:
+        # Prepare postings for searching
+        postings_date_currency = collections.defaultdict(list)
+        
+        for mp in mps:
+            weight = get_posting_weight(mp.posting)
+            if weight is None:
+                continue
+            if negate:
+                weight = -weight
+            postings_date_currency[self._date_currency_key(entry, mp)].append((weight, id(mp), mp.posting))
+        for dc, items in postings_date_currency.items():
+            items.sort()
+
+        keys = sorted(postings_date_currency.keys())
+
+        for key in keys:
+            db = self.get_date_currency_postings(key)
+            s = slice(0,1)
+            for weight, _, p in postings_date_currency[key]:
+                # Do meta lookup first
+                if not negate and not is_unknown_account(p.account):
+                    meta = p.meta
+                    if meta:
+                        # Look for metadata matches
+                        yielded = False
+                        for meta_key in self.metadata_keys:
+                            value = meta.get(meta_key)
+                            if value is None: continue
+                            cur_matches = self._get_weight_matches(
+                                weight, self._keyed_postings.get(
+                                    (p.account, meta_key, value)))
+                            if cur_matches:
+                                for (k, (t, mp)) in cur_matches.items():
+                                    # Stop searching if we match a keyed posting
+                                    newsp = SearchPosting(
+                                        number=None, key=k, entry=t, mp=mp)
+                                    if cmp_callable(p, newsp):
+                                        yielded = True
+                                        yield newsp
+                        if yielded:
+                            continue
+
+                upper = weight.number + self.fuzzy_match_amount
+                lower = weight.number - self.fuzzy_match_amount
+                # Expand window for fuzzy match
+                while db[s.stop-1].number <= upper:
+                    if s.stop >= len(db):
+                        break
+                    s = slice(s.start, s.stop+1)
+                # Contract window for fuzzy match
+                while db[s.start].number < lower:
+                    if s.start >= len(db):
+                        break
+                    s = slice(s.start+1, s.stop)
+
+                for i in db[s]:
+                    # Because of slice shenanigans, we want to double check
+                    # upper and lower
+                    if lower <= i.number <= upper and cmp_callable(p, i):
+                        yield i
 
     def add_transaction(self, transaction: Transaction):
         for mp in get_matchable_postings_from_transaction(
@@ -273,9 +390,9 @@ class PostingDatabase(object):
                 if group is not None:
                     group.pop(source_posting_ids, None)
 
-        group = self._postings.get(_date_key(entry, mp))
-        if group is not None:
-            group.pop(source_posting_ids, None)
+        for dc in self.fuzz_date_currency_key(
+                self._date_currency_key(entry, mp)):
+            self._date_currency[dc].remove(self._search_posting(entry, mp))
 
     def remove_transaction(self, transaction: Transaction):
         for mp in get_matchable_postings_from_transaction(
@@ -318,24 +435,30 @@ class PostingDatabase(object):
             self, account: str, date: datetime.date, amount: Amount,
             is_date_exact: bool) -> DatabaseValues:
         matches = dict() # type: DatabaseValues
-        for adjusted_date in self.get_fuzzy_date_range(date):
-            cur_matches = self._postings.get(adjusted_date)
-            if cur_matches is not None:
-                for key, (entry, mp) in cur_matches.items():
-                    posting = mp.posting
-                    # Verify that the account is compatible.
-                    if not are_accounts_mergeable(account, posting.account):
+        dc = (date, amount.currency)
+        upper = amount.number + self.fuzzy_match_amount
+        lower = amount.number - self.fuzzy_match_amount
+
+        cur_matches = self.get_date_currency_postings(dc)
+        if cur_matches is not None:
+            lower_bound = bisect.bisect_left(cur_matches, (lower, tuple(), None, None))
+            upper_bound = bisect.bisect_right(cur_matches, (upper, (sys.maxsize,), None, None), lo=lower_bound)
+            for sp in cur_matches[lower_bound-1 if lower_bound > 0 else 0:upper_bound]:
+                posting = sp.mp.posting
+                # Verify that the account is compatible.
+                if not are_accounts_mergeable(account, posting.account):
+                    continue
+
+                # Verify that the date is compatible.
+                if is_date_exact:
+                    posting_date = posting.meta and posting.meta.get(
+                        POSTING_DATE_KEY)
+                    if posting_date and posting_date != date:
                         continue
 
-                    # Verify that the date is compatible.
-                    if is_date_exact:
-                        posting_date = posting.meta and posting.meta.get(
-                            POSTING_DATE_KEY)
-                        if posting_date and posting_date != date:
-                            continue
-
-                    matches[key] = (entry, mp)
-        return self._get_weight_matches(amount, matches)
+                key = _entry_and_posting_ids_key(sp.entry, sp.mp)
+                matches[key] = (sp.entry, sp.mp)
+        return matches
 
     def _get_weight_matches(
             self,
@@ -717,15 +840,31 @@ def get_aggregate_posting_candidates(
     """
     possible_sets = collections.OrderedDict(
     )  # type: Dict[Tuple[str, str], List[Posting]]
+    uncleared_postings = []
     for posting in postings:
         if (posting.price is not None or posting.cost is not None or
                 posting.units is None or posting.units is MISSING):
             continue
         if is_cleared(posting):
             continue
+        uncleared_postings.append(posting)
+
+    return _get_uncleared_aggregate_posting_candidates(tuple(uncleared_postings))
+
+uncleared_aggreregate_posting_candidate_cache = cachetools.LFUCache(maxsize=1024)  # type: cachetools.Cache
+
+@cachetools.cached(cache=uncleared_aggreregate_posting_candidate_cache, key=lambda x: tuple(id(y) for y in x))
+def _get_uncleared_aggregate_posting_candidates(
+        postings: Iterable[Posting]) -> List[Tuple[Posting, Tuple[Posting, ...]]]:
+
+    possible_sets = collections.OrderedDict(
+    )  # type: Dict[Tuple[str, str], List[Posting]]
+
+    for posting in postings:
         possible_sets.setdefault((posting.account, posting.units.currency),
                                  []).append(posting)
-    results = []
+
+    results = [] # type: List[Posting]
     max_subset_size = 4
     sum_to_zero = set()  # type: Set[Tuple[int, ...]]
 
@@ -742,7 +881,7 @@ def get_aggregate_posting_candidates(
                 f.append(p)
         return t, f
 
-    def add_subset(account, currency, subset, check_zero=True):
+    def add_subset(l, account, currency, subset, check_zero=True):
         total = sum(x.units.number for x in subset)
         if check_zero:
             if total == ZERO:
@@ -759,7 +898,7 @@ def get_aggregate_posting_candidates(
             price=None,
             flag=None,
             meta=None)
-        results.append((aggregate_posting, tuple(subset)))
+        l.append((aggregate_posting, tuple(subset)))
 
     for (account, currency), posting_list in possible_sets.items():
         if len(posting_list) == 1:
@@ -767,11 +906,16 @@ def get_aggregate_posting_candidates(
         if len(posting_list) > max_subset_size:
             for samesign_list in partition(lambda p: p.units.number > ZERO, posting_list):
                 if len(samesign_list) > max_subset_size:
-                    add_subset(account, currency, samesign_list, check_zero=False)
+                    add_subset(results, account, currency, samesign_list, check_zero=False)
         for subset_size in range(
                 2, min(len(posting_list) + 1, max_subset_size + 1)):
+            potential_results = [] # type: List[Posting]
             for subset in itertools.combinations(posting_list, subset_size):
-                add_subset(account, currency, subset)
+                add_subset(potential_results, account, currency, subset)
+            if len(results) + len(potential_results) > MAX_AGGREGATE_POSTINGS:
+                break
+            results.extend(potential_results)
+
     return results
 
 
@@ -859,8 +1003,16 @@ def is_metadata_mergeable(*metas: Optional[Meta]) -> bool:
     """Returns `True` if a sequence of metadata dictionaries can all be merged
     without conflicts.
     """
-    combined = {}  # type: Meta
-    for meta in metas:
+    # Filter out all None metas:
+    complete_metas = [x for x in metas if x is not None]
+    # No use processing if there is only one meta
+    if len(complete_metas) < 2:
+        return True
+
+    # Save ourselves one loop of setdefault calls
+    # Reduces time spent in is_metadata_mergeable by about half
+    combined = complete_metas[0].copy()  # type: Meta
+    for meta in complete_metas[1:]:
         if not meta:
             continue
         for k, v in meta.items():
@@ -871,6 +1023,7 @@ def is_metadata_mergeable(*metas: Optional[Meta]) -> bool:
     return True
 
 
+@functools.lru_cache()
 def are_accounts_mergeable(account_a: str, account_b: str) -> bool:
     """Returns `True` if the two accounts may be equivalent."""
     return account_a == account_b or is_unknown_account(
@@ -1502,16 +1655,41 @@ def get_single_step_extended_transactions(
         get_matchable_postings_from_transaction(transaction,
                                                 posting_db.is_cleared))
     transaction_constraint = IsTransactionMergeablePredicate(transaction)
-    for mp in matchable_postings:
-        for orig_matching_transaction, _ in _get_valid_posting_matches(
-                transaction_constraint,
-                mp.posting,
-                negate=False,
-                posting_db=posting_db,
-                excluded_transaction_ids=excluded_transaction_ids,
-        ):
-            matching_transactions[id(
-                orig_matching_transaction)] = orig_matching_transaction
+
+    def _postings_match(posting: Posting, sp: SearchPosting):
+        if id(sp.entry) in excluded_transaction_ids:
+            return False
+        if not transaction_constraint(sp.entry):
+            return False
+
+        if not are_accounts_mergeable(sp.mp.posting.account, posting.account):
+            return False
+
+        sp_posting_date = sp.mp.posting.meta and sp.mp.posting.meta.get(
+            POSTING_DATE_KEY)
+        posting_date = posting.meta and posting.meta.get(
+            POSTING_DATE_KEY)
+        if posting_date and sp_posting_date and posting_date != sp_posting_date:
+            return False
+
+        return True
+
+    if SEARCH_POSTINGS_WITH_ITERATOR:
+        results = posting_db.search_postings(
+            transaction, matchable_postings, cmp_callable=_postings_match)
+        for sp in results:
+            matching_transactions[id(sp.entry)] = sp.entry
+    else:
+        for mp in matchable_postings:
+            for orig_matching_transaction, _ in _get_valid_posting_matches(
+                    transaction_constraint,
+                    mp.posting,
+                    negate=False,
+                    posting_db=posting_db,
+                    excluded_transaction_ids=excluded_transaction_ids,
+            ):
+                matching_transactions[id(orig_matching_transaction)] = orig_matching_transaction
+
 
     postings_matched = set()  # type: Set[int]
 

@@ -162,20 +162,21 @@ setuptools.setup(
     package_data={
         'beancount_import': ['frontend_dist/*'],
     },
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     setup_requires=['setuptools_scm>=5.0.2'],
     install_requires=[
         'beancount>=2.1.3',
         'tornado',
         'numpy',
         'scipy',
-        'scikit-learn',
+        'scikit-learn~=1.2',
         'nltk',
         'python-dateutil',
         'atomicwrites>=1.3.0',
         'jsonschema',
         'watchdog',
         'typing_extensions',
+        'cachetools',
     ],
     test_requirements=[
         'pytest',
