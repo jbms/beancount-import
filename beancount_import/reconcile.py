@@ -136,7 +136,7 @@ def get_prediction_explanation(classifier, features: Dict[str, bool]):
 
     converted_features = classifier._vectorizer.transform([features])
     class_names = classifier._encoder.classes_
-    feature_names = classifier._vectorizer.get_feature_names()
+    feature_names = classifier._vectorizer.get_feature_names_out()
 
     node_id = 0
     while True:

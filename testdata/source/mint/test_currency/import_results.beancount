@@ -1,0 +1,56 @@
+;; date: 2013-11-27
+;; info: {"filename": "<testdata>/mint.csv", "line": 2, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "66.88 CAD",
+;               "date": "2013-11-27",
+;               "key_value_pairs": {
+;                 "desc": "CR CARD PAYMENT ALEXANDRIA VA"
+;               },
+;               "source_account": "Liabilities:Credit-Card"
+;             }
+;           ]
+2013-11-27 * "CR CARD PAYMENT ALEXANDRIA VA"
+  Liabilities:Credit-Card   66.88 CAD
+    date: 2013-11-27
+    source_desc: "CR CARD PAYMENT ALEXANDRIA VA"
+  Expenses:FIXME           -66.88 CAD
+
+;; date: 2013-12-02
+;; info: {"filename": "<testdata>/mint.csv", "line": 3, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-66.88 CAD",
+;               "date": "2013-12-02",
+;               "key_value_pairs": {
+;                 "desc": "NATIONAL FEDERAL DES:TRNSFR"
+;               },
+;               "source_account": "Assets:Checking"
+;             }
+;           ]
+2013-12-02 * "NATIONAL FEDERAL DES:TRNSFR"
+  Assets:Checking  -66.88 CAD
+    date: 2013-12-02
+    source_desc: "NATIONAL FEDERAL DES:TRNSFR"
+  Expenses:FIXME    66.88 CAD
+
+;; date: 2016-08-10
+;; info: {"filename": "<testdata>/mint.csv", "line": 1, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-2.45 CAD",
+;               "date": "2016-08-10",
+;               "key_value_pairs": {
+;                 "desc": "STARBUCKS STORE 12345"
+;               },
+;               "source_account": "Liabilities:Credit-Card"
+;             }
+;           ]
+2016-08-10 * "STARBUCKS STORE 12345"
+  Liabilities:Credit-Card  -2.45 CAD
+    date: 2016-08-10
+    source_desc: "STARBUCKS STORE 12345"
+  Expenses:FIXME            2.45 CAD

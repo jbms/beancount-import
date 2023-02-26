@@ -24,3 +24,13 @@ def test_source(name: str):
             'filename': os.path.join(testdata_dir, 'mint.csv'),
         },
         replacements=[(testdata_dir, '<testdata>')])
+
+def test_currency():
+    check_source_example(
+        example_dir=os.path.join(testdata_dir, 'test_currency'),
+        source_spec={
+            'module': 'beancount_import.source.mint',
+            'filename': os.path.join(testdata_dir, 'mint.csv'),
+            'currency': 'CAD',
+        },
+        replacements=[(testdata_dir, '<testdata>')])

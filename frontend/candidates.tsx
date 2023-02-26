@@ -399,8 +399,18 @@ export class CandidatesComponent extends React.PureComponent<
               disabled={
                 selectedCandidate.original_transaction_properties == null
               }
+              onClick={this.handleEditPayee}
+              title="Edit payee of selected candidate, keyboard shortcut: p"
+              className="action-button"
+            >
+              Payee
+            </button>
+            <button
+              disabled={
+                selectedCandidate.original_transaction_properties == null
+              }
               onClick={this.handleEditNarration}
-              title="Add link to selected candidate, keyboard shortcut: n"
+              title="Edit narration of selected candidate, keyboard shortcut: n"
               className="action-button"
             >
               Narration
@@ -641,6 +651,9 @@ export class CandidatesComponent extends React.PureComponent<
       case "n":
         this.editCurrentTransaction("narration");
         break;
+      case "p":
+        this.editCurrentTransaction("payee");
+        break;
       default:
         return;
     }
@@ -749,6 +762,9 @@ export class CandidatesComponent extends React.PureComponent<
   };
   private handleEditNarration = () => {
     this.editCurrentTransaction("narration");
+  };
+  private handleEditPayee = () => {
+    this.editCurrentTransaction("payee");
   };
   private handleConfirm = () => {
     this.acceptCandidate(this.state.selectedCandidateIndex);
