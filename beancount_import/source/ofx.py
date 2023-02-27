@@ -656,7 +656,7 @@ class ParsedOfxStatement(object):
         security_activity_dates = self.security_activity_dates = set()
         cash_activity_dates = self.cash_activity_dates = set()
 
-        self.ofx_id = account_ofx_id = (org, self.broker_id, account_id)
+        self.ofx_id = (org, self.broker_id, account_id)
 
         for invtranlist in stmtrs.find_all(re.compile('invtranlist|banktranlist')):
             for tran in invtranlist.find_all(
@@ -670,7 +670,7 @@ class ParsedOfxStatement(object):
                 # We include the date along with the FITID because some financial institutions fail
                 # to produce truly unique FITID values.  For example, National Financial Services
                 # (Fidelity) sometimes produces duplicates when the amount is the same.
-                full_fitid = (account_ofx_id, date, fitid)
+                full_fitid = (self.ofx_id, date, fitid)
                 uniqueid = find_child(tran, 'uniqueid')
                 if uniqueid is not None:
                     security_activity_dates.add((date, uniqueid))
@@ -808,7 +808,7 @@ class ParsedOfxStatement(object):
         if quantity_round_digits is not None:
             quantity_round_digits = int(quantity_round_digits)
 
-        ofx_id = self.ofx_id
+        ofx_id = prepare_state.ofx_id_translations.get(self.ofx_id, self.ofx_id)
 
         matched_transactions = prepare_state.matched_transactions
         matched_cash_transactions = prepare_state.matched_cash_transactions
@@ -830,8 +830,8 @@ class ParsedOfxStatement(object):
                 return commodity
             if unique_id not in securities_map:
                 results.add_error(
-                    'Missing id for security %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
-                    % (unique_id, ))
+                    'Missing id for security %r seen in %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
+                    % (unique_id, self.filename))
                 return None
             sec = securities_map[unique_id]
             ticker = sec.ticker
@@ -841,13 +841,13 @@ class ParsedOfxStatement(object):
                 ticker = "T" + ticker
             if ticker is None:
                 results.add_error(
-                    'Missing ticker for security %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
-                    % (unique_id, ))
+                    'Missing ticker for security %r seen in %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
+                    % (unique_id, self.filename))
                 return None
             if not is_valid_commodity_name(ticker):
                 results.add_error(
-                    'Ticker %r for security %r is not a valid commodity name.   You must specify it manually using a commodity directive with a cusip metadata field.'
-                    % (ticker, unique_id))
+                    'Ticker %r for security %r seen in %r is not a valid commodity name.   You must specify it manually using a commodity directive with a cusip metadata field.'
+                    % (ticker, unique_id, self.filename))
             return ticker
 
         def get_subaccount(inv401ksource: Optional[str],
@@ -1314,6 +1314,7 @@ class ParsedOfxFile(object):
 def get_account_map(accounts):
     account_to_ofx_id = dict()
     ofx_id_to_account = dict()
+    ofx_id_translations = dict()
     cash_accounts = set()
     for entry in accounts.values():
         meta = entry.meta
@@ -1322,11 +1323,17 @@ def get_account_map(accounts):
         org = entry.meta.get('ofx_org')
         broker_id = entry.meta.get('ofx_broker_id')
         account_id = entry.meta.get('account_id')
+        old_account_ids = entry.meta.get('old_account_ids')
         if org is None or broker_id is None or account_id is None:
             continue
         ofx_id = (org, broker_id, account_id)
         account_to_ofx_id[entry.account] = ofx_id
         ofx_id_to_account[ofx_id] = entry
+        if old_account_ids is not None:
+            for old_account_id in old_account_ids.split(' '):
+                old_ofx_id = (org, broker_id, old_account_id)
+                ofx_id_to_account[old_ofx_id] = entry
+                ofx_id_translations[old_ofx_id] = ofx_id
         ofx_account_type = entry.meta.get('ofx_account_type')
         if ofx_account_type == 'cash_only':
             cash_accounts.add(entry.account)
@@ -1339,7 +1346,7 @@ def get_account_map(accounts):
             other = entry.meta.get(key)
             if other is not None:
                 account_to_ofx_id[other] = ofx_id
-    return account_to_ofx_id, ofx_id_to_account, cash_accounts
+    return account_to_ofx_id, ofx_id_to_account, ofx_id_translations, cash_accounts
 
 
 FullFitid = Tuple[str, datetime.date, str]
@@ -1367,7 +1374,7 @@ class PrepareState(object):
                  results: SourceResults) -> None:
         self.source = source
         self.journal = journal
-        self.account_to_ofx_id, self.ofx_id_to_account, self.cash_accounts = get_account_map(
+        self.account_to_ofx_id, self.ofx_id_to_account, self.ofx_id_translations, self.cash_accounts = get_account_map(
             journal.accounts)
 
         results.add_accounts(self.account_to_ofx_id.keys())
@@ -1395,7 +1402,7 @@ class PrepareState(object):
                 statement.get_entries(self)
 
     def _process_journal_entries(self):
-        source_fitids = self.source.source_fitids
+        source_fitids = set((self.ofx_id_translations.get(acct, acct), dt, fit) for acct, dt, fit in self.source.source_fitids)
         matched_transactions = self.matched_transactions
         cash_accounts = self.cash_accounts
         matched_cash_transactions = self.matched_cash_transactions
