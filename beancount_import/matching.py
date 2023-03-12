@@ -355,13 +355,14 @@ class PostingDatabase(object):
 
                 upper = weight.number + self.fuzzy_match_amount
                 lower = weight.number - self.fuzzy_match_amount
+
                 # Expand window for fuzzy match
-                while db[s.stop-1].number <= upper:
+                while db[s.stop-1].number is not None and db[s.stop-1].number <= upper:
                     if s.stop >= len(db):
                         break
                     s = slice(s.start, s.stop+1)
                 # Contract window for fuzzy match
-                while db[s.start].number < lower:
+                while db[s.start].number is not None and db[s.start].number < lower:
                     if s.start >= len(db):
                         break
                     s = slice(s.start+1, s.stop)
@@ -369,7 +370,7 @@ class PostingDatabase(object):
                 for i in db[s]:
                     # Because of slice shenanigans, we want to double check
                     # upper and lower
-                    if lower <= i.number <= upper and cmp_callable(p, i):
+                    if i.number is not None and lower <= i.number <= upper and cmp_callable(p, i):
                         yield i
 
     def add_transaction(self, transaction: Transaction):
