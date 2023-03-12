@@ -362,7 +362,7 @@ class PostingDatabase(object):
                         break
                     s = slice(s.start, s.stop+1)
                 # Contract window for fuzzy match
-                while db[s.start].number is not None and db[s.start].number < lower:
+                while db[s.start].number is None or db[s.start].number < lower:
                     if s.start >= len(db):
                         break
                     s = slice(s.start+1, s.stop)
