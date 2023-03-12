@@ -265,14 +265,14 @@ class PostingDatabase(object):
     def _date_currency_key(self, entry: Transaction, mp: MatchablePosting) -> DateCurrencyKey:
         pw = get_posting_weight(mp.posting)
         currency = ""
-        if pw:
+        if pw is not None:
             currency = pw.currency
         return (_date_key(entry, mp), currency)
 
     def _search_posting(self, entry: Transaction, mp: MatchablePosting):
         pw = get_posting_weight(mp.posting)
         number = None
-        if pw:
+        if pw is not None:
             number = pw.number
         return SearchPosting(
             number=number,
