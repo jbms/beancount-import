@@ -970,7 +970,6 @@ class ParsedOfxStatement(object):
                 is_sale = False
                 if raw.trantype in SELL_TYPES or (raw.trantype == 'TRANSFER' and
                                                   units < ZERO):
-                    is_sale = True
                     units = -abs(units)
                     # For sell transactions, rely on beancount to determine the matching lot.
                     cost_spec = CostSpec(
@@ -980,7 +979,9 @@ class ParsedOfxStatement(object):
                         date=None,
                         label=None,
                         merge=False)
-                    price = Amount(number=unitprice, currency=self.currency)
+                    if unitprice != ZERO:
+                        is_sale = True
+                        price = Amount(number=unitprice, currency=self.currency)
                 elif raw.trantype == 'TRANSFER' and units > ZERO:
                     # Transfer in.
                     # OFX does not specify the lot information, so it will have to be manually fixed.
