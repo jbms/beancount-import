@@ -618,8 +618,8 @@ def get_securities(soup: bs4.BeautifulSoup) -> List[SecurityInfo]:
 
 STOCK_BUY_SELL_TYPES = set(
     ['BUYMF', 'SELLMF', 'SELLSTOCK', 'BUYSTOCK', 'REINVEST', 'BUYDEBT',
-     'SELLDEBT'])
-SELL_TYPES = set(['SELLMF', 'SELLSTOCK', 'SELLDEBT'])
+     'SELLDEBT', 'SELLOTHER'])
+SELL_TYPES = set(['SELLMF', 'SELLSTOCK', 'SELLDEBT', 'SELLOTHER'])
 
 RELATED_ACCOUNT_KEYS = ['aftertax_account', 'pretax_account', 'match_account']
 
@@ -653,7 +653,7 @@ class ParsedOfxStatement(object):
         for invtranlist in stmtrs.find_all(re.compile('invtranlist|banktranlist')):
             for tran in invtranlist.find_all(
                     re.compile(
-                        '^(buymf|sellmf|reinvest|buystock|sellstock|buyopt|sellopt|buydebt|selldebt|transfer|income|invbanktran|stmttrn)$'
+                        '^(buymf|sellmf|reinvest|buystock|sellstock|buyopt|sellopt|buydebt|selldebt|sellother|transfer|income|invbanktran|stmttrn)$'
                     )):
                 fitid = find_child(tran, 'fitid')
                 date = parse_ofx_time(
