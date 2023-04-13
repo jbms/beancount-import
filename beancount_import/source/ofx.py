@@ -564,8 +564,9 @@ inv401k_account_keys = {
 # nor the target account, and should be ignored while building training
 # examples.
 AUX_CAPITAL_GAINS_KEY = 'capital_gains'
+AUX_DIVIDENDS_KEY = 'div_income'
 AUX_FEE_KEYS = ['fees', 'commission']
-AUX_ACCOUNT_KEYS = [AUX_CAPITAL_GAINS_KEY] + AUX_FEE_KEYS
+AUX_ACCOUNT_KEYS = [AUX_CAPITAL_GAINS_KEY, AUX_DIVIDENDS_KEY] + AUX_FEE_KEYS
 
 def get_aux_account_by_key(account: Open, key: str, results: SourceResults) -> str:
     """Like get_account_by_key. Ensures the account isn't used for training."""
@@ -625,6 +626,9 @@ RELATED_ACCOUNT_KEYS = ['aftertax_account', 'pretax_account', 'match_account']
 
 # Tolerance allowed in transaction balancing.  In units of base currency used, e.g. USD.
 TOLERANCE = 0.05
+UNITPRICE_ERROR_LOWER_BOUND = 0.05
+UNITPRICE_ERROR_UPPER_BOUND = 20.0
+
 
 class ParsedOfxStatement(object):
     def __init__(self, seen_fitids, filename, securities_map, org, stmtrs):
@@ -677,6 +681,17 @@ class ParsedOfxStatement(object):
                     total = find_child(tran, 'trnamt', D)
                 else:
                     total = find_child(tran, 'total', D)
+                units = find_child(tran, 'units', D)
+                unitprice = find_child(tran, 'unitprice', D)
+                if total and unitprice:
+                    error_ratio = abs(units * unitprice / total)
+                    if error_ratio > UNITPRICE_ERROR_UPPER_BOUND or error_ratio < UNITPRICE_ERROR_LOWER_BOUND:
+                        id_type = find_child(tran, 'uniqueidtype')
+                        unique_id = find_child(tran, 'uniqueid')
+                        units_x_unitprice = units*unitprice
+                        unitprice = abs(total / units)
+                        print(
+                            f"[{id_type} {unique_id}]: Mismatch between UNITS * UNITPRICE = {units_x_unitprice:.2f} and TOTAL = {total:.2f}. Inferring price: {unitprice:.3f}")
 
                 raw = RawTransactionEntry(
                     trantype=trantype,
@@ -689,8 +704,8 @@ class ParsedOfxStatement(object):
                     name=find_child(tran, 'name'),
                     trntype=find_child(tran, 'trntype'),
                     uniqueid=uniqueid,
-                    units=find_child(tran, 'units', D),
-                    unitprice=find_child(tran, 'unitprice', D),
+                    units=units,
+                    unitprice=unitprice,
                     tferaction=find_child(tran, 'tferaction'),
                     fees=find_child(tran, 'fees', D),
                     commission=find_child(tran, 'commission', D),
@@ -714,36 +729,37 @@ class ParsedOfxStatement(object):
 
         for bal in stmtrs.find_all('ledgerbal'):
             bal_amount_str = find_child(bal, 'balamt')
-            if not bal_amount_str.strip(): continue
+            if not bal_amount_str.strip():
+                continue
             bal_amount = D(bal_amount_str)
             date = find_child(bal, 'dtasof', parse_ofx_time).date()
             raw_cash_balance_entries.append(
                 RawCashBalanceEntry(
                     date=date, number=bal_amount, filename=filename))
 
-
         for invposlist in stmtrs.find_all('invposlist'):
             for invpos in invposlist.find_all('invpos'):
                 time_str = find_child(invpos, 'dtpriceasof')
-                units=find_child(invpos, 'units', D)
-                unitprice=find_child(invpos, 'unitprice', D)
-                mktval=find_child(invpos, 'mktval', D)
+                units = find_child(invpos, 'units', D)
+                unitprice = find_child(invpos, 'unitprice', D)
+                mktval = find_child(invpos, 'mktval', D)
                 if mktval and mktval > 0:
                     ratio = units*unitprice/mktval
                     # these thresholds are arbitrary and could be tightened
-                    if (ratio < 0.2) or (ratio > 5):
+                    if error_ratio > UNITPRICE_ERROR_UPPER_BOUND or error_ratio < UNITPRICE_ERROR_LOWER_BOUND:
                         id_type = find_child(invpos, 'uniqueidtype')
                         unique_id = find_child(invpos, 'uniqueid')
+                        units_x_unitprice = units*unitprice
                         unitprice = mktval / units if units > 0 else None
                         print(
-                            f"[{id_type} {unique_id}]: Mismatch between UNITS * UNITPRICE = {units*unitprice:.2f} and  MKTVAL = {mktval:.2f}. Inferring price: {unitprice:.3f}")
+                            f"[{id_type} {unique_id}]: Mismatch between UNITS * UNITPRICE = {units_x_unitprice:.2f} and MKTVAL = {mktval:.2f}. Inferring price: {unitprice:.3f}")
                 t = parse_ofx_time(time_str)
                 date = t.date()
                 raw_balance_entries.append(
                     RawBalanceEntry(
                         date=date,
                         uniqueid=find_child(invpos, 'uniqueid'),
-                        units=find_child(invpos, 'units', D),
+                        units=units,
                         unitprice=unitprice,
                         inv401ksource=find_child(invpos, 'inv401ksource'),
                         filename=filename))
@@ -1041,12 +1057,16 @@ class ParsedOfxStatement(object):
 
                 if is_sale:
                     # Add capital gains posting.
+                    if security.startswith("T9127") or "-9127" in security:
+                        account_name = AUX_DIVIDENDS_KEY + "_account"
+                    else:
+                        account_name = AUX_CAPITAL_GAINS_KEY + "_account"
                     entry.postings.append(
                         Posting(
                             meta=None,
                             account=get_aux_account_by_key(
                                 account,
-                                AUX_CAPITAL_GAINS_KEY + '_account',
+                                account_name,
                                 results) + ':' + security,
                             units=MISSING,
                             cost=None,
