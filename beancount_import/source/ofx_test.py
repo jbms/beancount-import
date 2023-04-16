@@ -51,6 +51,7 @@ def test_source(name: str, ofx_filename: str):
             'ofx_filenames': [os.path.join(testdata_dir, ofx_filename)],
         },
         replacements=[(testdata_dir, '<testdata>')],
+        write=True,
     )
 
 def test_find_ofx_id_for_account():
