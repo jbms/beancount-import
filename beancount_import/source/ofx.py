@@ -744,7 +744,7 @@ class ParsedOfxStatement(object):
                 unitprice = find_child(invpos, 'unitprice', D)
                 mktval = find_child(invpos, 'mktval', D)
                 if mktval and mktval > 0:
-                    ratio = units*unitprice/mktval
+                    error_ratio = units*unitprice/mktval
                     # these thresholds are arbitrary and could be tightened
                     if error_ratio > UNITPRICE_ERROR_UPPER_BOUND or error_ratio < UNITPRICE_ERROR_LOWER_BOUND:
                         id_type = find_child(invpos, 'uniqueidtype')
