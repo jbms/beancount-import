@@ -1030,7 +1030,7 @@ class ParsedOfxStatement(object):
                 else:
                     number_per_fix = unitprice
                     if abs(total + fee_total + (units * unitprice)) >= TOLERANCE:
-                    	number_per_fix = normalize_fraction((abs(total)-abs(fee_total))/units)
+                        mber_per_fix = normalize_fraction((abs(total)-abs(fee_total))/units)
                     cost_spec = CostSpec(
                         number_per=number_per_fix,
                         number_total=None,
@@ -1056,10 +1056,11 @@ class ParsedOfxStatement(object):
                     ))
 
                 if is_sale:
-                    # Add capital gains posting.
                     if security.startswith("T9127") or "-9127" in security:
+                        # Treasury bill: add dividend posting.
                         account_name = AUX_DIVIDENDS_KEY + "_account"
                     else:
+                        # Others: add capital gains posting.
                         account_name = AUX_CAPITAL_GAINS_KEY + "_account"
                     entry.postings.append(
                         Posting(
