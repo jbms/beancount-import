@@ -683,7 +683,7 @@ class ParsedOfxStatement(object):
                     total = find_child(tran, 'total', D)
                 units = find_child(tran, 'units', D)
                 unitprice = find_child(tran, 'unitprice', D)
-                if total and unitprice:
+                if units and total and unitprice:
                     error_ratio = abs(units * unitprice / total)
                     if error_ratio > UNITPRICE_ERROR_UPPER_BOUND or error_ratio < UNITPRICE_ERROR_LOWER_BOUND:
                         id_type = find_child(tran, 'uniqueidtype')
