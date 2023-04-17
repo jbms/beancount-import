@@ -71,6 +71,30 @@
             </STMTTRN>
             <SUBACCTFUND>CASH</SUBACCTFUND>
           </INVBANKTRAN>
+          <SELLOTHER>
+            <INVSELL>
+              <INVTRAN>
+                <FITID>Z0464551608101420230321</FITID>
+                <DTTRADE>20230321000000.000[-4:EDT]</DTTRADE>
+                <MEMO>REDEMPTION PAYOUT</MEMO>
+              </INVTRAN>
+              <SECID>
+                <UNIQUEID>912796Z77</UNIQUEID>
+                <UNIQUEIDTYPE>CUSIP</UNIQUEIDTYPE>
+              </SECID>
+              <UNITS>-0000000096000.00000</UNITS>
+              <UNITPRICE>000000100.000000000</UNITPRICE>
+              <COMMISSION>+00000000000000.0000</COMMISSION>
+              <FEES>+00000000000000.0000</FEES>
+              <TOTAL>+00000000096000.0000</TOTAL>
+              <CURRENCY>
+                <CURRATE>1.00</CURRATE>
+                <CURSYM>USD</CURSYM>
+              </CURRENCY>
+              <SUBACCTSEC>CASH</SUBACCTSEC>
+              <SUBACCTFUND>CASH</SUBACCTFUND>
+            </INVSELL>
+          </SELLOTHER>
         </INVTRANLIST>
         <INVPOSLIST>
           <POSDEBT>

@@ -263,7 +263,7 @@
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}
 
-2018-08-04 price IQVJK                          27.7635148 USD
+2018-08-04 price IQVJK                  1.714967820408059013623574335 USD
 
 ;; date: 2018-08-04
 ;; info: {"filename": "<testdata>/investment_buy_sell_income.ofx", "type": "application/x-ofx"}

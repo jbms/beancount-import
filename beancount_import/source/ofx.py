@@ -564,9 +564,9 @@ inv401k_account_keys = {
 # nor the target account, and should be ignored while building training
 # examples.
 AUX_CAPITAL_GAINS_KEY = 'capital_gains'
-AUX_DIVIDENDS_KEY = 'div_income'
+AUX_INTEREST_KEY = 'interest_income'
 AUX_FEE_KEYS = ['fees', 'commission']
-AUX_ACCOUNT_KEYS = [AUX_CAPITAL_GAINS_KEY, AUX_DIVIDENDS_KEY] + AUX_FEE_KEYS
+AUX_ACCOUNT_KEYS = [AUX_CAPITAL_GAINS_KEY, AUX_INTEREST_KEY] + AUX_FEE_KEYS
 
 def get_aux_account_by_key(account: Open, key: str, results: SourceResults) -> str:
     """Like get_account_by_key. Ensures the account isn't used for training."""
@@ -626,8 +626,8 @@ RELATED_ACCOUNT_KEYS = ['aftertax_account', 'pretax_account', 'match_account']
 
 # Tolerance allowed in transaction balancing.  In units of base currency used, e.g. USD.
 TOLERANCE = 0.05
-UNITPRICE_ERROR_LOWER_BOUND = 0.05
-UNITPRICE_ERROR_UPPER_BOUND = 20.0
+UNITPRICE_ERROR_LOWER_BOUND = 0.2
+UNITPRICE_ERROR_UPPER_BOUND = 5.0
 
 
 class ParsedOfxStatement(object):
@@ -1057,8 +1057,8 @@ class ParsedOfxStatement(object):
 
                 if is_sale:
                     if security.startswith("T9127") or "-9127" in security:
-                        # Treasury bill: add dividend posting.
-                        account_name = AUX_DIVIDENDS_KEY + "_account"
+                        # Treasury bill: add interest posting.
+                        account_name = AUX_INTEREST_KEY + "_account"
                     else:
                         # Others: add capital gains posting.
                         account_name = AUX_CAPITAL_GAINS_KEY + "_account"
