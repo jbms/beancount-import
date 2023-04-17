@@ -1030,7 +1030,7 @@ class ParsedOfxStatement(object):
                 else:
                     number_per_fix = unitprice
                     if abs(total + fee_total + (units * unitprice)) >= TOLERANCE:
-                        mber_per_fix = normalize_fraction((abs(total)-abs(fee_total))/units)
+                        number_per_fix = normalize_fraction((abs(total)-abs(fee_total))/units)
                     cost_spec = CostSpec(
                         number_per=number_per_fix,
                         number_total=None,
