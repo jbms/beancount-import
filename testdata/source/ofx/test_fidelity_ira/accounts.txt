@@ -1,0 +1,7 @@
+Assets:Investment:Fidelity
+Assets:Investment:Fidelity:AAPL220624P120
+Assets:Investment:Fidelity:Cash
+Assets:Investment:Fidelity:DAL220520C42
+Assets:Investment:Fidelity:IWM220826C207
+Assets:Investment:Fidelity:MSFT220826C310
+Assets:Investment:Fidelity:WMT220617P118

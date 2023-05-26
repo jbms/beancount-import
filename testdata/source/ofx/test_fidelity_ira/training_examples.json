@@ -1,0 +1,80 @@
+[
+  [
+    {
+      "amount": "-1 DAL220520C42",
+      "date": "2022-05-13",
+      "key_value_pairs": {
+        "desc": "YOU SOLD OPENING TRA",
+        "ofx_memo": "YOU SOLD OPENING TRA",
+        "ofx_type": "SELLOPT"
+      },
+      "source_account": "Assets:Investment:Fidelity:DAL220520C42"
+    },
+    "Assets:Investment:Fidelity:Cash"
+  ],
+  [
+    {
+      "amount": "1 DAL220520C42",
+      "date": "2022-05-20",
+      "key_value_pairs": {
+        "desc": "YOU BOUGHT CLOSING TRA",
+        "ofx_memo": "YOU BOUGHT CLOSING TRA",
+        "ofx_type": "BUYOPT"
+      },
+      "source_account": "Assets:Investment:Fidelity:DAL220520C42"
+    },
+    "Assets:Investment:Fidelity:Cash"
+  ],
+  [
+    {
+      "amount": "-1 WMT220617P118",
+      "date": "2022-06-16",
+      "key_value_pairs": {
+        "desc": "YOU SOLD OPENING TRA",
+        "ofx_memo": "YOU SOLD OPENING TRA",
+        "ofx_type": "SELLOPT"
+      },
+      "source_account": "Assets:Investment:Fidelity:WMT220617P118"
+    },
+    "Assets:Investment:Fidelity:Cash"
+  ],
+  [
+    {
+      "amount": "-1 AAPL220624P120",
+      "date": "2022-06-17",
+      "key_value_pairs": {
+        "desc": "YOU SOLD OPENING TRA",
+        "ofx_memo": "YOU SOLD OPENING TRA",
+        "ofx_type": "SELLOPT"
+      },
+      "source_account": "Assets:Investment:Fidelity:AAPL220624P120"
+    },
+    "Assets:Investment:Fidelity:Cash"
+  ],
+  [
+    {
+      "amount": "-1 MSFT220826C310",
+      "date": "2022-08-18",
+      "key_value_pairs": {
+        "desc": "YOU SOLD OPENING TRA",
+        "ofx_memo": "YOU SOLD OPENING TRA",
+        "ofx_type": "SELLOPT"
+      },
+      "source_account": "Assets:Investment:Fidelity:MSFT220826C310"
+    },
+    "Assets:Investment:Fidelity:Cash"
+  ],
+  [
+    {
+      "amount": "-1 IWM220826C207",
+      "date": "2022-08-18",
+      "key_value_pairs": {
+        "desc": "YOU SOLD OPENING TRA",
+        "ofx_memo": "YOU SOLD OPENING TRA",
+        "ofx_type": "SELLOPT"
+      },
+      "source_account": "Assets:Investment:Fidelity:IWM220826C207"
+    },
+    "Assets:Investment:Fidelity:Cash"
+  ]
+]

@@ -1,0 +1,139 @@
+option "operating_currency" "USD"
+option "conversion_currency" "USD"
+
+1900-01-01 open Assets:Investment:Fidelity
+  ofx_org: "fidelity.com"
+  ofx_broker_id: "fidelity.com"
+  account_id: "313379972"
+  ofx_account_type: "securities_and_cash"
+  div_income_account: "Income:Fidelity:Dividends"
+  interest_income_account: "Income:Fidelity:Interest"
+  capital_gains_account: "Income:Fidelity:Capital-Gains"
+  fees_account: "Expenses:Investment:Fidelity:Fees"
+  commission_account: "Expenses:Investment:Fidelity:Commissions"
+
+
+1900-01-01 open Assets:Investment:Fidelity:Cash
+1900-01-01 open Assets:Investment:Fidelity:AAPL220624P120
+1900-01-01 open Assets:Investment:Fidelity:DAL220520C42
+1900-01-01 open Assets:Investment:Fidelity:IWM220826C207
+1900-01-01 open Assets:Investment:Fidelity:MSFT220826C310
+1900-01-01 open Assets:Investment:Fidelity:WMT220617P118
+1900-01-01 open Expenses:Investment:Fidelity:Fees
+1900-01-01 open Expenses:Investment:Fidelity:Commissions
+1900-01-01 open Expenses:FIXME
+1900-01-01 open Income:Fidelity:Capital-Gains
+1900-01-01 open Income:Fidelity:Capital-Gains:DAL220520C42
+
+2022-05-13 * "SELLOPT - DAL220520C42"
+  Expenses:Investment:Fidelity:Fees         0.0400 USD
+  Expenses:Investment:Fidelity:Commissions  0.6500 USD
+  Assets:Investment:Fidelity:DAL220520C42       -1 DAL220520C42 {13.00} @ 0.13 USD
+    date: 2022-05-13
+    ofx_fitid: "22052997213401220220513"
+    ofx_memo: "YOU SOLD OPENING TRA"
+    ofx_type: "SELLOPT"
+    cleared: TRUE
+  Assets:Investment:Fidelity:Cash            12.31 USD
+    ofx_fitid: "22052997213401220220513"
+    cleared: TRUE
+
+2022-05-20 * "BUYOPT - DAL220520C42"
+  Assets:Investment:Fidelity:DAL220520C42         1 DAL220520C42 {} @ 0.01 USD
+    date: 2022-05-20
+    ofx_fitid: "22052997214101120220520"
+    ofx_memo: "YOU BOUGHT CLOSING TRA"
+    ofx_type: "BUYOPT"
+    cleared: TRUE
+  Income:Fidelity:Capital-Gains:DAL220520C42
+  Assets:Investment:Fidelity:Cash             -1.03 USD
+    ofx_fitid: "22052997214101120220520"
+    cleared: TRUE
+
+2022-06-16 * "SELLOPT - WMT220617P118"
+  Expenses:Investment:Fidelity:Fees         0.0400 USD
+  Expenses:Investment:Fidelity:Commissions  0.6500 USD
+  Assets:Investment:Fidelity:WMT220617P118      -1 WMT220617P118 {70.0} @ 0.7 USD
+    date: 2022-06-16
+    ofx_fitid: "31337997216801320220616"
+    ofx_memo: "YOU SOLD OPENING TRA"
+    ofx_type: "SELLOPT"
+    cleared: TRUE
+  Assets:Investment:Fidelity:Cash            69.31 USD
+    ofx_fitid: "31337997216801320220616"
+    cleared: TRUE
+
+2022-06-17 * "SELLOPT - AAPL220624P120"
+  Expenses:Investment:Fidelity:Fees          0.0400 USD
+  Expenses:Investment:Fidelity:Commissions   0.6500 USD
+  Assets:Investment:Fidelity:AAPL220624P120      -1 AAPL220624P120 {40.0} @ 0.4 USD
+    date: 2022-06-17
+    ofx_fitid: "31337997216901220220617"
+    ofx_memo: "YOU SOLD OPENING TRA"
+    ofx_type: "SELLOPT"
+    cleared: TRUE
+  Assets:Investment:Fidelity:Cash             39.31 USD
+    ofx_fitid: "31337997216901220220617"
+    cleared: TRUE
+
+2022-06-17 * "TRANSFER - WMT220617P118"
+  Assets:Investment:Fidelity:WMT220617P118  1 WMT220617P118 {}
+    date: 2022-06-17
+    ofx_fitid: "31337997217301320220617"
+    ofx_memo: "EXPIRED PUT (WMT)"
+    ofx_type: "TRANSFER"
+    cleared: TRUE
+  Expenses:FIXME
+
+2022-06-24 * "TRANSFER - AAPL220624P120"
+  Assets:Investment:Fidelity:AAPL220624P120  1 AAPL220624P120 {}
+    date: 2022-06-24
+    ofx_fitid: "31337997217901120220624"
+    ofx_memo: "EXPIRED PUT (AAPL)"
+    ofx_type: "TRANSFER"
+    cleared: TRUE
+  Expenses:FIXME
+
+2022-08-18 * "SELLOPT - MSFT220826C310"
+  Expenses:Investment:Fidelity:Fees          0.0400 USD
+  Expenses:Investment:Fidelity:Commissions   0.5000 USD
+  Assets:Investment:Fidelity:MSFT220826C310      -1 MSFT220826C310 {10.0} @ 0.1 USD
+    date: 2022-08-18
+    ofx_fitid: "31337997223101120220818"
+    ofx_memo: "YOU SOLD OPENING TRA"
+    ofx_type: "SELLOPT"
+    cleared: TRUE
+  Assets:Investment:Fidelity:Cash              9.46 USD
+    ofx_fitid: "31337997223101120220818"
+    cleared: TRUE
+
+2022-08-18 * "SELLOPT - IWM220826C207"
+  Expenses:Investment:Fidelity:Fees         0.0400 USD
+  Expenses:Investment:Fidelity:Commissions  0.6500 USD
+  Assets:Investment:Fidelity:IWM220826C207      -1 IWM220826C207 {22.00} @ 0.22 USD
+    date: 2022-08-18
+    ofx_fitid: "31337997223101220220818"
+    ofx_memo: "YOU SOLD OPENING TRA"
+    ofx_type: "SELLOPT"
+    cleared: TRUE
+  Assets:Investment:Fidelity:Cash            21.31 USD
+    ofx_fitid: "31337997223101220220818"
+    cleared: TRUE
+
+2022-08-26 * "TRANSFER - MSFT220826C310"
+  Assets:Investment:Fidelity:MSFT220826C310  1 MSFT220826C310 {}
+    date: 2022-08-26
+    ofx_fitid: "31337997224201120220826"
+    ofx_memo: "EXPIRED CALL (MSFT)"
+    ofx_type: "TRANSFER"
+    cleared: TRUE
+  Expenses:FIXME
+
+2022-08-26 * "TRANSFER - IWM220826C207"
+  Assets:Investment:Fidelity:IWM220826C207  1 IWM220826C207 {}
+    date: 2022-08-26
+    ofx_fitid: "31337997224201220220826"
+    ofx_memo: "EXPIRED CALL (IWM)"
+    ofx_type: "TRANSFER"
+    cleared: TRUE
+  Expenses:FIXME
