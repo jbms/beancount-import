@@ -484,6 +484,7 @@ RawBalanceEntry = NamedTuple('RawBalanceEntry', [
     ('units', Optional[Decimal]),
     ('unitprice', Optional[Decimal]),
     ('inv401ksource', Optional[str]),
+    ('tolerance', Optional[Decimal]),
 ])
 
 RawCashBalanceEntry = NamedTuple('RawCashBalanceEntry', [
@@ -691,7 +692,7 @@ class ParsedOfxStatement(object):
                         units_x_unitprice = units*unitprice
                         unitprice = abs(total / units)
                         print(
-                            f"[{id_type} {unique_id}]: Mismatch between UNITS * UNITPRICE = {units_x_unitprice:.2f} and TOTAL = {total:.2f}. Inferring price: {unitprice:.3f}")
+                            f"Transaction [{id_type} {unique_id}]: Mismatch between UNITS * UNITPRICE = {units_x_unitprice:.2f} and TOTAL = {total:.2f}. Inferring price: {unitprice:.3f}")
 
                 raw = RawTransactionEntry(
                     trantype=trantype,
@@ -743,6 +744,7 @@ class ParsedOfxStatement(object):
                 units = find_child(invpos, 'units', D)
                 unitprice = find_child(invpos, 'unitprice', D)
                 mktval = find_child(invpos, 'mktval', D)
+                tolerance = None
                 if mktval and mktval > 0:
                     error_ratio = units*unitprice/mktval
                     # these thresholds are arbitrary and could be tightened
@@ -752,7 +754,11 @@ class ParsedOfxStatement(object):
                         units_x_unitprice = units*unitprice
                         unitprice = mktval / units if units > 0 else None
                         print(
-                            f"[{id_type} {unique_id}]: Mismatch between UNITS * UNITPRICE = {units_x_unitprice:.2f} and MKTVAL = {mktval:.2f}. Inferring price: {unitprice:.3f}")
+                            f"Balance [{id_type} {unique_id}]: Mismatch between UNITS * UNITPRICE = {units_x_unitprice:.2f} and MKTVAL = {mktval:.2f}. Inferring price: {unitprice:.3f}")
+                        if self.org == "Vanguard":
+                            # For Vanguard balance, tolerance needs to be set. See
+                            # https://beancount.github.io/docs/precision_tolerances.html#explicit-tolerances-on-balance-assertions
+                            tolerance = round(abs(units) * Decimal(0.001))
                 t = parse_ofx_time(time_str)
                 date = t.date()
                 raw_balance_entries.append(
@@ -762,7 +768,8 @@ class ParsedOfxStatement(object):
                         units=units,
                         unitprice=unitprice,
                         inv401ksource=find_child(invpos, 'inv401ksource'),
-                        filename=filename))
+                        filename=filename,
+                        tolerance=tolerance))
 
     def get_entries(self, prepare_state):
         account = prepare_state.ofx_id_to_account.get(self.ofx_id)
@@ -1200,7 +1207,7 @@ class ParsedOfxStatement(object):
                         amount=Amount(
                             number=round(units + self.availcash, 2),
                             currency=associated_currency),
-                        tolerance=None,
+                        tolerance=raw.tolerance,
                         diff_amount=None,
                     )
                     results.add_pending_entry(
@@ -1216,7 +1223,7 @@ class ParsedOfxStatement(object):
                         meta=None,
                         account=security_account_name,
                         amount=Amount(number=units, currency=security),
-                        tolerance=None,
+                        tolerance=raw.tolerance,
                         diff_amount=None,
                     )
                     results.add_pending_entry(
