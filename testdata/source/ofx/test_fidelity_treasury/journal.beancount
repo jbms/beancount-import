@@ -1,0 +1,6 @@
+1900-01-01 open Assets:Savings:Fidelity
+  ofx_org: "fidelity.com"
+  ofx_broker_id: "fidelity.com"
+  account_id: "X0000001"
+  ofx_account_type: "securities_and_cash"
+  interest_income_account: "Income:Interest:Savings:Fidelity"

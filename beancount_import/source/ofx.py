@@ -484,6 +484,7 @@ RawBalanceEntry = NamedTuple('RawBalanceEntry', [
     ('units', Optional[Decimal]),
     ('unitprice', Optional[Decimal]),
     ('inv401ksource', Optional[str]),
+    ('tolerance', Optional[Decimal]),
 ])
 
 RawCashBalanceEntry = NamedTuple('RawCashBalanceEntry', [
@@ -566,8 +567,9 @@ inv401k_account_keys = {
 # nor the target account, and should be ignored while building training
 # examples.
 AUX_CAPITAL_GAINS_KEY = 'capital_gains'
+AUX_INTEREST_KEY = 'interest_income'
 AUX_FEE_KEYS = ['fees', 'commission']
-AUX_ACCOUNT_KEYS = [AUX_CAPITAL_GAINS_KEY] + AUX_FEE_KEYS
+AUX_ACCOUNT_KEYS = [AUX_CAPITAL_GAINS_KEY, AUX_INTEREST_KEY] + AUX_FEE_KEYS
 
 def get_aux_account_by_key(account: Open, key: str, results: SourceResults) -> str:
     """Like get_account_by_key. Ensures the account isn't used for training."""
@@ -619,14 +621,18 @@ def get_securities(soup: bs4.BeautifulSoup) -> List[SecurityInfo]:
 
 
 STOCK_BUY_SELL_TYPES = set(
-    ['BUYMF', 'SELLMF', 'SELLSTOCK', 'BUYSTOCK', 'REINVEST'])
-SELL_TYPES = set(['SELLMF', 'SELLSTOCK'])
+    ['BUYMF', 'SELLMF', 'SELLSTOCK', 'BUYSTOCK', 'REINVEST', 'BUYDEBT',
+     'SELLDEBT', 'SELLOTHER'])
+SELL_TYPES = set(['SELLMF', 'SELLSTOCK', 'SELLDEBT', 'SELLOTHER'])
 OPT_TYPES = set(['BUYOPT', 'SELLOPT'])
 
 RELATED_ACCOUNT_KEYS = ['aftertax_account', 'pretax_account', 'match_account']
 
 # Tolerance allowed in transaction balancing.  In units of base currency used, e.g. USD.
 TOLERANCE = 0.05
+UNITPRICE_ERROR_LOWER_BOUND = 0.2
+UNITPRICE_ERROR_UPPER_BOUND = 5.0
+
 
 class ParsedOfxStatement(object):
     def __init__(self, seen_fitids, filename, securities_map, org, stmtrs):
@@ -655,7 +661,7 @@ class ParsedOfxStatement(object):
         for invtranlist in stmtrs.find_all(re.compile('invtranlist|banktranlist')):
             for tran in invtranlist.find_all(
                     re.compile(
-                        '^(buymf|sellmf|reinvest|buystock|sellstock|buyopt|sellopt|transfer|income|invbanktran|stmttrn)$'
+                        '^(buymf|sellmf|reinvest|buystock|sellstock|buyopt|sellopt|buydebt|selldebt|sellother|transfer|income|invbanktran|stmttrn)$'
                     )):
                 fitid = find_child(tran, 'fitid')
                 date = parse_ofx_time(
@@ -679,6 +685,17 @@ class ParsedOfxStatement(object):
                     total = find_child(tran, 'trnamt', D)
                 else:
                     total = find_child(tran, 'total', D)
+                units = find_child(tran, 'units', D)
+                unitprice = find_child(tran, 'unitprice', D)
+                if units and total and unitprice:
+                    error_ratio = abs(units * unitprice / total)
+                    if error_ratio > UNITPRICE_ERROR_UPPER_BOUND or error_ratio < UNITPRICE_ERROR_LOWER_BOUND:
+                        id_type = find_child(tran, 'uniqueidtype')
+                        unique_id = find_child(tran, 'uniqueid')
+                        units_x_unitprice = units*unitprice
+                        unitprice = abs(total / units)
+                        print(
+                            f"Transaction [{id_type} {unique_id}]: Mismatch between UNITS * UNITPRICE = {units_x_unitprice:.2f} and TOTAL = {total:.2f}. Inferring price: {unitprice:.3f}")
 
                 opttrantype = None
                 shares_per_contract = find_child(tran, 'shperctrct', D)
@@ -698,8 +715,8 @@ class ParsedOfxStatement(object):
                     name=find_child(tran, 'name'),
                     trntype=find_child(tran, 'trntype'),
                     uniqueid=uniqueid,
-                    units=find_child(tran, 'units', D),
-                    unitprice=find_child(tran, 'unitprice', D),
+                    units=units,
+                    unitprice=unitprice,
                     tferaction=find_child(tran, 'tferaction'),
                     fees=find_child(tran, 'fees', D),
                     commission=find_child(tran, 'commission', D),
@@ -725,27 +742,46 @@ class ParsedOfxStatement(object):
 
         for bal in stmtrs.find_all('ledgerbal'):
             bal_amount_str = find_child(bal, 'balamt')
-            if not bal_amount_str.strip(): continue
+            if not bal_amount_str.strip():
+                continue
             bal_amount = D(bal_amount_str)
             date = find_child(bal, 'dtasof', parse_ofx_time).date()
             raw_cash_balance_entries.append(
                 RawCashBalanceEntry(
                     date=date, number=bal_amount, filename=filename))
 
-
         for invposlist in stmtrs.find_all('invposlist'):
             for invpos in invposlist.find_all('invpos'):
                 time_str = find_child(invpos, 'dtpriceasof')
+                units = find_child(invpos, 'units', D)
+                unitprice = find_child(invpos, 'unitprice', D)
+                mktval = find_child(invpos, 'mktval', D)
+                tolerance = None
+                if mktval and mktval > 0:
+                    error_ratio = units*unitprice/mktval
+                    # these thresholds are arbitrary and could be tightened
+                    if error_ratio > UNITPRICE_ERROR_UPPER_BOUND or error_ratio < UNITPRICE_ERROR_LOWER_BOUND:
+                        id_type = find_child(invpos, 'uniqueidtype')
+                        unique_id = find_child(invpos, 'uniqueid')
+                        units_x_unitprice = units*unitprice
+                        unitprice = mktval / units if units > 0 else None
+                        print(
+                            f"Balance [{id_type} {unique_id}]: Mismatch between UNITS * UNITPRICE = {units_x_unitprice:.2f} and MKTVAL = {mktval:.2f}. Inferring price: {unitprice:.3f}")
+                        if self.org == "Vanguard":
+                            # For Vanguard balance, tolerance needs to be set. See
+                            # https://beancount.github.io/docs/precision_tolerances.html#explicit-tolerances-on-balance-assertions
+                            tolerance = round(abs(units) * Decimal(0.001))
                 t = parse_ofx_time(time_str)
                 date = t.date()
                 raw_balance_entries.append(
                     RawBalanceEntry(
                         date=date,
                         uniqueid=find_child(invpos, 'uniqueid'),
-                        units=find_child(invpos, 'units', D),
-                        unitprice=find_child(invpos, 'unitprice', D),
+                        units=units,
+                        unitprice=unitprice,
                         inv401ksource=find_child(invpos, 'inv401ksource'),
-                        filename=filename))
+                        filename=filename,
+                        tolerance=tolerance))
 
     def get_entries(self, prepare_state):
         account = prepare_state.ofx_id_to_account.get(self.ofx_id)
@@ -797,6 +833,10 @@ class ParsedOfxStatement(object):
                 return None
             sec = securities_map[unique_id]
             ticker = sec.ticker
+            # Treasury bill and bond start with 912
+            if ticker.startswith("912"):
+                # Prepend "T" to make it a valid ticker
+                ticker = "T" + ticker
             if ticker is None:
                 results.add_error(
                     'Missing ticker for security %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
@@ -1027,7 +1067,7 @@ class ParsedOfxStatement(object):
                 else:
                     number_per_fix = unitprice
                     if abs(total + fee_total + (units * unitprice)) >= TOLERANCE:
-                    	number_per_fix = normalize_fraction((abs(total)-abs(fee_total))/units)
+                        number_per_fix = normalize_fraction((abs(total)-abs(fee_total))/units)
                     cost_spec = CostSpec(
                         number_per=number_per_fix,
                         number_total=None,
@@ -1053,13 +1093,19 @@ class ParsedOfxStatement(object):
                     ))
 
                 if is_closing_txn:
+                    if security.startswith("T9127") or "-9127" in security:
+                        # Treasury bill: add interest posting.
+                        account_name = AUX_INTEREST_KEY + "_account"
+                    else:
+                        # Others: add capital gains posting.
+                        account_name = AUX_CAPITAL_GAINS_KEY + "_account"
                     # Add capital gains posting.
                     entry.postings.append(
                         Posting(
                             meta=None,
                             account=get_aux_account_by_key(
                                 account,
-                                AUX_CAPITAL_GAINS_KEY + '_account',
+                                account_name,
                                 results) + ':' + security,
                             units=MISSING,
                             cost=None,
@@ -1181,6 +1227,7 @@ class ParsedOfxStatement(object):
             security = get_security(raw.uniqueid)
             if security is None:
                 continue
+            units = raw.units
             associated_currency = cash_securities_map.get(security)
             if associated_currency is not None:
                 if raw.date not in cash_activity_dates:
@@ -1189,9 +1236,9 @@ class ParsedOfxStatement(object):
                         meta=None,
                         account=get_subaccount_cash(raw.inv401ksource),
                         amount=Amount(
-                            number=round(raw.units + self.availcash, 2),
+                            number=round(units + self.availcash, 2),
                             currency=associated_currency),
-                        tolerance=None,
+                        tolerance=raw.tolerance,
                         diff_amount=None,
                     )
                     results.add_pending_entry(
@@ -1206,8 +1253,8 @@ class ParsedOfxStatement(object):
                         date=raw.date,
                         meta=None,
                         account=security_account_name,
-                        amount=Amount(number=raw.units, currency=security),
-                        tolerance=None,
+                        amount=Amount(number=units, currency=security),
+                        tolerance=raw.tolerance,
                         diff_amount=None,
                     )
                     results.add_pending_entry(

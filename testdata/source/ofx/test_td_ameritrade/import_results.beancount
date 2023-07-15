@@ -21,4 +21,4 @@
 ;; date: 2017-12-03
 ;; info: {"filename": "<testdata>/td_ameritrade.ofx", "type": "application/x-ofx"}
 
-2017-12-03 price AMERITRADE-912810RW0                  100 USD
+2017-12-03 price AMERITRADE-912810RW0                    1 USD
