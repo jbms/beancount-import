@@ -456,6 +456,10 @@ class PostingDatabase(object):
                     if posting_date and posting_date != date:
                         continue
 
+                # Verify that number is in fuzzy range
+                if abs(sp.number - amount.number) > self.fuzzy_match_amount:
+                    continue
+
                 key = _entry_and_posting_ids_key(sp.entry, sp.mp)
                 matches[key] = (sp.entry, sp.mp)
         return matches
