@@ -721,6 +721,33 @@ def test_match_fuzzy_amount():
           note: "B"
       """)
 
+def test_match_fuzzy_amount_upper_bound():
+  # We match despite a skew of 0.01 USD, our configured fuzzy_match_amount.
+  assert_match(
+      pending_candidate="""
+      2016-01-01 * "Narration"
+        note: "A"
+        Income:A -100 USD
+          note: "A"
+        Expenses:FIXME 100 USD
+      """,
+      pending="""
+      2016-01-01 * "Narration"
+        note2: "B"
+        Assets:B 100.01 STOCK { 1.00 USD }
+          note: "B"
+        Expenses:FIXME -100.01 USD
+      """,
+      matches="""
+      2016-01-01 * "Narration"
+        note: "A"
+        note2: "B"
+        Income:A -100 USD
+          note: "A"
+        Assets:B 100.01 STOCK { 1.00 USD }
+          note: "B"
+      """)
+
 def test_nonmatch_fuzzy_amount():
   # We don't match with a skew of 0.02, beyond our configured fuzzy_match_amount.
   assert_match(
@@ -737,6 +764,24 @@ def test_nonmatch_fuzzy_amount():
         Assets:B 99.98 STOCK { 1.00 USD }
           note: "B"
         Expenses:FIXME -99.98 USD
+      """)
+
+def test_nonmatch_fuzzy_amount_with_dates():
+  # We don't match with a skew of 0.02, beyond our configured fuzzy_match_amount.
+  assert_match(
+      pending_candidate="""
+      2023-01-01 * "Transaction 0"
+        Assets:A 20.00 USD
+          date: 2023-01-01
+          cleared: TRUE
+        Expenses:FIXME -20.00 USD
+      """,
+      pending="""
+      2023-01-01 * "Transaction 1"
+        Assets:B -19.98 USD
+          date: 2023-01-01
+          cleared: TRUE
+        Expenses:FIXME 19.98 USD
       """)
 
 def test_match_grouped_differing_signs():

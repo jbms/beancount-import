@@ -444,7 +444,11 @@ class PostingDatabase(object):
         if cur_matches is not None:
             lower_bound = bisect.bisect_left(cur_matches, (lower, tuple(), None, None))
             upper_bound = bisect.bisect_right(cur_matches, (upper, (sys.maxsize,), None, None), lo=lower_bound)
-            for sp in cur_matches[lower_bound-1 if lower_bound > 0 else 0:upper_bound]:
+            for sp in cur_matches[lower_bound:upper_bound]:
+                assert abs(sp.number - amount.number) <= self.fuzzy_match_amount, (
+                    f'Bug in matching algorithm: {sp} is not within '
+                    + f'{self.fuzzy_match_amount} of {amount}')
+
                 posting = sp.mp.posting
                 # Verify that the account is compatible.
                 if not are_accounts_mergeable(account, posting.account):
