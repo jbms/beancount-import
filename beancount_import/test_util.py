@@ -10,6 +10,8 @@ import beancount.parser.parser
 import beancount.parser.printer
 from beancount.core.data import Directive, Entries, Posting, Transaction, Meta
 
+from .sorted_entry_printer import SortedEntryPrinter
+
 
 def parse(text: str) -> Entries:
     entries, errors, options = beancount.parser.parser.parse_string(
@@ -19,8 +21,7 @@ def parse(text: str) -> Entries:
 
 
 def format_entries(entries: Entries, indent=0):
-    result = '\n\n'.join(
-        beancount.parser.printer.format_entry(e) for e in entries)
+    result = '\n\n'.join(SortedEntryPrinter()(e) for e in entries)
     indent_str = ' ' * indent
     return '\n'.join(indent_str + x.rstrip() for x in result.split('\n'))
 
