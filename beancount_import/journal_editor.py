@@ -37,6 +37,8 @@ import beancount.parser.printer
 import beancount.parser.booking
 from beancount.core.number import MISSING
 
+from .sorted_entry_printer import SortedEntryPrinter
+
 # Inclusive starting original line, exclusive ending original line.
 LineRange = Tuple[int, int]
 
@@ -820,7 +822,7 @@ class StagedChanges(object):
         new_entries = []
         old_entries = []
 
-        printer = beancount.parser.printer.EntryPrinter()
+        printer = SortedEntryPrinter()
 
         for filename, changed_entries in self.changed_entries.items():
             changed_entries.sort(key=lambda x: float('inf')
