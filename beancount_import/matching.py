@@ -269,14 +269,14 @@ class PostingDatabase(object):
             currency = pw.currency
         return (_date_key(entry, mp), currency)
 
-    def _search_posting(self, entry: Transaction, mp: MatchablePosting):
+    def _search_posting(self, key: SourcePostingIds, entry: Transaction, mp: MatchablePosting):
         pw = get_posting_weight(mp.posting)
         number = None
         if pw is not None:
             number = pw.number
         return SearchPosting(
             number=number,
-            key=_entry_and_posting_ids_key(entry, mp),
+            key=key,
             entry=entry,
             mp=mp)
 
@@ -296,8 +296,9 @@ class PostingDatabase(object):
         if weight is None:
             return
 
+        sp = self._search_posting(source_posting_ids, entry, mp)
         for dc in self.fuzz_date_currency_key(self._date_currency_key(entry, mp)):
-            self._date_currency[dc].append(self._search_posting(entry, mp))
+            self._date_currency[dc].append(sp)
             self._date_currency_dirty[dc] = True
 
     def get_date_currency_postings(self, key: DateCurrencyKey) -> List[SearchPosting]:
@@ -390,9 +391,9 @@ class PostingDatabase(object):
                 if group is not None:
                     group.pop(source_posting_ids, None)
 
-        for dc in self.fuzz_date_currency_key(
-                self._date_currency_key(entry, mp)):
-            self._date_currency[dc].remove(self._search_posting(entry, mp))
+        sp = self._search_posting(source_posting_ids, entry, mp)
+        for dc in self.fuzz_date_currency_key(self._date_currency_key(entry, mp)):
+            self._date_currency[dc].remove(sp)
 
     def remove_transaction(self, transaction: Transaction):
         for mp in get_matchable_postings_from_transaction(
@@ -456,8 +457,7 @@ class PostingDatabase(object):
                     if posting_date and posting_date != date:
                         continue
 
-                key = _entry_and_posting_ids_key(sp.entry, sp.mp)
-                matches[key] = (sp.entry, sp.mp)
+                matches[sp.key] = (sp.entry, sp.mp)
         return matches
 
     def _get_weight_matches(
