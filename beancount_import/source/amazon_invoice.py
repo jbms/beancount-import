@@ -273,8 +273,8 @@ class Locale_de_DE(Locale_Data):
 
     @staticmethod
     def parse_amount(amount: str, assumed_currency=None) -> Amount:
-        if amount is None:
-            return None
+        if amount is None or amount == '':
+            return Amount(D(0), Locale_de_DE.currency)
         else:
             return parse_amount(
                 Locale_de_DE._format_number_str(amount),
