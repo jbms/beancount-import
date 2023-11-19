@@ -721,8 +721,47 @@ def test_match_fuzzy_amount():
           note: "B"
       """)
 
+def test_match_fuzzy_amount_upper_bound():
+  # We match despite a skew of 0.01 USD, our configured fuzzy_match_amount.
+  assert_match(
+      pending_candidate="""
+      2016-01-01 * "Narration"
+        note: "A"
+        Income:A -100 USD
+          note: "A"
+        Expenses:FIXME 100 USD
+      """,
+      pending="""
+      2016-01-01 * "Narration"
+        note2: "B"
+        Assets:B 100.01 STOCK { 1.00 USD }
+          note: "B"
+        Expenses:FIXME -100.01 USD
+      """,
+      matches="""
+      2016-01-01 * "Narration"
+        note: "A"
+        note2: "B"
+        Income:A -100 USD
+          note: "A"
+        Assets:B 100.01 STOCK { 1.00 USD }
+          note: "B"
+      """)
+
 def test_nonmatch_fuzzy_amount():
   # We don't match with a skew of 0.02, beyond our configured fuzzy_match_amount.
+  #
+  # This test case searches for matches for the "Expenses:FIXME 100 USD"
+  # posting among the following 4 candidates, ordered by amount:
+  #
+  # 1. Income:A -100 USD
+  # 2. Expenses:FIXME -99.98 USD
+  # 3. Assets:B 99.98 STOCK { 1.00 USD }
+  # 4. Expenses:FIXME 100 USD
+  #
+  # Only posting #1 should be considered; the others are beyond the
+  # fuzzy_match_amount. But since posting #1 is from the same transaction as the
+  # original posting, it should be excluded and no match should be returned.
   assert_match(
       pending_candidate="""
       2016-01-01 * "Narration"
@@ -737,6 +776,37 @@ def test_nonmatch_fuzzy_amount():
         Assets:B 99.98 STOCK { 1.00 USD }
           note: "B"
         Expenses:FIXME -99.98 USD
+      """)
+
+def test_nonmatch_fuzzy_amount_2():
+  # We don't match with a skew of 0.02, beyond our configured fuzzy_match_amount.
+  #
+  # This test case searches for matches for the "Expenses:FIXME -20.00 USD"
+  # posting among the following 4 candidates, ordered by amount:
+  #
+  # 1. Expenses:FIXME -20.00 USD
+  # 2. Assets:B -19.98 USD
+  # 3. Expenses:FIXME 19.98 USD
+  # 4. Assets:A 20.00 USD
+  #
+  # Only posting #4 should be considered; the others are beyond the
+  # fuzzy_match_amount. But since posting #4 is from the same transaction as the
+  # original posting, it should be excluded and no match should be returned.
+  #
+  # The difference between this test case and `test_nonmatch_fuzzy_amount()`
+  # above is the position of the target posting within the candidates list: at
+  # the end of the list rather than the beginning. This test case reproduces
+  # issue #202.
+  assert_match(
+      pending_candidate="""
+      2023-01-01 * "Transaction 0"
+        Assets:A 20.00 USD
+        Expenses:FIXME -20.00 USD
+      """,
+      pending="""
+      2023-01-01 * "Transaction 1"
+        Assets:B -19.98 USD
+        Expenses:FIXME 19.98 USD
       """)
 
 def test_match_grouped_differing_signs():
