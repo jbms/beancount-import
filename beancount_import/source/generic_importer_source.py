@@ -18,14 +18,13 @@ from collections import OrderedDict
 import itertools
 from typing import Hashable, List, Dict, Optional
 
-from beancount.core.data import Balance, Transaction, Posting,  Directive
-from beancount.core.amount import Amount
-from beancount.core.convert import get_weight
+from beancount.core import interpolate
+from beancount.core.data import Balance, Transaction, Posting,  Directive, Options
+from beancount.core.number import MISSING
 from beancount.ingest.importer import ImporterProtocol
 from beancount.ingest.cache import get_file
-from beancount.parser.booking_full import convert_costspec_to_cost
 
-from ..matching import FIXME_ACCOUNT, SimpleInventory
+from ..matching import FIXME_ACCOUNT
 from . import ImportResult, SourceResults
 from ..journal_editor import JournalEditor
 from .description_based_source import DescriptionBasedSource, get_pending_and_invalid_entries
@@ -83,7 +82,7 @@ class ImporterSource(DescriptionBasedSource):
             account_set=set([self.account]),
             get_key_from_posting=_get_key_from_posting,
             get_key_from_raw_entry=self._get_key_from_imported_entry,
-            make_import_result=self._make_import_result,
+            make_import_result=lambda entry: self._make_import_result(entry,journal.options_map),
             results=results)
 
     def _add_description(self, entry: Transaction):
@@ -124,8 +123,9 @@ class ImporterSource(DescriptionBasedSource):
                 source_posting.units,
                 entry.narration)
 
-    def _make_import_result(self, imported_entry:Directive):
-        if isinstance(imported_entry, Transaction): balance_amounts(imported_entry)
+    def _make_import_result(self, imported_entry: Directive, options_map: Options):
+        if isinstance(imported_entry, Transaction):
+            balance_amounts(imported_entry, options_map)
         result = ImportResult(
             date=imported_entry.date, info=get_info(imported_entry), entries=[imported_entry])
         # delete filename since it is used by beancount-import to determine if the
@@ -145,21 +145,29 @@ def get_info(raw_entry: Directive) -> dict:
         line=raw_entry.meta['lineno'],
     )
 
-def balance_amounts(txn:Transaction)-> None:
+
+def balance_amounts(txn: Transaction, options_map: Options) -> None:
     """Add FIXME account for the remaing amount to balance accounts"""
-    inventory = SimpleInventory()
     for posting in txn.postings:
-        inventory += get_weight(convert_costspec_to_cost(posting))
-    for currency in inventory:
+        if posting.units is None or posting.units is MISSING:
+            # If one of the postings has no amount specified then the entry is
+            # automatically balanced.
+            return
+    residual = interpolate.compute_residual(filter(lambda p: p.units, txn.postings))
+    tolerances = interpolate.infer_tolerances(txn.postings, options_map)
+    if residual.is_small(tolerances):
+        return
+    for position in residual:
         txn.postings.append(
             Posting(
                 account=FIXME_ACCOUNT,
-                units=Amount(currency=currency, number=-inventory[currency]),
+                units=-position.units,
                 cost=None,
                 price=None,
                 flag=None,
                 meta={},
-            ))
+            )
+        )
 
 
 def load(spec, log_status):
