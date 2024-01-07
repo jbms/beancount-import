@@ -626,7 +626,7 @@ STOCK_BUY_SELL_TYPES = set(
 SELL_TYPES = set(['SELLMF', 'SELLSTOCK', 'SELLDEBT', 'SELLOTHER'])
 OPT_TYPES = set(['BUYOPT', 'SELLOPT'])
 
-RELATED_ACCOUNT_KEYS = ['aftertax_account', 'pretax_account', 'match_account']
+RELATED_ACCOUNT_KEYS = ['aftertax_account', 'pretax_account', 'match_account', 'extra_aftertax_account']
 
 # Tolerance allowed in transaction balancing.  In units of base currency used, e.g. USD.
 TOLERANCE = 0.05
