@@ -618,7 +618,7 @@ class LoadedReconciler(object):
         for account_name in sorted(self.editor.accounts):
             account = self.editor.accounts[account_name]
             meta = account.meta
-            if meta is None: continue
+            if meta is None: meta = dict()
             parts = account_name.split(':')
             cleared_before = datetime.date.min
             cleared_after = datetime.date.max
