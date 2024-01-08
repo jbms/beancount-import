@@ -321,8 +321,7 @@ class UltiproSource(Config, Source):
             documents_seen_in_directory.add(seen_key)
             if seen_key in documents_seen_in_journal:
                 continue
-            parsed_statements.append((pay_date, document_number, parse_result,
-                                      filename))
+            parsed_statements.append((pay_date, document_number, parse_result, path))
 
         rules = self.rules.copy()
         rules.setdefault('Net Pay Distribution', []).extend(net_pay_rules)
@@ -349,7 +348,7 @@ class UltiproSource(Config, Source):
             return FIXME_ACCOUNT
 
         parsed_statements.sort(key=lambda x: (x[0], x[1]))
-        for pay_date, _, parse_result, filename in parsed_statements:
+        for pay_date, _, parse_result, path in parsed_statements:
             results.add_pending_entry(
                 self._get_import_result(
                     parse_result,
