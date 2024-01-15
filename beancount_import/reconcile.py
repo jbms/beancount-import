@@ -26,6 +26,7 @@ from .thread_helpers import call_in_new_thread
 from .matching import FIXME_ACCOUNT, is_unknown_account, CLEARED_KEY
 
 UNCONFIRMED_ACCOUNT_KEY = 'unconfirmed_account'
+NEW_ACCOUNT_KEY = 'unknown_account'
 display_prediction_explanation = False
 
 classifier_cache_version_number = 1
@@ -729,11 +730,14 @@ class LoadedReconciler(object):
         return None
 
     def _get_unknown_account_names(self, transaction: Transaction):
-        return [posting.account for posting in transaction.postings if posting.meta is not None and NEW_ACCOUNT_KEY in posting.meta]
+        return [posting.account for posting in transaction.postings if posting.meta is not None and UNCONFIRMED_ACCOUNT_KEY in posting.meta]
 
     def _has_unconfirmed_account(self, transaction: Transaction) -> bool:
         return any((posting.meta is not None and posting.meta.get(UNCONFIRMED_ACCOUNT_KEY, False))
                 for posting in transaction.postings)
+    
+    def _get_unconfirmed_postings(self, entry: Transaction):
+        return [posting for posting in entry.postings if posting.meta.get(UNCONFIRMED_ACCOUNT_KEY, False)]
     
     def _strip_unconfirmed_account_tags(self, transaction: Transaction):
         '''
@@ -756,7 +760,6 @@ class LoadedReconciler(object):
         group_numbers = []
         predicted_account_names = []
         existing_groups = {}  # type: Dict[str, int]
-        new_accounts = []
         for posting in transaction.postings:
             if posting.meta is None or not posting.meta.get(UNCONFIRMED_ACCOUNT_KEY, False):
                 continue
@@ -768,12 +771,20 @@ class LoadedReconciler(object):
             group_numbers.append(group_number)
         return predicted_account_names, group_numbers
 
+    """
+    Given a transaction with FIXME account postings, predict the account names for each posting.
+    If any of the postings have an unconfirmed account, then prediction was handled by smart_importer,
+    so remove the posting and return the already predicted account as a prediction.
+    """
     def _get_unknown_account_predictions(self,
-                                         transaction: Transaction) -> List[str]:
+                                         transaction: Transaction) -> Tuple[Transaction, List[str]]:
         if self._has_unconfirmed_account(transaction): 
             # if any of the postings have an unconfirmed account, then prediction was handled by smart_importer
-            predicted_account_names, _ = _group_predicted_accounts_by_name(transaction)
-            return predicted_account_names
+            predicted_account_names, _ = self._group_predicted_accounts_by_name(transaction)
+            # pop the unconfirmed account posting to be added later as predicted account
+            new_postings = [p if not p.meta.get(UNCONFIRMED_ACCOUNT_KEY, False) else p._replace(account=FIXME_ACCOUNT, meta={}) for p in transaction.postings  ]
+            transaction = transaction._replace(postings=new_postings)
+            return transaction, predicted_account_names
         else:
             group_prediction_inputs = self._feature_extractor.extract_unknown_account_group_features(
                 transaction)
@@ -782,7 +793,7 @@ class LoadedReconciler(object):
                 for prediction_input in group_prediction_inputs
             ]
             group_numbers = training.get_unknown_account_group_numbers(transaction)
-            return [
+            return transaction, [
                 group_predictions[group_number] for group_number in group_numbers
             ]
 
@@ -805,12 +816,8 @@ class LoadedReconciler(object):
             unique_id: account
             for unique_id, account in zip(unique_ids, new_accounts)
         }
-        if self._has_unconfirmed_account(transaction):
-            _, group_numbers = self._group_predicted_accounts_by_name(transaction)
-            unknown_names = self._get_unknown_account_names(transaction)
-        else:
-            group_numbers = training.get_unknown_account_group_numbers(transaction)
-            unknown_names = training.get_unknown_account_names(transaction)
+        group_numbers = training.get_unknown_account_group_numbers(transaction)
+        unknown_names = training.get_unknown_account_names(transaction)
         substitutions = [
             AccountSubstitution(
                 unique_name=unique_id,
@@ -883,7 +890,7 @@ class LoadedReconciler(object):
             # Always include the original transaction.
             match_results.append((next_entry, [next_entry]))
             for transaction, used_transactions in match_results:
-                predicted_accounts = self._get_unknown_account_predictions(
+                transaction, predicted_accounts = self._get_unknown_account_predictions(
                     transaction)
                 candidates.append(
                     self._make_candidate_with_substitutions(
