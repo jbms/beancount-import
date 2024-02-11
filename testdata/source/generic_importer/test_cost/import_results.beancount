@@ -7,3 +7,4 @@
     date: 2020-01-01
     source_desc: "convert currency"
   Assets:Saving   2 EUR @ 0.5 USD
+    unconfirmed_account: TRUE
