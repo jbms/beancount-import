@@ -147,7 +147,7 @@ def balance_amounts(txn:Transaction)-> None:
     inventory = SimpleInventory()
     for posting in txn.postings:
         inventory += get_weight(convert_costspec_to_cost(posting))
-    unbalanced_currencies = [(currency,v) for currency,v in inventory.items() if v!=0]
+    unbalanced_currencies = [(currency,v) for currency,v in inventory.items() if round(v, 5)!=0]
     # posting with no units. Usually added by smart_importer or user
     empty_posting = any([True if p.units is None else False for p in txn.postings])
     if unbalanced_currencies and not empty_posting:
