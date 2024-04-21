@@ -95,10 +95,8 @@ class ImporterSource(DescriptionBasedSource):
             if isinstance(posting.meta, dict):
                 posting.meta["source_desc"] = entry.narration
                 posting.meta["date"] = entry.date
-                break
             else:
                 to_mutate.append(i)
-                break
         for i in to_mutate:
             p = postings.pop(i)
             p = Posting(p.account, p.units, p.cost, p.price, p.flag,
