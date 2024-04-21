@@ -93,8 +93,8 @@ class ImporterSource(DescriptionBasedSource):
         for i, posting in enumerate(postings):
             if posting.account != self.account: continue
             if isinstance(posting.meta, dict):
-                posting.meta["source_desc"] = entry.narration
-                posting.meta["date"] = entry.date
+                posting.meta.setdefault("source_desc", entry.narration)
+                posting.meta.setdefault("date", entry.date)
             else:
                 to_mutate.append(i)
         for i in to_mutate:
