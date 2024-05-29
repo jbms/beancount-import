@@ -1711,7 +1711,7 @@ def _load_positions(filename: str) -> Sequence[RawPosition]:
         else:
             expect_account_headers = False
             looking_for_account = False
-            account = groups["account"]
+            account = "..." + groups["account"][-3:]
             line_count += 1
 
         for line in csvfile:
@@ -1735,7 +1735,7 @@ def _load_positions(filename: str) -> Sequence[RawPosition]:
                 line_count += len(lines) + empty_lines + 1
                 lines = []
                 empty_lines = 0
-                account = match.groupdict()["account"]
+                account = "..." + match.groupdict()["account"][-3:]
                 looking_for_account = False
                 continue
             lines.append(line)
