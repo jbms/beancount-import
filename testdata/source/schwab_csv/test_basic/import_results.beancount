@@ -1,5 +1,5 @@
 ;; date: 2018-06-28
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 17, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 17, "type": "text/csv"}
 
 ; features: []
 2018-06-28 * "Margin Interest - INTEREST 05/30THRU 06/27"
@@ -10,7 +10,7 @@
   Income:Interest:Schwab                0.05 USD
 
 ;; date: 2019-06-11
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 16, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 16, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -31,7 +31,7 @@
   Expenses:FIXME                        1.05 USD
 
 ;; date: 2019-06-11
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 15, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 15, "type": "text/csv"}
 
 ; features: []
 2019-06-11 * "ADR Mgmt Fee - NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS"
@@ -42,7 +42,7 @@
   Expenses:Brokerage-Fees:Schwab        0.47 USD
 
 ;; date: 2019-06-11
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 14, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 14, "type": "text/csv"}
 
 ; features: []
 2019-06-11 * "INCOME - DIV - NOKIA CORP FSPONSORED ADR 1 ADR REPS 1 ORD SHS"
@@ -53,7 +53,7 @@
   Income:Dividend:Schwab:NOK           -6.32 USD
 
 ;; date: 2019-11-22
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 15, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 15, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -74,7 +74,7 @@
   Expenses:FIXME           1234.11 USD
 
 ;; date: 2019-12-20
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 13, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 13, "type": "text/csv"}
 
 ; features: []
 2019-12-20 * "INCOME - DIV - ISHARES CORE MSCI EMERGING ETF"
@@ -85,7 +85,7 @@
   Income:Dividend:Schwab:IEMG          -156.87 USD
 
 ;; date: 2020-01-06
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 12, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 12, "type": "text/csv"}
 
 ; features: []
 2020-01-06 * "INCOME - DIV - VANECK VECTORS J.P. MORGAN EM LOCAL CURRENCYBOND ETF"
@@ -96,7 +96,7 @@
   Income:Dividend:Schwab:EMLC          -51.77 USD
 
 ;; date: 2020-01-10
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 14, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 14, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -117,7 +117,7 @@
   Expenses:FIXME           16.69 USD
 
 ;; date: 2020-01-12
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 13, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 13, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -138,7 +138,7 @@
   Expenses:FIXME           6.14 USD
 
 ;; date: 2020-01-31
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 12, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 12, "type": "text/csv"}
 
 ; features: []
 2020-01-31 * "INTEREST - Interest Paid"
@@ -149,7 +149,7 @@
   Income:Interest:Schwab  -0.09 USD
 
 ;; date: 2020-03-17
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 18, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 18, "type": "text/csv"}
 
 ; features: []
 2020-03-17 * "BUYOPT - PUT SMALL CAP INDEX $32 EXP 04/01/20"
@@ -164,7 +164,7 @@
   Expenses:Brokerage-Fees:Schwab                        0.65 USD
 
 ;; date: 2020-03-18
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 19, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 19, "type": "text/csv"}
 
 ; features: []
 2020-03-18 * "SELLOPT - PUT SMALL CAP INDEX $32 EXP 04/01/20"
@@ -180,7 +180,7 @@
   Expenses:Brokerage-Fees:Schwab                       0.68 USD
 
 ;; date: 2020-03-27
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 20, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 20, "type": "text/csv"}
 
 ; features: []
 2020-03-27 * "SELLOPT - PUT SMALL CAP INDEX $10 EXP 06/19/20"
@@ -195,7 +195,7 @@
   Expenses:Brokerage-Fees:Schwab                      0.67 USD
 
 ;; date: 2020-03-30
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 22, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 22, "type": "text/csv"}
 
 ; features: []
 2020-03-30 * "BUYOPT - CALL SMALL CAP INDEX $83 EXP 04/03/20"
@@ -210,7 +210,7 @@
   Expenses:Brokerage-Fees:Schwab                      1.34 USD
 
 ;; date: 2020-03-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 11, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 11, "type": "text/csv"}
 
 ; features: []
 2020-03-31 * "BUYOPT - EXPIRED - PUT SMALL CAP INDEX $124 EXP 03/31/21"
@@ -226,7 +226,7 @@
   Expenses:Brokerage-Fees:Schwab                      10 USD
 
 ;; date: 2020-03-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 10, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 10, "type": "text/csv"}
 
 ; features: []
 2020-03-31 * "BUYOPT - EXPIRED - CALL SMALL CAP INDEX $184 EXP 03/31/21"
@@ -241,7 +241,7 @@
   Income:Capital-Gains:Schwab:SMAL0331202018400C
 
 ;; date: 2020-03-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 9, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 9, "type": "text/csv"}
 
 ; features: []
 2020-03-31 * "SELLOPT - EXPIRED - PUT SMALL CAP INDEX $84 EXP 03/31/21"
@@ -257,7 +257,7 @@
   Expenses:Brokerage-Fees:Schwab                     5 USD
 
 ;; date: 2020-03-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 8, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 8, "type": "text/csv"}
 
 ; features: []
 2020-03-31 * "SELLOPT - EXPIRED - PUT SPDR S&P 500 $284 EXP 03/31/21"
@@ -272,7 +272,7 @@
   Income:Capital-Gains:Schwab:SPY0331202028400P
 
 ;; date: 2020-06-12
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 21, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 21, "type": "text/csv"}
 
 ; features: []
 2020-06-12 * "BUYOPT - PUT SMALL CAP INDEX $10 EXP 06/19/20"
@@ -288,7 +288,7 @@
   Expenses:Brokerage-Fees:Schwab                     0.65 USD
 
 ;; date: 2020-08-24
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 11, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 11, "type": "text/csv"}
 
 ; features: []
 2020-08-24 * "BUYSTOCK - SCHWAB FUNDAMENTAL US SMALL COM ETF"
@@ -302,7 +302,7 @@
     source_desc: "SCHWAB FUNDAMENTAL US SMALL COM ETF"
 
 ;; date: 2020-08-24
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 10, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 10, "type": "text/csv"}
 
 ; features: []
 2020-08-24 * "BUYSTOCK - SCHWAB US SMALL CAP ETF"
@@ -316,7 +316,7 @@
     source_desc: "SCHWAB US SMALL CAP ETF"
 
 ;; date: 2020-09-15
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 7, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 7, "type": "text/csv"}
 
 ; features: []
 2020-09-15 * "INTEREST - BANK INT 081620-091520 SCHWAB PREMIER BANK"
@@ -327,7 +327,7 @@
   Income:Interest:Schwab             -0.05 USD
 
 ;; date: 2020-10-15
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 9, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 9, "type": "text/csv"}
 
 ; features: []
 2020-10-15 * "INTEREST - BANK INT SCHWAB BANK"
@@ -338,7 +338,7 @@
   Income:Interest:Schwab               -33.93 USD
 
 ;; date: 2020-10-19
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 8, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 8, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -359,7 +359,7 @@
   Expenses:FIXME                        4000.00 USD
 
 ;; date: 2020-10-19
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 7, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 7, "type": "text/csv"}
 
 ; features: []
 2020-10-19 * "SELLSTOCK - SCHWAB FUNDAMENTAL US SMALL COM ETF"
@@ -374,7 +374,7 @@
   Income:Capital-Gains:Schwab:FNDA
 
 ;; date: 2020-10-19
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 6, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 6, "type": "text/csv"}
 
 ; features: []
 2020-10-19 * "SELLSTOCK - SCHWAB US SMALL CAP ETF"
@@ -389,7 +389,7 @@
   Income:Capital-Gains:Schwab:SCHA
 
 ;; date: 2020-10-26
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 11, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 11, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -410,7 +410,7 @@
   Expenses:FIXME          -2500.00 USD
 
 ;; date: 2020-10-27
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 10, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 10, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -431,7 +431,7 @@
   Expenses:FIXME          -1.56 USD
 
 ;; date: 2020-10-27
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 9, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 9, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -452,7 +452,7 @@
   Expenses:FIXME           1.10 USD
 
 ;; date: 2020-11-01
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 6, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 6, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -473,7 +473,7 @@
   Expenses:FIXME
 
 ;; date: 2020-11-05
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 5, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 5, "type": "text/csv"}
 
 ; features: []
 2020-11-05 * "SELLSTOCK - FACEBOOK INC CLASS A"
@@ -489,7 +489,7 @@
   Expenses:Brokerage-Fees:Schwab         6.06 USD
 
 ;; date: 2020-11-06
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 5, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 5, "type": "text/csv"}
 
 ; features: []
 2020-11-06 * "INCOME - DIV - SCHWAB US TIPS ETF"
@@ -500,7 +500,7 @@
   Income:Dividend:Schwab:SCHP          -136.69 USD
 
 ;; date: 2020-11-09
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 4, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 4, "type": "text/csv"}
 
 ; features: []
 2020-11-09 * "INCOME - DIV - XTRACKERS USD HIGH YIELDCOR BND ETF"
@@ -511,7 +511,7 @@
   Income:Dividend:Schwab:HYLB          -92.16 USD
 
 ;; date: 2020-11-10
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 4, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 4, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -532,7 +532,7 @@
   Expenses:FIXME                      123.45 USD
 
 ;; date: 2020-11-10
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 3, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 3, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -553,7 +553,7 @@
   Expenses:FIXME                       -123.45 USD
 
 ;; date: 2020-11-13
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 8, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 8, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -574,7 +574,7 @@
   Expenses:FIXME          -10500.00 USD
 
 ;; date: 2020-11-13
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 7, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 7, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -595,7 +595,7 @@
   Expenses:FIXME           10500.00 USD
 
 ;; date: 2020-11-13
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 2, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 2, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -656,7 +656,7 @@
 2020-11-15 price SMAL040120203200P                   12.53 USD
 
 ;; date: 2020-11-19
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 3, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 3, "type": "text/csv"}
 
 ; features: []
 2020-11-19 * "PROMOTIONAL AWARD - PROMOTIONAL AWARD"
@@ -667,7 +667,7 @@
   Income:Interest:Schwab             -300.00 USD
 
 ;; date: 2020-11-20
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 2, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 2, "type": "text/csv"}
 
 ; features: []
 2020-11-20 * "INCOME - DIV - ISHARES GLOBAL CLEAN ENERGY ETF"
@@ -678,7 +678,7 @@
   Income:Dividend:Schwab:ICLN        -2.11 USD
 
 ;; date: 2020-12-10
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 12, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 12, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -714,7 +714,7 @@
 2020-12-21 price SCHA                                88.71 USD
 
 ;; date: 2020-12-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 15, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 15, "type": "text/csv"}
 
 ; features: []
 2020-12-31 * "INCOME - DIV - ARK INNOVATION ETF"
@@ -725,7 +725,7 @@
   Income:Dividend:Schwab:ARKK        -0.09 USD
 
 ;; date: 2020-12-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 14, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 14, "type": "text/csv"}
 
 ; features: []
 2020-12-31 * "INCOME - CAP GAINS - ARK INNOVATION ETF"
@@ -736,7 +736,7 @@
   Income:Capital-Gains:Schwab:ARKK   -100 USD
 
 ;; date: 2020-12-31
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 13, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 13, "type": "text/csv"}
 
 ; features: []
 2020-12-31 * "INCOME - CAP GAINS - ARK INNOVATION ETF"
@@ -747,7 +747,7 @@
   Income:Capital-Gains:Schwab:ARKK   -1000 USD
 
 ;; date: 2021-01-30
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 16, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 16, "type": "text/csv"}
 
 ; features: []
 2021-01-30 * "Credit Interest - SCHWAB1 INT 12/30-01/29"
@@ -758,7 +758,7 @@
   Income:Interest:Schwab             -0.02 USD
 
 ;; date: 2021-02-01
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 6, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 6, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -779,7 +779,7 @@
   Expenses:FIXME          -20000.00 USD
 
 ;; date: 2021-02-15
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 17, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 17, "type": "text/csv"}
 
 ; features: []
 2021-02-15 * "BOND INTEREST - US TREASURY 1.375%08/50UST BOND DUE 08/15/50"
@@ -790,7 +790,7 @@
   Income:Interest:Schwab:912810SP4   -6.87 USD
 
 ;; date: 2021-02-16
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 23, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 23, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -811,7 +811,7 @@
   Expenses:FIXME                        12.3456 GOOG
 
 ;; date: 2021-03-22
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 24, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 24, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -832,7 +832,7 @@
   Expenses:FIXME                        10 GOOG
 
 ;; date: 2021-03-25
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 19, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 19, "type": "text/csv"}
 
 ; features: []
 2021-03-25 * "STOCKMERGER - QUQUZETA CORP - SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
@@ -846,7 +846,7 @@
     source_desc: "SPAC MERGER CORP XXXMANDATORY MERGER EFF: 03/25/21"
 
 ;; date: 2021-05-25
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 25, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 25, "type": "text/csv"}
 
 ; features: []
 2021-05-25 * "INCOME - DIV - ISHARES GOLD ETF"
@@ -857,7 +857,7 @@
   Income:Dividend:Schwab:IAU           -18.02 USD
 
 ;; date: 2021-05-26
-;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 26, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 26, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -878,7 +878,7 @@
   Expenses:FIXME                       -2000.00 USD
 
 ;; date: 2021-07-30
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 5, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 5, "type": "text/csv"}
 
 ; features: []
 2021-07-30 * "ATMREBATE - ATM Fee Rebate"
@@ -889,7 +889,7 @@
   Expenses:Bank-Fees:Schwab  -3.00 USD
 
 ;; date: 2021-11-01
-;; info: {"filename": "<testdata>/test_basic/transactions/EAC_Checking_Transactions_20201223-160009.CSV", "line": 16, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Checking_EAC_Transactions_20201223-160009.CSV", "line": 16, "type": "text/csv"}
 
 ; features: [
 ;             {
@@ -910,7 +910,7 @@
   Expenses:FIXME          -1234.56 USD
 
 ;; date: 2022-04-20
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 20, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 20, "type": "text/csv"}
 
 ; features: []
 2022-04-20 * "INCOME - DIV - ISHARES GLOBAL CLEAN ENERGY ETF"
@@ -921,7 +921,7 @@
   Income:Dividend:Schwab:ICLN        -2.11 USD
 
 ;; date: 2022-04-21
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 21, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 21, "type": "text/csv"}
 
 ; features: []
 2022-04-21 * "INCOME - DIV - ISHARES GLOBAL CLEAN ENERGY ETF"
@@ -932,7 +932,7 @@
   Income:Dividend:Schwab:ICLN        -2.11 USD
 
 ;; date: 2022-04-22
-;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 22, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_XXX234_Transactions_20201115-180021.CSV", "line": 22, "type": "text/csv"}
 
 ; features: []
 2022-04-22 * "INCOME - DIV - ISHARES GLOBAL CLEAN ENERGY ETF"
