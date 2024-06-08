@@ -36,7 +36,8 @@ class ImporterSource(DescriptionBasedSource):
     def __init__(self,
                  directory: str,
                  importer: ImporterProtocol,
-                 account: Optional[str]=None, # use None for importers that are not authoritative and would not clear any postings
+                # use None for importers that are not authoritative and would not clear any postings
+                 account: Optional[str]=None,
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = os.path.expanduser(directory)
