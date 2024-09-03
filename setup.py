@@ -165,7 +165,7 @@ setuptools.setup(
     python_requires='>=3.8',
     setup_requires=['setuptools_scm>=5.0.2'],
     install_requires=[
-        'beancount>=2.1.3',
+        'beancount<3',
         'tornado',
         'numpy',
         'scipy',
