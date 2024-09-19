@@ -52,8 +52,10 @@ def get_features(example: PredictionInput) -> Dict[str, bool]:
 class TrainingExamples(object):
     def __init__(self):
         self.training_examples = []
+        self.payee_examples = []
 
-    def add(self, example: PredictionInput, target_account: str):
+    def add(self, example: PredictionInput, target_account: str, target_payee: str):
+        self.payee_examples.append((get_features(example), target_payee))
         self.training_examples.append((get_features(example), target_account))
 
 
@@ -182,6 +184,7 @@ class FeatureExtractor(object):
                             date=entry.date,
                             key_value_pairs=key_value_pairs),
                         target_account=posting.account,
+                        target_payee=entry.payee,
                     )
             if got_example: continue
 
@@ -208,7 +211,8 @@ class FeatureExtractor(object):
                         key_value_pairs=key_value_pairs,
                         date=get_posting_date(entry, posting),
                         amount=posting.units),
-                    target_account=target_account)
+                    target_account=target_account,
+                    target_payee=entry.payee)
 
     def extract_unknown_account_group_features(
             self, transaction: Transaction) -> List[Optional[PredictionInput]]:

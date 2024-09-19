@@ -475,6 +475,9 @@ class LoadedReconciler(object):
             self.classifier = nltk.classify.scikitlearn.SklearnClassifier(
                 estimator=sklearn.tree.DecisionTreeClassifier())
             self.classifier.train(training_examples)
+            self.payee_classifier = nltk.classify.scikitlearn.SklearnClassifier(
+                estimator=sklearn.tree.DecisionTreeClassifier())
+            self.payee_classifier.train(self.training_examples.payee_examples)
             self.reconciler.log_status(
                 'Trained classifier with %d examples.' % len(training_examples))
             classifier_cache_path = self.reconciler.options['classifier_cache']
@@ -704,6 +707,19 @@ class LoadedReconciler(object):
             print('predicted account = %r' % (predicted_account, ))
         return predicted_account
 
+    def predict_payee(
+            self, prediction_input: Optional[training.PredictionInput]) -> str:
+        if self.payee_classifier is None or prediction_input is None:
+            return None
+        features = training.get_features(prediction_input)
+        explanation = get_prediction_explanation(self.payee_classifier, features)
+        predicted_payee = self.payee_classifier.classify(features)
+        if display_prediction_explanation:
+            print('\n'.join(explanation))
+            print('predicted payee = %r' % (predicted_payee, ))
+            print('from features', features.keys())
+        return predicted_payee
+
     def _get_generic_stage(self, entries: Entries):
         stage = self.editor.stage_changes()
         for entry in entries:
@@ -739,10 +755,22 @@ class LoadedReconciler(object):
             group_predictions[group_number] for group_number in group_numbers
         ]
 
+    def _get_unknown_payee_prediction(self,
+                                       transaction: Transaction) -> List[str]:
+        group_prediction_inputs = self._feature_extractor.extract_unknown_account_group_features(
+            transaction)
+        group_predictions = [
+            self.predict_payee(prediction_input)
+            for prediction_input in group_prediction_inputs
+        ]
+        print("predict:", group_predictions)
+        return group_predictions[0]
+
     def _make_candidate_with_substitutions(self,
                                            transaction: Transaction,
                                            used_transactions: List[Transaction],
                                            predicted_accounts: List[str],
+                                           predicted_payee: Optional[str],
                                            changes: dict = {}):
         assert isinstance(changes, dict)
         new_accounts = changes.get('accounts')
@@ -777,9 +805,14 @@ class LoadedReconciler(object):
                 transaction,
                 used_transactions,
                 changes=changes,
-                predicted_accounts=predicted_accounts)
+                predicted_accounts=predicted_accounts,
+                predicted_payee=predicted_payee)
 
         new_transaction = _replace_transaction_properties(transaction, changes)
+
+        if predicted_payee:
+            new_transaction = new_transaction._replace(payee=predicted_payee)
+
         real_transaction = _get_transaction_with_substitutions(
             new_transaction, new_accounts)
         transaction_with_unique_account_names = _get_transaction_with_substitutions(
@@ -834,11 +867,13 @@ class LoadedReconciler(object):
             for transaction, used_transactions in match_results:
                 predicted_accounts = self._get_unknown_account_predictions(
                     transaction)
+                predicted_payee = self._get_unknown_payee_prediction(transaction)
                 candidates.append(
                     self._make_candidate_with_substitutions(
                         transaction,
                         used_transactions,
-                        predicted_accounts=predicted_accounts))
+                        predicted_accounts=predicted_accounts,
+                        predicted_payee=predicted_payee))
             result = Candidates(
                 candidates=candidates,
                 date=next_entry.date,
