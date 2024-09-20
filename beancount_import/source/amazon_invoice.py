@@ -29,7 +29,7 @@ main(...)
     |
     +-> returns Order
 """
-from typing import NamedTuple, Optional, List, Union, Iterable, Dict, Sequence, cast
+from typing import NamedTuple, Optional, List, Union, Iterable, Dict, Sequence, cast, Type
 from abc import ABC, abstractmethod
 import collections
 import re
@@ -293,7 +293,7 @@ class Locale_de_DE(Locale_Data):
         return dateutil.parser.parse(date_str, parserinfo=Locale_de_DE._parserinfo(dayfirst=True)).date()
 
 
-LOCALES = {x.LOCALE: x for x in [Locale_en_US, Locale_de_DE]}
+LOCALES: Dict[str, Type[Locale_Data]] = {x.LOCALE: x for x in [Locale_en_US, Locale_de_DE]}
 
 Errors = List[str]
 Adjustment = NamedTuple('Adjustment', [

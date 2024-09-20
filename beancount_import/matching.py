@@ -314,7 +314,7 @@ class PostingDatabase(object):
                         negate=False) -> Iterable[SearchPosting]:
         # Prepare postings for searching
         postings_date_currency = collections.defaultdict(list)
-        
+
         for mp in mps:
             weight = get_posting_weight(mp.posting)
             if weight is None:
@@ -1489,8 +1489,9 @@ def get_combined_transactions(txns: Tuple[Transaction, Transaction],
     for match_sets in itertools.product(*match_groups.values()):
         combined_matches = sum((match_set.matches for match_set in match_sets),
                                [])  # type: PostingMatches
-        combined_removals = sum((match_set.removals
-                                 for match_set in match_sets), ())
+        combined_removals: MatchablePostings = tuple(removal
+                                                    for match_set in match_sets
+                                                    for removal in match_set.removals)
         if not combined_matches:
             continue
         for m in combined_matches:
