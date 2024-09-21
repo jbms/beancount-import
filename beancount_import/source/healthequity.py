@@ -457,9 +457,12 @@ def make_import_result(csv_entry: RawTransaction, accounts: Dict[str, Open],
 
 
 class Source(description_based_source.DescriptionBasedSource):
-    def __init__(self, directory: str, **kwargs) -> None:
+    def __init__(self, directory: str,
+                 ignore_before: Optional[datetime.date] = None,
+                 **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
+        self.ignore_before = ignore_before
         self.raw_transactions = [
         ]  # type: List[Union[CashTransaction, FundTransaction]]
         self.raw_balances = []  # type: List[ImportedBalance]
@@ -493,9 +496,15 @@ class Source(description_based_source.DescriptionBasedSource):
             account_to_id[full_account] = account_id
             return entry._replace(account=full_account)
 
-        balances = [convert_account(entry) for entry in self.raw_balances]
+        balances = [
+            convert_account(entry)
+            for entry in self.raw_balances
+            if self.ignore_before is None or self.ignore_before <= entry.date
+        ]
         transactions = [
-            convert_account(entry) for entry in self.raw_transactions
+            convert_account(entry)
+            for entry in self.raw_transactions
+            if self.ignore_before is None or self.ignore_before <= entry.date
         ]
 
         description_based_source.get_pending_and_invalid_entries(
@@ -510,26 +519,36 @@ class Source(description_based_source.DescriptionBasedSource):
             results=results)
 
         balance_entries = collections.OrderedDict(
-        )  # type: Dict[Tuple[datetime.date, str, str], ImportResult]
+        )  # type: Dict[Tuple[datetime.date, str, str], Optional[ImportResult]]
 
         for entry in transactions:
             date = entry.date + datetime.timedelta(days=1)
-            balance_entries[(date, entry.account,
-                             entry.balance.currency)] = ImportResult(
-                                 date=date,
-                                 entries=[
-                                     Balance(
-                                         date=date,
-                                         meta=None,
-                                         account=entry.account,
-                                         amount=entry.balance,
-                                         tolerance=None,
-                                         diff_amount=None)
-                                 ],
-                                 info=get_info(entry))
+            key = (date, entry.account, entry.balance.currency)
+
+            # When multiple transactions happen on the same day, we can't trust
+            # the reported balance because we don't know which order to apply
+            # them in. Just skip it, and put a tombstone in place of the one
+            # that was already there.
+            if key in balance_entries:
+                balance_entries[key] = None
+                continue
+
+            balance_entries[key] = ImportResult(
+                date=date,
+                entries=[
+                    Balance(
+                        date=date,
+                        meta=None,
+                        account=entry.account,
+                        amount=entry.balance,
+                        tolerance=None,
+                        diff_amount=None)
+                ],
+                info=get_info(entry))
 
         for entry in balance_entries.values():
-            results.add_pending_entry(entry)
+            if entry != None:
+              results.add_pending_entry(entry)
 
         for balance in balances:
             # Skip outputting recent balances --- just output prices.
