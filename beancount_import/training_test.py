@@ -1,6 +1,7 @@
 import datetime
 
 from beancount.core.data import Amount
+from beancount.core.number import D
 from . import test_util
 from . import training
 
@@ -21,7 +22,10 @@ def test_get_features():
                 'a:hello': True,
                 'b:foo': True,
                 'b:bar': True,
-                'b:foo bar': True
+                'b:foo bar': True,
+                'a': True,
+                'b': True,
+                'amount:USD': D(3)
             }
 
 
