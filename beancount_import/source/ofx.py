@@ -626,7 +626,7 @@ STOCK_BUY_SELL_TYPES = set(
 SELL_TYPES = set(['SELLMF', 'SELLSTOCK', 'SELLDEBT', 'SELLOTHER'])
 OPT_TYPES = set(['BUYOPT', 'SELLOPT'])
 
-RELATED_ACCOUNT_KEYS = ['aftertax_account', 'pretax_account', 'match_account']
+RELATED_ACCOUNT_KEYS = ['aftertax_account', 'pretax_account', 'match_account', 'extra_aftertax_account']
 
 # Tolerance allowed in transaction balancing.  In units of base currency used, e.g. USD.
 TOLERANCE = 0.05
@@ -656,7 +656,7 @@ class ParsedOfxStatement(object):
         security_activity_dates = self.security_activity_dates = set()
         cash_activity_dates = self.cash_activity_dates = set()
 
-        self.ofx_id = account_ofx_id = (org, self.broker_id, account_id)
+        self.ofx_id = (org, self.broker_id, account_id)
 
         for invtranlist in stmtrs.find_all(re.compile('invtranlist|banktranlist')):
             for tran in invtranlist.find_all(
@@ -670,7 +670,7 @@ class ParsedOfxStatement(object):
                 # We include the date along with the FITID because some financial institutions fail
                 # to produce truly unique FITID values.  For example, National Financial Services
                 # (Fidelity) sometimes produces duplicates when the amount is the same.
-                full_fitid = (account_ofx_id, date, fitid)
+                full_fitid = (self.ofx_id, date, fitid)
                 uniqueid = find_child(tran, 'uniqueid')
                 if uniqueid is not None:
                     security_activity_dates.add((date, uniqueid))
@@ -808,7 +808,7 @@ class ParsedOfxStatement(object):
         if quantity_round_digits is not None:
             quantity_round_digits = int(quantity_round_digits)
 
-        ofx_id = self.ofx_id
+        ofx_id = prepare_state.ofx_id_translations.get(self.ofx_id, self.ofx_id)
 
         matched_transactions = prepare_state.matched_transactions
         matched_cash_transactions = prepare_state.matched_cash_transactions
@@ -822,14 +822,16 @@ class ParsedOfxStatement(object):
 
         cash_securities_map = prepare_state.cash_securities_map
 
+        payee_format = account.meta.get('ofx_payee_format', None)
+
         def get_security(unique_id: str) -> Optional[str]:
             commodity = commodities_by_cusip.get(unique_id)
             if commodity is not None:
                 return commodity
             if unique_id not in securities_map:
                 results.add_error(
-                    'Missing id for security %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
-                    % (unique_id, ))
+                    'Missing id for security %r seen in %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
+                    % (unique_id, self.filename))
                 return None
             sec = securities_map[unique_id]
             ticker = sec.ticker
@@ -839,13 +841,13 @@ class ParsedOfxStatement(object):
                 ticker = "T" + ticker
             if ticker is None:
                 results.add_error(
-                    'Missing ticker for security %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
-                    % (unique_id, ))
+                    'Missing ticker for security %r seen in %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
+                    % (unique_id, self.filename))
                 return None
             if not is_valid_commodity_name(ticker):
                 results.add_error(
-                    'Ticker %r for security %r is not a valid commodity name.   You must specify it manually using a commodity directive with a cusip metadata field.'
-                    % (ticker, unique_id))
+                    'Ticker %r for security %r seen in %r is not a valid commodity name.   You must specify it manually using a commodity directive with a cusip metadata field.'
+                    % (ticker, unique_id, self.filename))
             return ticker
 
         def get_subaccount(inv401ksource: Optional[str],
@@ -903,10 +905,20 @@ class ParsedOfxStatement(object):
                 # Remove redundant memo field
                 memo = None
 
-            narration = ' - '.join(
-                filter(None,
-                       (raw.trantype, raw.incometype, raw.inv401ksource, name,
-                        memo)))
+            if payee_format is not None:
+                narration = ''
+                payee = payee_format.format(
+                    trantype = raw.trantype,
+                    incometype = raw.incometype,
+                    inv401ksource = raw.inv401ksource,
+                    name = name if name is not None else "",
+                    memo = memo if memo is not None else "")
+            else:
+                payee = None
+                narration = ' - '.join(
+                    filter(None,
+                           (raw.trantype, raw.incometype, raw.inv401ksource,
+                            name, memo)))
 
             if ignore_re and re.match(ignore_re, narration):
                 continue
@@ -914,7 +926,7 @@ class ParsedOfxStatement(object):
                 meta=None,
                 date=raw.date,
                 flag=FLAG_OKAY,
-                payee=None,
+                payee=payee,
                 narration=narration,
                 tags=EMPTY_SET,
                 links=EMPTY_SET,
@@ -1077,7 +1089,7 @@ class ParsedOfxStatement(object):
                         merge=False)
 
                 if raw.tferaction == 'OUT':
-                    assert units < ZERO
+                    assert Decimal(1).copy_sign(units) < ZERO
 
                 security_account_name = get_subaccount(raw.inv401ksource,
                                                        security)
@@ -1211,17 +1223,18 @@ class ParsedOfxStatement(object):
                         info=get_info(raw)))
 
         for raw in self.raw_cash_balance_entries:
-            entry = Balance(
-                date=raw.date,
-                meta=None,
-                account=get_subaccount_cash(),
-                amount=Amount(number=raw.number, currency=self.currency),
-                tolerance=None,
-                diff_amount=None,
-            )
-            results.add_pending_entry(
-                ImportResult(
-                    date=raw.date, entries=[entry], info=get_info(raw)))
+            if raw.date not in cash_activity_dates:
+                entry = Balance(
+                    date=raw.date,
+                    meta=None,
+                    account=get_subaccount_cash(),
+                    amount=Amount(number=raw.number, currency=self.currency),
+                    tolerance=None,
+                    diff_amount=None,
+                )
+                results.add_pending_entry(
+                    ImportResult(
+                        date=raw.date, entries=[entry], info=get_info(raw)))
 
         for raw in self.raw_balance_entries:
             security = get_security(raw.uniqueid)
@@ -1301,6 +1314,7 @@ class ParsedOfxFile(object):
 def get_account_map(accounts):
     account_to_ofx_id = dict()
     ofx_id_to_account = dict()
+    ofx_id_translations = dict()
     cash_accounts = set()
     for entry in accounts.values():
         meta = entry.meta
@@ -1309,11 +1323,17 @@ def get_account_map(accounts):
         org = entry.meta.get('ofx_org')
         broker_id = entry.meta.get('ofx_broker_id')
         account_id = entry.meta.get('account_id')
+        old_account_ids = entry.meta.get('old_account_ids')
         if org is None or broker_id is None or account_id is None:
             continue
         ofx_id = (org, broker_id, account_id)
         account_to_ofx_id[entry.account] = ofx_id
         ofx_id_to_account[ofx_id] = entry
+        if old_account_ids is not None:
+            for old_account_id in old_account_ids.split(' '):
+                old_ofx_id = (org, broker_id, old_account_id)
+                ofx_id_to_account[old_ofx_id] = entry
+                ofx_id_translations[old_ofx_id] = ofx_id
         ofx_account_type = entry.meta.get('ofx_account_type')
         if ofx_account_type == 'cash_only':
             cash_accounts.add(entry.account)
@@ -1326,7 +1346,7 @@ def get_account_map(accounts):
             other = entry.meta.get(key)
             if other is not None:
                 account_to_ofx_id[other] = ofx_id
-    return account_to_ofx_id, ofx_id_to_account, cash_accounts
+    return account_to_ofx_id, ofx_id_to_account, ofx_id_translations, cash_accounts
 
 
 FullFitid = Tuple[str, datetime.date, str]
@@ -1354,7 +1374,7 @@ class PrepareState(object):
                  results: SourceResults) -> None:
         self.source = source
         self.journal = journal
-        self.account_to_ofx_id, self.ofx_id_to_account, self.cash_accounts = get_account_map(
+        self.account_to_ofx_id, self.ofx_id_to_account, self.ofx_id_translations, self.cash_accounts = get_account_map(
             journal.accounts)
 
         results.add_accounts(self.account_to_ofx_id.keys())
@@ -1382,7 +1402,7 @@ class PrepareState(object):
                 statement.get_entries(self)
 
     def _process_journal_entries(self):
-        source_fitids = self.source.source_fitids
+        source_fitids = set((self.ofx_id_translations.get(acct, acct), dt, fit) for acct, dt, fit in self.source.source_fitids)
         matched_transactions = self.matched_transactions
         cash_accounts = self.cash_accounts
         matched_cash_transactions = self.matched_cash_transactions
@@ -1429,7 +1449,8 @@ class PrepareState(object):
                     matched.setdefault(full_fitid, []).append((entry, posting))
             elif isinstance(entry, Commodity):
                 if CUSIP_KEY in entry.meta:
-                    commodities_by_cusip[entry.meta[CUSIP_KEY]] = entry.currency
+                    for cusip in entry.meta[CUSIP_KEY].split(','):
+                        commodities_by_cusip[cusip] = entry.currency
                 if EQUIVALENT_CURRENCY in entry.meta:
                     self.cash_securities_map[entry.currency] = entry.meta[EQUIVALENT_CURRENCY]
 
