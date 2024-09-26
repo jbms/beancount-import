@@ -138,8 +138,17 @@ class Locale_en_US(Locale_Data):
         'Extra Savings',
         '(?:.*) Discount',
         'Gift[ -]Wrap',
+        'B2G1 Free Frozen',
+        'Prime Benefit',
+        'Bottle Deposit Fee',
     ]) + ') *:')
-    posttax_adjustment_fields_pattern=r'Gift Card Amount:|Rewards Points:|Tip [(]optional[)]:|Recycle Fee \$X'
+    posttax_adjustment_fields_pattern=('(?:' + '|'.join([
+        'Gift Card Amount',
+        'Rewards Points',
+        'Tip [(]optional[)]',
+        'Recycle Fee \$X',
+        'CA Electronic Waste Recycling Fee',
+    ]) + ') *:?')
 
     # Payment Table & Credit Card Transactions
     grand_total=r'\n\s*Grand Total:\s+(.*)\n'
