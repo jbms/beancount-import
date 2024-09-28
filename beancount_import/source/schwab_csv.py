@@ -171,6 +171,7 @@ class BrokerageAction(enum.Enum):
     MISC_CASH_ENTRY = "Misc Cash Entry"
     MONEYLINK_DEPOSIT = "MoneyLink Deposit"
     MONEYLINK_TRANSFER = "MoneyLink Transfer"
+    ATM_WITHDRAW = "ATM Withdrawal"
     PRIOR_YEAR_CASH_DIVIDEND = "Pr Yr Cash Div"
     PRIOR_YEAR_DIV_REINVEST = "Pr Yr Div Reinvest"
     PRIOR_YEAR_SPECIAL_DIVIDEND = "Pr Yr Special Div"
@@ -193,8 +194,10 @@ class BrokerageAction(enum.Enum):
     STOCK_PLAN_ACTIVITY = "Stock Plan Activity"
     STOCK_SPLIT = "Stock Split"
     WIRE_FUNDS = "Wire Funds"
-    WIRE_FUNDS_RECEIVED = "Wire Funds Received"
+    WIRE_FUNDS_RECEIVED = "Wire Received"
     FUNDS_RECEIVED = "Funds Received"
+    ATM_REBATE_RECEIVED = "Schwab ATM Rebate"
+    FUTURES_SWEEP = "Futures MM Sweep"
 
 class BankingEntryType(enum.Enum):
     # Please keep these alphabetized:
@@ -370,7 +373,9 @@ class RawBrokerageEntry(RawEntry):
                            BrokerageAction.SECURITY_TRANSFER,
                            BrokerageAction.WIRE_FUNDS,
                            BrokerageAction.WIRE_FUNDS_RECEIVED,
-                           BrokerageAction.FUNDS_RECEIVED):
+                           BrokerageAction.FUNDS_RECEIVED,
+                           BrokerageAction.ATM_REBATE_RECEIVED,
+                           BrokerageAction.ATM_WITHDRAW):
             return Transfer(**shared_attrs)
         if self.action in (BrokerageAction.SELL,
                             BrokerageAction.SELL_TO_OPEN,
@@ -411,6 +416,8 @@ class RawBrokerageEntry(RawEntry):
             )
         if self.action in (BrokerageAction.SHORT_TERM_CAP_GAIN, BrokerageAction.LONG_TERM_CAP_GAIN):
             return FundGainsDistribution(symbol=self.symbol, capital_gains_account=capital_gains_account, **shared_attrs)
+        if self.action in (BrokerageAction.FUTURES_SWEEP,):
+            return FuturesSweep(**shared_attrs)
 
         if self.action in (BrokerageAction.ADR_MGMT_FEE,
                            BrokerageAction.SERVICE_FEE,
@@ -739,6 +746,18 @@ class Transfer(TransactionEntry):
     def get_narration_prefix(self) -> str:
         return "TRANSFER"
 
+@dataclass(frozen=True)
+class FuturesSweep(TransactionEntry):
+    def get_sub_account(self) -> Optional[str]:
+        if self.amount.currency != CASH_CURRENCY:
+            return self.amount.currency
+        return "Cash"
+
+    def get_narration_prefix(self) -> str:
+        return "Futures Sweep"
+    
+    def get_other_account(self) -> str:
+        return "Income:Capital"
 
 @dataclass(frozen=True)
 class StockSplit(TransactionEntry):
@@ -1530,7 +1549,6 @@ def _load_transactions(filename: str) -> List[RawEntry]:
         "Price",
         "Fees & Comm",
         "Amount",
-        "",
     ]
     expected_banking_field_names = [
         "Date",
@@ -1544,10 +1562,8 @@ def _load_transactions(filename: str) -> List[RawEntry]:
     filename = os.path.abspath(filename)
     entries = []
     with open(filename, "r", encoding="utf-8", newline="") as csvfile:
-        title = csvfile.readline()
-        match = TITLE_RE.match(title)
-        assert match, title
-        account = match.groupdict()["account"]
+        first_part_account = "..." + os.path.basename(filename).split('_')[1][-3:]
+        account = first_part_account
         reader = csv.DictReader(csvfile)
         if reader.fieldnames == expected_brokerage_field_names:
             entries = _load_brokerage_transactions(reader, account, filename)
@@ -1695,7 +1711,7 @@ def _load_positions(filename: str) -> Sequence[RawPosition]:
         else:
             expect_account_headers = False
             looking_for_account = False
-            account = groups["account"]
+            account = "..." + groups["account"][-3:]
             line_count += 1
 
         for line in csvfile:
@@ -1719,7 +1735,7 @@ def _load_positions(filename: str) -> Sequence[RawPosition]:
                 line_count += len(lines) + empty_lines + 1
                 lines = []
                 empty_lines = 0
-                account = match.groupdict()["account"]
+                account = "..." + match.groupdict()["account"][-3:]
                 looking_for_account = False
                 continue
             lines.append(line)
