@@ -4,8 +4,10 @@ import beancount.parser.printer
 from beancount.core.data import Transaction, Posting, EMPTY_SET
 from beancount.core.number import MISSING, Decimal
 from beancount.core.amount import Amount
+import os
 import pytest
 import py
+import stat
 
 from . import journal_editor
 from . import test_util
@@ -138,6 +140,29 @@ def test_simple(tmpdir):
   Assets:Account-B
 """)
     check_journal_entries(editor)
+
+def test_permissions(tmpdir):
+    journal_path = create_journal(
+        tmpdir, """
+2015-02-01 * "Test transaction"
+  Assets:Account-A  100 USD
+  Assets:Account-B
+""")
+    # Set unusual permissions. We'll check that they are preserved.
+    os.chmod(journal_path, mode = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXGRP)
+    # In case the OS doesn't support arbitrary inputs to os.chmod,
+    # check what we were actually able to set the mode to.
+    original_mode = os.stat(journal_path).st_mode
+    editor = journal_editor.JournalEditor(journal_path)
+    stage = editor.stage_changes()
+    old_entry = editor.entries[0]
+    new_entry = old_entry._replace(postings=[
+        old_entry.postings[0]._replace(meta=dict(note="Hello")),
+        old_entry.postings[1],
+    ])
+    stage.change_entry(old_entry, new_entry)
+    result = stage.apply()
+    assert os.stat(journal_path).st_mode == original_mode
 
 
 def test_transaction_add_meta(tmpdir):
