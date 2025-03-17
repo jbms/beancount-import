@@ -1,0 +1,13 @@
+<journal-dir>/journal.beancount
++
++2017-04-25 * "Tom Johnson" "Transfer" ^venmo.2394198259925614643
++  Assets:Venmo           220.00 USD
++    date: 2017-04-25
++    venmo_account_description: "Visa Debit *1559"
++    venmo_description: "Tutoring"
++    venmo_payee: "Tom Johnson"
++    venmo_transfer_id: "2394198259925614643"
++    venmo_type: "Payment"
++  [0]Assets:Checking  -220.00 USD
++
++2017-04-25 open Assets:Checking                                 USD
