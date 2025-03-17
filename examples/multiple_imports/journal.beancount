@@ -1,0 +1,3 @@
+include "accounts.beancount"
+include "transactions.beancount"
+include "prices.beancount"
