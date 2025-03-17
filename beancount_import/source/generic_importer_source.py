@@ -31,6 +31,7 @@ from ..journal_editor import JournalEditor
 from .description_based_source import DescriptionBasedSource, get_pending_and_invalid_entries
 from .mint import _get_key_from_posting
 
+UNCONFIRMED = "unconfirmed_account"
 
 class ImporterSource(DescriptionBasedSource):
     def __init__(self,
@@ -66,7 +67,7 @@ class ImporterSource(DescriptionBasedSource):
             hashed_entries = OrderedDict() #type: Dict[Hashable, Directive]
             for entry in f_entries:
                 key_ = self._get_key_from_imported_entry(entry)
-                self._add_description(entry)
+                self._add_description_and_unconfirmed_account_key(entry)
                 hashed_entries.setdefault(key_, []).append(entry)
             # deduplicate across statements
             for key_ in hashed_entries:
@@ -86,24 +87,20 @@ class ImporterSource(DescriptionBasedSource):
             make_import_result=self._make_import_result,
             results=results)
 
-    def _add_description(self, entry: Transaction):
+    def _add_description_and_unconfirmed_account_key(self, entry: Transaction):
         if not isinstance(entry, Transaction): return None
-        postings = entry.postings #type: List[Posting]
-        to_mutate = []
-        for i, posting in enumerate(postings):
-            if posting.account != self.account: continue
-            if isinstance(posting.meta, dict):
+        for i, posting in enumerate(entry.postings):
+            if not isinstance(posting.meta, dict):
+                # replace posting with a clone with meta dict
+                entry.postings[i] = posting._replace(meta={})
+                posting = entry.postings[i]
+            if posting.account == self.account:
+                # add description
                 posting.meta["source_desc"] = entry.narration
                 posting.meta["date"] = entry.date
-                break
             else:
-                to_mutate.append(i)
-                break
-        for i in to_mutate:
-            p = postings.pop(i)
-            p = Posting(p.account, p.units, p.cost, p.price, p.flag,
-                        {"source_desc":entry.narration, "date": entry.date})
-            postings.insert(i, p)
+                # add unconfirmed account key
+                posting.meta[UNCONFIRMED] = True
 
     def _get_source_posting(self, entry:Transaction) -> Optional[Posting]:
         for posting in entry.postings:
@@ -150,7 +147,11 @@ def balance_amounts(txn:Transaction)-> None:
     inventory = SimpleInventory()
     for posting in txn.postings:
         inventory += get_weight(convert_costspec_to_cost(posting))
-    for currency in inventory:
+    unbalanced_currencies = [(currency,v) for currency,v in inventory.items() if round(v, 5)!=0]
+    # posting with no units. Usually added by smart_importer or user
+    empty_posting = any([True if p.units is None else False for p in txn.postings])
+    if unbalanced_currencies and not empty_posting:
+        currency = unbalanced_currencies[0][0]
         txn.postings.append(
             Posting(
                 account=FIXME_ACCOUNT,
