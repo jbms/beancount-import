@@ -833,15 +833,15 @@ class ParsedOfxStatement(object):
                 return None
             sec = securities_map[unique_id]
             ticker = sec.ticker
-            # Treasury bill and bond start with 912
-            if ticker.startswith("912"):
-                # Prepend "T" to make it a valid ticker
-                ticker = "T" + ticker
             if ticker is None:
                 results.add_error(
                     'Missing ticker for security %r.  You must specify it manually using a commodity directive with a cusip metadata field.'
                     % (unique_id, ))
                 return None
+            # Treasury bill and bond start with 912
+            if ticker.startswith("912"):
+                # Prepend "T" to make it a valid ticker
+                ticker = "T" + ticker
             if not is_valid_commodity_name(ticker):
                 results.add_error(
                     'Ticker %r for security %r is not a valid commodity name.   You must specify it manually using a commodity directive with a cusip metadata field.'
