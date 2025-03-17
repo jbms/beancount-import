@@ -145,21 +145,40 @@ def get_info(raw_entry: Directive) -> dict:
         line=raw_entry.meta['lineno'],
     )
 
+def _none_units_posting_index(txn:Transaction):
+    """Index of posting with None units"""
+    for i, posting in enumerate(txn.postings):
+        if posting.units is None:
+            return i
+
 def balance_amounts(txn:Transaction)-> None:
     """Add FIXME account for the remaing amount to balance accounts"""
     inventory = SimpleInventory()
+    i = _none_units_posting_index(txn)
     for posting in txn.postings:
         inventory += get_weight(convert_costspec_to_cost(posting))
     for currency in inventory:
-        txn.postings.append(
-            Posting(
-                account=FIXME_ACCOUNT,
-                units=Amount(currency=currency, number=-inventory[currency]),
-                cost=None,
-                price=None,
-                flag=None,
-                meta={},
-            ))
+        if not inventory[currency]: # if amount already balanced
+            continue
+        if i is not None:
+            # use empty posting to balance amount instead of FIXME
+            none_posting = txn.postings[i]
+            txn.postings.append(
+                none_posting._replace(
+                    units=Amount(currency=currency, number=-inventory[currency])
+                ))
+        else:
+            txn.postings.append(
+                Posting(
+                    account=FIXME_ACCOUNT,
+                    units=Amount(currency=currency, number=-inventory[currency]),
+                    cost=None,
+                    price=None,
+                    flag=None,
+                    meta={},
+                ))
+    if i is not None:
+        txn.postings.pop(i) # remove the None posting after balancing
 
 
 def load(spec, log_status):
