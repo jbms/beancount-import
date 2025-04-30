@@ -8,6 +8,8 @@ mypy = "==1.13.0"
 pytest = "*"
 coverage = "*"
 typing-extensions = "*"
+tox = "*"
+wheel = "*"
 
 [dev-packages]
 
