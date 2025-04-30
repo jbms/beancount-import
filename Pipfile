@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+mypy = "==1.13.0"
+pytest = "*"
+coverage = "*"
+typing-extensions = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.13"
