@@ -4,14 +4,18 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+
+
+[dev-packages]
 mypy = "==1.13.0"
 pytest = "*"
 coverage = "*"
 typing-extensions = "*"
 tox = "*"
 wheel = "*"
-
-[dev-packages]
+types-cachetools = "*"
+types-python-dateutil = "*"
+types-setuptools = "*"
 
 [requires]
 python_version = "3.13"
