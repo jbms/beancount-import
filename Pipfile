@@ -4,7 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-
+beancount = "*"
+mypy = "*"
 
 [dev-packages]
 mypy = "==1.13.0"
