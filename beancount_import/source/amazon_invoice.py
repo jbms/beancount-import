@@ -217,7 +217,7 @@ class Locale_de_DE(Locale_Data):
         # 'Extra Savings', '(?:.*) Discount', 'Gift[ -]Wrap',
     ]) + ') *:')
     # most adjustments in DE are posttax:
-    posttax_adjustment_fields_pattern='Gutschein eingelöst:|Geschenkgutschein\(e\):'
+    posttax_adjustment_fields_pattern=r'Gutschein eingelöst:|Geschenkgutschein\(e\):'
     
     # Payment Table & Credit Card Transactions
     grand_total=r'\n\s*(?:Gesamtsumme|Endsumme):\s+(.*)\n' # regular: Gesamtsumme, digital: Endsumme
