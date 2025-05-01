@@ -12,10 +12,10 @@ beancount = "==2.3.6"
 jsonschema = "*"
 nltk = "*"
 scikit-learn = "*"
-mypy = "*"
+
 
 [dev-packages]
-mypy = "==1.13.0"
+mypy = "*"
 pytest = "*"
 coverage = "*"
 typing-extensions = "*"
