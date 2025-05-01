@@ -858,7 +858,7 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
 
     matcher : Callable[[Tag], bool] = lambda node: node.name == 'table' and re.match(
         locale.payment_information, node.text.strip()) is not None
-    payment_table_header = soup.find(matcher)
+    payment_table_header = require_find(soup, matcher)
 
     payment_table = payment_table_header.find_parent('table')
 
