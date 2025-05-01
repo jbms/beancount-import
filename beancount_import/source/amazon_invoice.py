@@ -42,7 +42,8 @@ import bs4
 import dateutil.parser
 import beancount.core.amount
 from beancount.core.amount import Amount
-from beancount.core.number import D, ZERO, Decimal
+from beancount.core.number import D, ZERO
+from decimal import Decimal
 
 from ..amount_parsing import parse_amount, parse_number
 
