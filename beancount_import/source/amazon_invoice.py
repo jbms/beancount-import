@@ -39,6 +39,7 @@ import datetime
 import logging
 
 import bs4
+from beancount_import.api_proxies.beautifulsoup import require_find
 import dateutil.parser
 import beancount.core.amount
 from beancount.core.amount import Amount
@@ -801,7 +802,11 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     # Order ID & Order placed date
     # -----------------
     logger.debug('parsing order id and order placed date...')
-    title = soup.find('title').text.strip()
+    title_element = soup.find('title')
+    if title_element is None:
+        raise ValueError("soup.find('title') returned None")
+    else:
+        title = title_element.text.strip()
     m = re.fullmatch(locale.regular_order_id, title.strip())
     assert m is not None
     order_id=m.group(1)
@@ -810,7 +815,8 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
         m = re.fullmatch(locale.regular_order_placed, node.text.strip())
         return m is not None
 
-    node = soup.find(is_order_placed_node)
+    node = require_find(soup,is_order_placed_node)
+    #node = soup.find(is_order_placed_node)
     m = re.fullmatch(locale.regular_order_placed, node.text.strip())
     assert m is not None
     order_date = locale.parse_date(m.group(1))
