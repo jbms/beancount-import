@@ -14,7 +14,7 @@ jobs:
         python-version:
         #  - '3.8'
         #  - '3.9'
-          - '3.10'
+        #  - '3.10'
           - '3.13'
         node-version:
           - '18.x'
@@ -54,7 +54,7 @@ jobs:
         coverage run -m pytest -vv
     - name: Static Type Checking with MyPy
       run: |
-        mypy beancount_import --non-interactive --disable-error-code=type-abstract
+        mypy beancount_import --disable-error-code=type-abstract
   # mypy beancount_import --install-types --non-interactive --disable-error-code=type-abstract
       
 #    - name: Show package version
