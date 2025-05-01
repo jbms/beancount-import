@@ -49,9 +49,9 @@ import datetime
 import logging
 
 import bs4
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, Tag, ResultSet, PageElement
 
-from beancount_import.api_proxies.beautifulsoup import require_find
+from beancount_import.api_proxies.beautifulsoup import require_find, require_find_parent
 import dateutil.parser
 import beancount.core.amount
 from beancount.core.amount import Amount
@@ -1062,8 +1062,8 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
         except:
             return False
 
-    digital_order_header = soup.find(is_digital_order_row)
-    digital_order_table = digital_order_header.find_parent('table')
+    digital_order_header = require_find(soup, is_digital_order_row)
+    digital_order_table : Tag = require_find_parent(digital_order_header, 'table')
     m = re.match(locale.digital_order, digital_order_header.text.strip())
     if m is None:
         msg = ('Identified digital order invoice but no digital orders were found.')
@@ -1073,10 +1073,9 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
         assert m is not None
     order_date = locale.parse_date(m.group(1))
 
-    order_id_td = soup.find(
-        lambda node: node.name == 'td' and
-        re.match(locale.digital_order_id, node.text.strip())
-        )
+    matcher: Callable[[Tag], bool] = lambda node: node.name == 'td' and re.match(locale.digital_order_id, node.text.strip()) is not None
+
+    order_id_td = require_find(soup, matcher)
     m = re.match(locale.digital_order_id, order_id_td.text.strip())
     assert m is not None
     order_id = m.group(1)
@@ -1085,15 +1084,17 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
     # Parse Items
     # -----------
     logger.debug('parsing items...')
-    items_ordered_header = digital_order_table.find(
+    items_ordered_header = require_find(digital_order_table,
         lambda node: is_items_ordered_header(node, locale))
-    item_rows = items_ordered_header.find_next_siblings('tr')
-    
+    item_rows_raw : ResultSet[PageElement] = items_ordered_header.find_next_siblings('tr')
+    # the find_all below needs them to be the narrower type Tag, so cast right away
+    item_rows : ResultSet[Tag] = cast(ResultSet[Tag], item_rows_raw)
+
     items = []  # Sequence[DigitalItem]
     other_fields_td = None
 
     for item_row in item_rows:
-        tds = item_row('td')
+        tds = item_row.find_all('td')
         if len(tds) != 2:
             # payment information on order level (not payment table)
             # differently formatted, take first column only

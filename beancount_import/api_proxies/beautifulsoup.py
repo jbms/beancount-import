@@ -31,3 +31,20 @@ def require_find(
         raise ValueError(f"require_find: Element not found or not a Tag: {name}, {attrs}, {kwargs}")
     return cast(Tag, result)
 
+def require_find_parent(
+        page_element: PageElement,
+        name: _FindMethodName = None,
+        attrs: _StrainableAttributes = {},
+        **kwargs: _StrainableAttribute,
+    ) -> Tag:
+
+    result = page_element.find_parent(
+        name=name,
+        attrs=attrs,
+        **kwargs,
+    )
+    if result is None or not isinstance(result, Tag):
+        raise ValueError(
+            f"require_find_parent: Element not found or not a Tag: {name}, {attrs}, {kwargs}")
+    return cast(Tag, result)
+
