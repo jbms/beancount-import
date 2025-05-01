@@ -11,6 +11,7 @@ watchdog = "*"
 beancount = "==2.3.6"
 jsonschema = "*"
 nltk = "*"
+scikit-learn = "*"
 
 [dev-packages]
 mypy = "==1.13.0"
