@@ -12,7 +12,7 @@ beancount = "==2.3.6"
 jsonschema = "*"
 nltk = "*"
 scikit-learn = "*"
-beancount-stubs = "*"
+beancount-stubs = {editable = true, ref = "PR_18", git = "https://github.com/beancount-stuff/beancount-stubs.git"}
 
 [dev-packages]
 mypy = "*"

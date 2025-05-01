@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b828f310d577f773ffe628e9719463421673e0a7fce7e238ed669b4d8a844bf8"
+            "sha256": "34bd00df4db4a0e45ec0fdefaedcea838fe7c13ce57fff6a848af7e80cde2845"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -75,13 +75,10 @@
             "version": "==2.3.6"
         },
         "beancount-stubs": {
-            "hashes": [
-                "sha256:40bff4190457b5a0edbe03c6f0d385311d21c1c982e3d4e982becf735eec2efc",
-                "sha256:7e9e2c216726bb9a69b652f9919734d4670a8e521537737339009470259a37e4"
-            ],
-            "index": "pypi",
+            "editable": true,
+            "git": "https://github.com/beancount-stuff/beancount-stubs.git",
             "markers": "python_full_version >= '3.8.18'",
-            "version": "==0.1.5"
+            "ref": "f33615f676dbb3a70b11f0595967a61afcc8f092"
         },
         "beautifulsoup4": {
             "hashes": [
