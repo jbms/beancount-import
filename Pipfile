@@ -4,8 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-beancount = "*"
-mypy = "*"
+bs4 = "*"
+atomicwrites = "*"
+tornado = "*"
+watchdog = "*"
+beancount = "==2.3.6"
+jsonschema = "*"
+nltk = "*"
 
 [dev-packages]
 mypy = "==1.13.0"
