@@ -12,6 +12,7 @@ beancount = "==2.3.6"
 jsonschema = "*"
 nltk = "*"
 scikit-learn = "*"
+beancount-stubs = "*"
 
 [dev-packages]
 mypy = "*"
