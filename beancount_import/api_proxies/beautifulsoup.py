@@ -7,6 +7,9 @@ from bs4._typing import (
     _StrainableAttributes,
     _StrainableString,
 )
+
+#
+#
 def require_find(
     tag: Tag,
     name: _FindMethodName = None,
@@ -28,7 +31,7 @@ def require_find(
         **kwargs,
     )
     if result is None or not isinstance(result, Tag):
-        raise ValueError(f"require_find: Element not found or not a Tag: {name}, {attrs}, {kwargs}")
+        raise ValueError(f"require_find: Element not found: {name!r}, {attrs!r}, {kwargs!r}")
     return cast(Tag, result)
 
 def require_find_parent(
@@ -45,6 +48,5 @@ def require_find_parent(
     )
     if result is None or not isinstance(result, Tag):
         raise ValueError(
-            f"require_find_parent: Element not found or not a Tag: {name}, {attrs}, {kwargs}")
+            f"require_find_parent: Element not found: {name!r}, {attrs!r}, {kwargs!r}")
     return cast(Tag, result)
-

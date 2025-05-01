@@ -50,5 +50,10 @@ jobs:
         
     - name: test with pytest and coverage
       run: pipenv run coverage run -m pytest -vv
+    - name: Version info
+      run: |
+        pipenv run pip show beancount
+        pipenv run pip show beancount-stubs
+
     - name: Static Type Checking with MyPy
       run: pipenv run mypy beancount_import --disable-error-code=type-abstract

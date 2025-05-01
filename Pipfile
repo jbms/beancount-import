@@ -12,11 +12,10 @@ beancount = "==2.3.6"
 jsonschema = "*"
 nltk = "*"
 scikit-learn = "*"
-beancount-stubs = {editable = true, ref = "PR_18", git = "https://github.com/beancount-stuff/beancount-stubs.git"}
+beancount-stubs = {editable = true, ref = "0.1.6b1", git = "https://github.com/beancount-stuff/beancount-stubs.git"}
 
 [dev-packages]
 mypy = "*"
-types-beautifulsoup4 = "*"
 pytest = "*"
 coverage = "*"
 typing-extensions = "*"

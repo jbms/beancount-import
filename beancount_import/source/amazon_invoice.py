@@ -1100,14 +1100,14 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
             # differently formatted, take first column only
             other_fields_td = tds[0]
             continue
-        description_node = tds[0]
+        description_node : Tag = cast(Tag, tds[0])
         price_node = tds[1]
         price = price_node.text.strip()
 
-        a = description_node.find('a')
+        a = cast(Tag,description_node.find('a'))
         if a is not None:
             description = a.text.strip()
-            url = a['href']
+            url = cast(str,a['href'])
         else:
             bold_node = description_node.find('b')
             description = bold_node.text.strip()

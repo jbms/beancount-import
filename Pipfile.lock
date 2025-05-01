@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "34bd00df4db4a0e45ec0fdefaedcea838fe7c13ce57fff6a848af7e80cde2845"
+            "sha256": "bc1861bff2279887e167d90266172b2b60c8e9ed68b2a82f6ea7364096b1e987"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -78,7 +78,7 @@
             "editable": true,
             "git": "https://github.com/beancount-stuff/beancount-stubs.git",
             "markers": "python_full_version >= '3.8.18'",
-            "ref": "f33615f676dbb3a70b11f0595967a61afcc8f092"
+            "ref": "8a1b000fa0f857d23f1baefc1f217bff123e85b4"
         },
         "beautifulsoup4": {
             "hashes": [
@@ -1296,15 +1296,6 @@
             "markers": "python_version >= '3.8'",
             "version": "==4.25.0"
         },
-        "types-beautifulsoup4": {
-            "hashes": [
-                "sha256:57ce9e75717b63c390fd789c787d267a67eb01fa6d800a03b9bdde2e877ed1eb",
-                "sha256:f083d8edcbd01279f8c3995b56cfff2d01f1bb894c3b502ba118d36fbbc495bf"
-            ],
-            "index": "pypi",
-            "markers": "python_version >= '3.9'",
-            "version": "==4.12.0.20250204"
-        },
         "types-cachetools": {
             "hashes": [
                 "sha256:b888ab5c1a48116f7799cd5004b18474cd82b5463acb5ffb2db2fc9c7b053bc0",
@@ -1313,14 +1304,6 @@
             "index": "pypi",
             "markers": "python_version >= '3.8'",
             "version": "==5.5.0.20240820"
-        },
-        "types-html5lib": {
-            "hashes": [
-                "sha256:3f1e064d9ed2c289001ae6392c84c93833abb0816165c6ff0abfc304a779f403",
-                "sha256:98042555ff78d9e3a51c77c918b1041acbb7eb6c405408d8a9e150ff5beccafa"
-            ],
-            "markers": "python_version >= '3.8'",
-            "version": "==1.1.11.20241018"
         },
         "types-python-dateutil": {
             "hashes": [
