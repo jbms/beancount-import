@@ -367,11 +367,21 @@ def add_amount(a: Optional[Amount], b: Optional[Amount]) -> Optional[Amount]:
         return a
     return beancount.core.amount.add(a, b)
 
+def reduce_amounts_may_return_none(amounts: Iterable[Amount]) -> Optional[Amount]:
+    return functools.reduce(add_amount, amounts, None)
 
-def reduce_amounts(amounts: Iterable[Amount]) -> Optional[Amount]:
+
+def reduce_amounts(amounts: Iterable[Amount]) -> Amount:
     """Reduce iterable of amounts to sum by applying `add_amount`.
     """
-    return functools.reduce(add_amount, amounts, None)
+
+    reduced_amounts = functools.reduce(add_amount, amounts, None)
+    if reduced_amounts is None:
+        raise ValueError("amount iterable is empty, must be checked before reducing.")
+    else:
+        return reduced_amounts
+
+
 
 
 def get_field_in_table(table, pattern, allow_multiple=False,
@@ -639,7 +649,7 @@ def parse_shipment_payments(
     items_subtotal = locale.parse_amount(
         get_field_in_table(shipment_table, locale.items_subtotal))
 
-    expected_items_subtotal = reduce_amounts(
+    expected_items_subtotal = reduce_amounts_may_return_none(
         beancount.core.amount.mul(x.price, D(x.quantity)) for x in items)
     if (items_subtotal is not None and
         expected_items_subtotal != items_subtotal):
@@ -843,7 +853,7 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     # detect which this is
     
     # payment table pretax adjustments
-    pretax_amount = reduce_amounts(
+    pretax_amount = reduce_amounts_may_return_none(
         a.amount for a in output_fields['pretax_adjustments'])
     
     shipments_pretax_amount = None
@@ -919,16 +929,17 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
         get_field_in_table(payment_table, locale.regular_estimated_tax))
 
     # tax from shipment tables
-    expected_tax = reduce_amounts(
-        a.amount for shipment in shipments for a in shipment.tax)
-    if expected_tax is None:
+    shipment_amounts = [a.amount for shipment in shipments for a in shipment.tax]
+    if len(shipment_amounts) == 0:
         # tax not given on shipment level
         if not locale.tax_included_in_price:
             # add tax to adjustments if not already included in item prices
             shipments_total_adjustments.append(tax)
-    elif expected_tax != tax:
-        errors.append(
-            'expected tax is %s, but parsed value is %s' % (expected_tax, tax))
+    else:
+        expected_tax = reduce_amounts(shipment_amounts)
+        if expected_tax != tax:
+            errors.append(
+                'expected tax is %s, but parsed value is %s' % (expected_tax, tax))
 
     if locale.tax_included_in_price:
         # tax is already inlcuded in item prices
@@ -936,8 +947,8 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
         tax = None
 
     logger.debug('consistency check grand total...')
-    payments_total_adjustment = reduce_amounts(payments_total_adjustments)
-    shipments_total_adjustment = reduce_amounts(shipments_total_adjustments)
+    payments_total_adjustment = reduce_amounts_may_return_none(payments_total_adjustments)
+    shipments_total_adjustment = reduce_amounts_may_return_none(shipments_total_adjustments)
 
     expected_total = add_amount(shipments_total_adjustment,
                                 reduce_amounts(x.total for x in shipments))
@@ -1156,7 +1167,7 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
         locale.pretax_adjustment_fields_pattern)
     pretax_parts = ([items_subtotal] +
                     [a.amount for a in output_fields['pretax_adjustments']])
-    expected_total_before_tax = reduce_amounts(pretax_parts)
+    expected_total_before_tax = reduce_amounts_may_return_none(pretax_parts)
     if expected_total_before_tax != total_before_tax:
         errors.append('expected total before tax is %s, but parsed value is %s'
                     % (expected_total_before_tax, total_before_tax))
