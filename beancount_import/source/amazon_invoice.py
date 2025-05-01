@@ -29,7 +29,17 @@ main(...)
     |
     +-> returns Order
 """
-from typing import NamedTuple, Optional, List, Union, Iterable, Dict, Sequence, cast, Type
+from typing import (
+    NamedTuple,
+    Optional,
+    List,
+    Union,
+    Iterable,
+    Dict,
+    Sequence,
+    cast,
+    Type,
+    Callable )
 from abc import ABC, abstractmethod
 import collections
 import re
@@ -39,7 +49,7 @@ import datetime
 import logging
 
 import bs4
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from beancount_import.api_proxies.beautifulsoup import require_find
 import dateutil.parser
@@ -845,9 +855,10 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     # Aim: Parse all pre- and posttax adjustments
     #      consistency check grand total against sum of item costs
     logger.debug('parsing payment table...')
-    payment_table_header = soup.find(
-        lambda node: node.name == 'table' and re.match(
-            locale.payment_information, node.text.strip()))
+
+    matcher : Callable[[Tag], bool] = lambda node: node.name == 'table' and re.match(
+        locale.payment_information, node.text.strip())
+    payment_table_header = soup.find()
 
     payment_table = payment_table_header.find_parent('table')
 
