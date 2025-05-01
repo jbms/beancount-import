@@ -13,9 +13,9 @@ jsonschema = "*"
 nltk = "*"
 scikit-learn = "*"
 
-
 [dev-packages]
 mypy = "*"
+types-beautifulsoup4 = "*"
 pytest = "*"
 coverage = "*"
 typing-extensions = "*"
