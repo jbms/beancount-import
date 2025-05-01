@@ -25,5 +25,3 @@ types-cachetools = "*"
 types-python-dateutil = "*"
 types-setuptools = "*"
 
-[requires]
-python_version = ">=3.8,<=3.13"
