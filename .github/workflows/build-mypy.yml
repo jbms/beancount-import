@@ -46,12 +46,10 @@ jobs:
     - name: Install Pipenv
       run: python -m pip install pipenv
     - name: Install Dependencies with Pipenv
-      run: |
-        pipenv install --dev
-        pipenv shell
+      run: pipenv install --dev
+        
     - name: test with pytest and coverage
-      run: |
-        coverage run -m pytest -vv
+      run: pipenv run coverage run -m pytest -vv
     - name: Static Type Checking with MyPy
       run: |
         mypy beancount_import --disable-error-code=type-abstract
