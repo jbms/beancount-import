@@ -16,17 +16,8 @@ def require_find(
     **kwargs: _StrainableAttribute,
 ) -> _OneElement:
 
-# def require_find(
-#     tag: Tag,
-#     name: _FindMethodName = None,
-#     attrs: Optional[dict[str, Any]] = None,
-#     recursive: bool = True,
-#     text: Any = None,
-#     limit: str | bool | bytes | Pattern[str] | Callable[[str], bool] | Callable[[Tag], bool] | None | Iterable[str | bool | bytes | Pattern[str] | Callable[[str], bool] | Callable[[Tag], bool] | None] = None,
-#     **kwargs: Any
-# ) -> Tag:
     """
-    Monkey-patched method for Tag that behaves like find() but raises if element is not found.
+    wrapper for Tag.find() that behaves like find() but raises if element is not found.
     Assumes the result is always a Tag (not NavigableString).
     """
     result = tag.find(
@@ -37,10 +28,6 @@ def require_find(
         **kwargs,
     )
     if result is None or not isinstance(result, Tag):
-        raise ValueError(f"Element not found or not a Tag: {name}, {attrs}, {kwargs}")
+        raise ValueError(f"require_find: Element not found or not a Tag: {name}, {attrs}, {kwargs}")
     return cast(Tag, result)
 
-
-# Monkey-patch the method into bs4.element.Tag
-#Tag.require_find = require_find  # type: ignore # type: ignore[assignment]
-# PageElement.require_find = require_find   # type: ignore
