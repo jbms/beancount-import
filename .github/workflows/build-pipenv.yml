@@ -1,4 +1,4 @@
-name: Build with pipenv dependency manager
+name: pipenv / full matrix + package build
 
 
 on: [push, pull_request]
@@ -44,7 +44,9 @@ jobs:
       working-directory: frontend
     - name: Install pdftotext (on Linux)
       if: ${{ runner.os == 'Linux' }}
-      run: sudo apt-get install poppler-utils
+      run: |
+        sudo apt-get update
+        sudo apt-get install poppler-utils
     - name: Install Pipenv
       run: python -m pip install pipenv
     - name: Install Dependencies with Pipenv
