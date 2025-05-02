@@ -41,7 +41,9 @@ jobs:
       working-directory: frontend
     - name: Install pdftotext (on Linux)
       if: ${{ runner.os == 'Linux' }}
-      run: sudo apt-get install poppler-utils
+      run: |
+        sudo apt-get update
+        sudo apt-get install poppler-utils
     - name: Install Python packaging/test tools
       run: python -m pip install tox wheel
     - name: Show package version
