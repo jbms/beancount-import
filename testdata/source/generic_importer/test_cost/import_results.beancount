@@ -7,3 +7,23 @@
     date: 2020-01-01
     source_desc: "convert currency"
   Assets:Saving   2 EUR @ 0.5 USD
+
+;; date: 2020-01-02
+;; info: {"filename": "<testdata>/test_cost/input/generic_statement.beancount", "line": 6, "type": "text/plain"}
+
+; features: []
+2020-01-02 * "convert currency with a rounding error"
+  Assets:Bank    -1.00 USD
+    date: 2020-01-02
+    source_desc: "convert currency with a rounding error"
+  Assets:Saving   3.00 EUR @ 0.3333 USD
+
+;; date: 2020-01-03
+;; info: {"filename": "<testdata>/test_cost/input/generic_statement.beancount", "line": 10, "type": "text/plain"}
+
+; features: []
+2020-01-03 * "atomatically balanced transaction"
+  Assets:Bank    -5 USD
+    date: 2020-01-03
+    source_desc: "atomatically balanced transaction"
+  Assets:Saving
