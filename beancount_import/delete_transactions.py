@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from beancount.query import (query_compile, query_env, query_execute, query_parser)
+from beanquery import (query_compile, query_env, query_execute, query_parser)
 from beancount.core import inventory
 from beancount.core.data import Transaction
 from beancount.parser import options

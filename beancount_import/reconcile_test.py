@@ -7,6 +7,7 @@ import shutil
 
 import py
 import pytest
+from unittest.mock import MagicMock
 from beancount.core.data import Directive, Posting, Transaction
 
 from . import reconcile
@@ -346,3 +347,4 @@ def test_amazon_large_matching(tmpdir: py.path.local):
             ],
         ),
     )
+    

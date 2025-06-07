@@ -469,6 +469,7 @@ class LoadedReconciler(object):
         if len(training_examples) > 0:
             self.reconciler.log_status(
                 'Training classifier with %d examples' % len(training_examples))
+            
             import nltk
             import sklearn.tree
 
