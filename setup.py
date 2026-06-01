@@ -162,10 +162,12 @@ setuptools.setup(
     package_data={
         'beancount_import': ['frontend_dist/*'],
     },
-    python_requires='>=3.8',
+    python_requires='>=3.9',
     setup_requires=['setuptools_scm>=5.0.2'],
     install_requires=[
-        'beancount<3',
+        'beancount>=2.3.5',
+        'beangulp>=0.2.0',
+        'beanquery>=0.2.0',
         'tornado',
         'numpy',
         'scipy',
