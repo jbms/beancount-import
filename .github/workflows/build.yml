@@ -6,15 +6,18 @@ on: [push, pull_request]
 jobs:
   tox:
     strategy:
+      fail-fast: false
       matrix:
         os:
           - 'ubuntu-latest'
           - 'windows-latest'
           - 'macos-latest'
         python-version:
-          - '3.8'
+          # beancount v3 requires Python >=3.9, matching setup.py python_requires.
           - '3.9'
           - '3.10'
+          - '3.11'
+          - '3.12'
         node-version:
           - '18.x'
     runs-on: ${{ matrix.os }}
@@ -45,7 +48,10 @@ jobs:
         sudo apt-get update
         sudo apt-get install poppler-utils
     - name: Install Python packaging/test tools
-      run: python -m pip install tox wheel
+      # setuptools is no longer bundled with Python >=3.12, and installing
+      # setuptools_scm explicitly avoids setup.py's legacy setup_requires egg
+      # fetch (which breaks on modern setuptools).
+      run: python -m pip install tox wheel setuptools setuptools_scm
     - name: Show package version
       run: python setup.py --version
     - name: Test with tox
