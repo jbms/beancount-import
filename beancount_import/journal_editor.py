@@ -632,6 +632,12 @@ def get_meta_ignore() -> FrozenSet[str]:
     printer = beancount.parser.printer.EntryPrinter()
     meta_ignore = set(printer.META_IGNORE)
     meta_ignore.add('__tolerances__')
+    # Beancount v3 attaches these metadata keys to auto-inserted postings
+    # (interpolate.AUTOMATIC_META / AUTOMATIC_RESIDUAL): __automatic__ on any
+    # interpolated amount, and __residual__ additionally on rounding postings
+    # inserted for the account_rounding option. Neither should affect matching.
+    meta_ignore.add('__automatic__')
+    meta_ignore.add('__residual__')
     return frozenset(meta_ignore)
 
 
