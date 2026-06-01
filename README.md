@@ -138,7 +138,7 @@ The currently supported set of data sources is:
 - [beancount_import.source.ultipro_google](beancount_import/source/ultipro_google.py):
   imports Google employee Ultipro payroll statements.
 - [beancount_import.source.generic_importer_source](beancount_import/source/generic_importer_source.py):
-  imports from `beancount.ingest.importer.ImporterProtocol` subclass Importers. See [beancount's documentation](https://beancount.github.io/docs/importing_external_data.html#the-importing-process) on how to write one and checkout the [examples](examples/) directory for a simple csv importer
+  imports from `beangulp.importer.Importer` (or legacy `beangulp.importer.ImporterProtocol`) subclass Importers. See [beangulp's documentation](https://github.com/beancount/beangulp) on how to write one and checkout the [examples](examples/) directory for a simple csv importer
 
 Refer to the individual data source documentation for details on configuration.
 

@@ -13,7 +13,7 @@ beancount-import should have it's own run.py where you invoke the
 
 This is the way!!
 """
-from beancount.ingest.importers.csv import Importer as CSVImporter, Col
+from beangulp.importers.csv import Importer as CSVImporter, Col
 
 my_foobar_bank_importer = CSVImporter({
                         Col.DATE: 'Date',
