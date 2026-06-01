@@ -3,56 +3,52 @@
 import argparse
 import sys
 
-from beancount.query import (query_compile, query_env, query_execute, query_parser)
-from beancount.core import inventory
+from beanquery.query import run_query
+from beancount.core.compare import hash_entry
 from beancount.core.data import Transaction
-from beancount.parser import options
-from beancount.core import (getters, prices)
+from beancount.core.position import Position
 from . import journal_editor
-import pdb
 
 
 def get_matching_postings(entries, options_map, query):
-    query_text = 'SELECT * ' + query
-    parser = query_parser.Parser()
-    parsed_query = parser.parse(query_text)
-    c_from = None
-    if parsed_query.from_clause:
-        c_from = query_compile.compile_from(parsed_query.from_clause, query_env.FilterEntriesEnvironment())
-    c_where = None
-    if parsed_query.where_clause:
-        c_where = query_compile.compile_expression(parsed_query.where_clause, query_env.FilterPostingsEnvironment())
+    """Yield ``(entry, matching_postings)`` for a BQL FROM/WHERE expression.
 
-    # Figure out if we need to compute balance.
-    balance = None
-    if c_where and query_execute.uses_balance_column(c_where):
-        balance = inventory.Inventory()
+    Beancount v3 moved the query engine out into the standalone ``beanquery``
+    package. beanquery's row API does not hand back the original ``Posting``
+    objects, so we select the columns that uniquely identify a matched posting
+    within its entry -- ``id`` (== ``hash_entry``), ``account``, ``position``,
+    ``price`` and ``posting_flag`` -- and map those keys back to the actual
+    ``Posting`` objects. Note beanquery's ``flag`` column is the transaction
+    flag; the posting flag is exposed separately as ``posting_flag``.
 
-    context = query_execute.RowContext()
-    context.balance = balance
-    
+    When the query has no WHERE clause, beanquery emits a row for every posting
+    of each matched entry, so all of an entry's postings are returned, matching
+    the previous behaviour.
 
-    # Initialize some global properties for use by some of the accessors.
-    context.options_map = options_map
-    context.account_types = options.get_account_types(options_map)
-    context.open_close_map = getters.get_account_open_close(entries)
-    #context.commodity_map = getters.get_commodity_map(entries)
-    context.price_map = prices.build_price_map(entries) 
+    Limitation: the match key does not include posting metadata, so a WHERE
+    clause that distinguishes two otherwise-identical sibling postings (same
+    account, units, cost, price and flag) purely by ``meta[...]`` will select
+    both -- a contrived case.
+    """
+    query_text = 'SELECT id, account, position, price, posting_flag ' + query
+    _rtypes, rows = run_query(entries, options_map, query_text)
+    matched = {(entry_id, account, str(position), str(price), str(flag))
+               for entry_id, account, position, price, flag in rows}
 
-    if c_from is not None:
-        filtered_entries = query_execute.filter_entries(c_from, entries, options_map)
-    else:
-        filtered_entries = entries
-    for entry in filtered_entries:
-        if isinstance(entry, Transaction):
-            context.entry = entry
-            matching_postings = []
-            for posting in entry.postings:
-                context.posting = posting
-                if c_where is None or c_where(context):
-                    matching_postings.append(posting)
-            if matching_postings:
-                yield (entry, matching_postings)
+    for entry in entries:
+        if not isinstance(entry, Transaction):
+            continue
+        entry_id = hash_entry(entry)
+        matching_postings = [
+            posting for posting in entry.postings
+            if (entry_id, posting.account,
+                str(Position(posting.units, posting.cost)),
+                str(posting.price), str(posting.flag)) in matched
+        ]
+        if matching_postings:
+            yield (entry, matching_postings)
+
+
 CHANGE_TYPE_INDICATOR = {0: ' ', -1: '-', 1: '+'}
 
 def main():
