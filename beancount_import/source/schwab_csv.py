@@ -154,6 +154,8 @@ class BrokerageAction(enum.Enum):
     # Please keep these alphabetized:
     ADR_MGMT_FEE = "ADR Mgmt Fee"
     BANK_INTEREST = "Bank Interest"
+    BANK_INTEREST_ADJ = "Bank Interest Adj"
+    BANK_TRANSFER = "Bank Transfer"
     BOND_INTEREST = "Bond Interest"
     BUY = "Buy"
     BUY_TO_CLOSE = "Buy to Close"
@@ -370,7 +372,8 @@ class RawBrokerageEntry(RawEntry):
                            BrokerageAction.SECURITY_TRANSFER,
                            BrokerageAction.WIRE_FUNDS,
                            BrokerageAction.WIRE_FUNDS_RECEIVED,
-                           BrokerageAction.FUNDS_RECEIVED):
+                           BrokerageAction.FUNDS_RECEIVED,
+                           BrokerageAction.BANK_TRANSFER):
             return Transfer(**shared_attrs)
         if self.action in (BrokerageAction.SELL,
                             BrokerageAction.SELL_TO_OPEN,
@@ -420,7 +423,9 @@ class RawBrokerageEntry(RawEntry):
             return Fee(fees_account=fees_account, **shared_attrs)
         if self.action == BrokerageAction.FOREIGN_TAX_PAID:
             return TaxPaid(taxes_account=taxes_account, **shared_attrs)
-        if self.action == BrokerageAction.MARGIN_INTEREST or self.action == BrokerageAction.CREDIT_INTEREST:
+        if self.action in (BrokerageAction.MARGIN_INTEREST,
+                           BrokerageAction.CREDIT_INTEREST,
+                           BrokerageAction.BANK_INTEREST_ADJ):
             return Interest(interest_account=interest_account, **shared_attrs)
         if self.action == BrokerageAction.EXPIRED:
             assert self.quantity is not None

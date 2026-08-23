@@ -941,3 +941,67 @@
     schwab_action: "Short Term Cap Gain Reinvest"
     source_desc: "ISHARES GLOBAL CLEAN ENERGY ETF"
   Income:Dividend:Schwab:ICLN        -2.11 USD
+
+;; date: 2023-10-26
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 23, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-101.01 USD",
+;               "date": "2023-10-26",
+;               "key_value_pairs": {
+;                 "desc": "OVERDRAFT TO INVESTOR CHECKING 5678",
+;                 "schwab_action": "Bank Transfer"
+;               },
+;               "source_account": "Assets:Schwab:Brokerage-1234:Cash"
+;             }
+;           ]
+2023-10-26 * "TRANSFER - OVERDRAFT TO INVESTOR CHECKING 5678"
+  Assets:Schwab:Brokerage-1234:Cash  -101.01 USD
+    date: 2023-10-26
+    schwab_action: "Bank Transfer"
+    source_desc: "OVERDRAFT TO INVESTOR CHECKING 5678"
+  Expenses:FIXME                      101.01 USD
+
+;; date: 2023-10-29
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 24, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "-202.02 USD",
+;               "date": "2023-10-29",
+;               "key_value_pairs": {
+;                 "desc": "OVERDRAFT TO INVESTOR CHECKING 5678",
+;                 "schwab_action": "Bank Transfer"
+;               },
+;               "source_account": "Assets:Schwab:Brokerage-1234:Cash"
+;             }
+;           ]
+2023-10-29 * "TRANSFER - OVERDRAFT TO INVESTOR CHECKING 5678"
+  Assets:Schwab:Brokerage-1234:Cash  -202.02 USD
+    date: 2023-10-29
+    schwab_action: "Bank Transfer"
+    source_desc: "OVERDRAFT TO INVESTOR CHECKING 5678"
+  Expenses:FIXME                      202.02 USD
+
+;; date: 2023-10-30
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 25, "type": "text/csv"}
+
+; features: []
+2023-10-30 * "Margin Interest - INTEREST 09/28THRU 10/29"
+  Assets:Schwab:Brokerage-1234:Cash  -0.15 USD
+    date: 2023-10-30
+    schwab_action: "Margin Interest"
+    source_desc: "INTEREST 09/28THRU 10/29"
+  Income:Interest:Schwab              0.15 USD
+
+;; date: 2023-10-31
+;; info: {"filename": "<testdata>/test_basic/transactions/Brokerage_Transactions_20201115-180021.CSV", "line": 26, "type": "text/csv"}
+
+; features: []
+2023-10-31 * "Bank Interest Adj - BANK INA 103023-103023 SCHWAB BANK"
+  Assets:Schwab:Brokerage-1234:Cash  -0.01 USD
+    date: 2023-10-31
+    schwab_action: "Bank Interest Adj"
+    source_desc: "BANK INA 103023-103023 SCHWAB BANK"
+  Income:Interest:Schwab              0.01 USD
