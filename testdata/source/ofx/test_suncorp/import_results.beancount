@@ -20,8 +20,3 @@
     ofx_memo: "EFTPOS WDL HANDYWAY ALDI STORE GEELONG WEST VICAU"
     ofx_type: "STMTTRN"
   Expenses:FIXME            16.85 AUD
-
-;; date: 2013-12-15
-;; info: {"filename": "<testdata>/suncorp.ofx", "type": "application/x-ofx"}
-
-2013-12-15 balance Assets:Checking:Suncorp                         1234.12 AUD
