@@ -1,0 +1,13 @@
+<journal-dir>/journal.beancount
++
++2018-04-05 * "Maria Anderson" "Transfer" ^venmo.3641977597632667950
++  Assets:Venmo         120.00 USD
++    date: 2018-04-05
++    venmo_account_description: "Visa Debit *1559"
++    venmo_description: "Utilities"
++    venmo_payee: "Maria Anderson"
++    venmo_transfer_id: "3641977597632667950"
++    venmo_type: "Charge"
++  Expenses:Utilities  -120.00 USD
++
++2018-04-05 open Expenses:Utilities                              USD

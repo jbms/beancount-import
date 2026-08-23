@@ -1,0 +1,26 @@
+2018-04-17 * "Maria Anderson" "Bagels" ^venmo.4354205292885612406
+  Assets:Venmo    -3.00 USD
+    date: 2018-04-17
+    venmo_description: "Bagels"
+    venmo_payee: "Maria Anderson"
+    venmo_payment_id: "4354205292885612406"
+    venmo_type: "Payment"
+  Expenses:FIXME   3.00 USD
+
+2022-01-09 * "Charlie Chow" "Local Eats"
+  Assets:Venmo    -2.24 USD
+    date: 2022-01-09
+    venmo_description: "Local Eats"
+    venmo_payee: "Charlie Chow"
+    venmo_payment_id: "1291991306506600548"
+    venmo_type: "Merchant Transaction"
+  Expenses:FIXME   2.24 USD
+
+2022-02-18 * "Charlie Chow" "Distant Treats" ^venmo.1299175267271967461
+  Assets:Venmo    -22.84 USD
+    date: 2022-02-18
+    venmo_description: "Distant Treats"
+    venmo_payee: "Charlie Chow"
+    venmo_payment_id: "1299175267271967461"
+    venmo_type: "Merchant Transaction"
+  Expenses:FIXME   22.84 USD

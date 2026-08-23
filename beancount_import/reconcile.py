@@ -396,6 +396,9 @@ class LoadedReconciler(object):
         all_source_results = self._prepare_sources()
         self._preprocess_entries()
         self._match_sources(all_source_results)
+        Preprocessor = self.reconciler.options.get('preprocessor')
+        if Preprocessor:
+            Preprocessor(self)
         all_skip_accounts = set()
         for src in all_source_results:
             all_skip_accounts.update(src.skip_training_accounts)
