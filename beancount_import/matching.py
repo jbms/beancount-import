@@ -869,7 +869,6 @@ def _get_uncleared_aggregate_posting_candidates(
                                  []).append(posting)
 
     results = [] # type: List[Posting]
-    max_subset_size = 4
     sum_to_zero = set()  # type: Set[Tuple[int, ...]]
 
     def posting_set_id(postings):
@@ -905,6 +904,7 @@ def _get_uncleared_aggregate_posting_candidates(
         l.append((aggregate_posting, tuple(subset)))
 
     for (account, currency), posting_list in possible_sets.items():
+        max_subset_size = 4 if len(posting_list) < 25 else 1
         if len(posting_list) == 1:
             continue
         if len(posting_list) > max_subset_size:
@@ -1784,8 +1784,9 @@ def get_extended_transactions(
                 excluded_transaction_ids=cast(FrozenSet[int],
                                               used_transaction_ids),
                 debug_level=level):
-            maybe_extend_candidate(new_transaction, matching_transaction,
-                                   level + 1)
+            if level <= 6:
+                maybe_extend_candidate(new_transaction, matching_transaction,
+                                       level + 1)
 
     maybe_extend_candidate(initial_transaction, initial_transaction, level=0)
 
