@@ -1,5 +1,5 @@
 ;; date: 2020-08-24
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 12, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 12, "type": "text/csv"}
 
 ; features: []
 2020-08-24 * "BUYSTOCK - SCHWAB FUNDAMENTAL US SMALL COM ETF"
@@ -13,7 +13,7 @@
     source_desc: "SCHWAB FUNDAMENTAL US SMALL COM ETF"
 
 ;; date: 2020-08-24
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 11, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 11, "type": "text/csv"}
 
 ; features: []
 2020-08-24 * "BUYSTOCK - SCHWAB US SMALL CAP ETF"
@@ -52,7 +52,7 @@
 2020-08-25 price SCHA                                71.39 USD
 
 ;; date: 2020-08-30
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 10, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 10, "type": "text/csv"}
 
 ; features: []
 2020-08-30 * "BUYSTOCK - XTRACKERS USD HIGH YIELDCOR BND ETF"
@@ -66,7 +66,7 @@
     source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
 
 ;; date: 2020-08-31
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 9, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 9, "type": "text/csv"}
 
 ; features: []
 2020-08-31 * "BUYSTOCK - XTRACKERS USD HIGH YIELDCOR BND ETF"
@@ -80,7 +80,7 @@
     source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
 
 ;; date: 2020-09-24
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 8, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 8, "type": "text/csv"}
 
 ; features: []
 2020-09-24 * "BUYSTOCK - ISHARES GOLD ETF"
@@ -94,7 +94,7 @@
     source_desc: "ISHARES GOLD ETF"
 
 ;; date: 2020-09-24
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 7, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 7, "type": "text/csv"}
 
 ; features: []
 2020-09-24 * "BUYSTOCK - SCHWAB US SMALL CAP ETF"
@@ -133,7 +133,7 @@
 2020-09-25 price SCHA                                72.56 USD
 
 ;; date: 2020-10-13
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 6, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 6, "type": "text/csv"}
 
 ; features: []
 2020-10-13 * "STOCKSPLIT - XTRACKERS USD HIGH YIELDCOR BND ETF"
@@ -155,7 +155,7 @@
     source_desc: "XTRACKERS USD HIGH YIELDCOR BND ETF"
 
 ;; date: 2020-10-19
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 5, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 5, "type": "text/csv"}
 
 ; features: []
 2020-10-19 * "SELLSTOCK - SCHWAB FUNDAMENTAL US SMALL CAP ETF"
@@ -170,7 +170,7 @@
   Income:Capital-Gains:Schwab:FNDA
 
 ;; date: 2020-10-19
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 4, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 4, "type": "text/csv"}
 
 ; features: []
 2020-10-19 * "SELLSTOCK - SCHWAB US SMALL CAP ETF"
@@ -189,7 +189,7 @@
   Income:Capital-Gains:Schwab:SCHA
 
 ;; date: 2020-10-22
-;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_Transactions_20201115-180120.CSV", "line": 3, "type": "text/csv"}
+;; info: {"filename": "<testdata>/test_lots/transactions/Intelligent_XXX321_Transactions_20201115-180120.CSV", "line": 3, "type": "text/csv"}
 
 ; features: []
 2020-10-22 * "STOCKSPLIT - ISHARES GOLD ETF XXXREVERSE SPLIT EFF: 10/21/20"
