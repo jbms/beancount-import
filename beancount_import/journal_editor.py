@@ -235,11 +235,22 @@ def get_partially_booked_entries(pre_booking_entries: Entries,
 
 
 class _AtomicWriter(atomicwrites.AtomicWriter):
-    """Wrapper that calls `os.stat` after close but before the rename."""
+    """Wrapper that preserves permissions and calls `os.stat` after close.
+
+    Two changes on top of AtomicWriter:
+    - Preserve permissions of the file.
+    - Calls `os.stat` after close but before the rename.
+    """
 
     def __init__(self, path, **kwargs):
         super().__init__(path, **kwargs)
         self.stat_result_after_close = None
+        self._permissions = os.stat(path).st_mode
+
+    def get_fileobject(self, **kwargs):
+        f = super().get_fileobject(**kwargs)
+        os.chmod(f.name, mode=self._permissions)
+        return f
 
     def sync(self, f):
         super().sync(f)
