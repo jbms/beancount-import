@@ -50,8 +50,10 @@ jobs:
     - name: Install Python packaging/test tools
       # setuptools is no longer bundled with Python >=3.12, and installing
       # setuptools_scm explicitly avoids setup.py's legacy setup_requires egg
-      # fetch (which breaks on modern setuptools).
-      run: python -m pip install tox wheel setuptools setuptools_scm
+      # fetch (which breaks on modern setuptools).  Upgrade so the setuptools
+      # bundled with older Pythons (58.x on macOS/Windows 3.9) isn't kept
+      # alongside a setuptools_scm that requires a newer one.
+      run: python -m pip install --upgrade tox wheel setuptools setuptools_scm
     - name: Show package version
       run: python setup.py --version
     - name: Test with tox
