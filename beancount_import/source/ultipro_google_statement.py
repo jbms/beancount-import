@@ -202,7 +202,7 @@ def parse(text: str) -> ParseResult:
                  ('Amount', parse_currency)),
                 #(r'^(Total) (' + currency_amount_re + ')$', (('amount', parse_currency))),
             ]),
-        (r'^(Pay Summary)\nGross FIT Taxable Wages Taxes Deductions Net Pay$',
+        (r'^(Pay Summary)\nGross FIT ?Taxable Wages Taxes Deductions Net Pay$',
          [
              (r'^(Current|YTD)' + 5 *
               (r' (' + currency_amount_re + r')') + r'$',
