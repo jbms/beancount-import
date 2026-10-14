@@ -26,7 +26,7 @@
     "esbuild": "^0.9.0",
     "fbemitter": "^3.0.0",
     "fuzzyjs": "^4.0.4",
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.1",
     "react": "^16",
     "react-autocomplete": "^1.8.1",
     "react-dom": "^16",
