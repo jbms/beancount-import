@@ -27,7 +27,7 @@ def get_posting_source_descs(
         if source_desc is not None:
             if posting_date is None:
                 raise RuntimeError(
-                    'Posting date is missing on entry: %r' % posting)
+                    'Posting date is missing on entry: %r' % (posting, ))
             yield (source_desc, posting_date)
 
 
