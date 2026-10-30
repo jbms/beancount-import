@@ -654,7 +654,7 @@ def get_meta_ignore() -> FrozenSet[str]:
 
 META_IGNORE = get_meta_ignore()
 
-metadata_line_re = '^ +([a-z][a-zA-Z0-9\\-_]*) *: *([^a-zA-Z].*)$'
+metadata_line_re = '^ +([a-z][a-zA-Z0-9\\-_]*) *:( *[^a-zA-Z].*)?$'
 
 
 def compute_metadata_changes(builder, old_meta, new_meta, indent):
