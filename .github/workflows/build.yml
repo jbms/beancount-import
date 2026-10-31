@@ -9,7 +9,9 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - 'ubuntu-latest'
+          # ubuntu-latest is now ubuntu-26.04, which has no Python 3.9 build for
+          # actions/setup-python.
+          - 'ubuntu-24.04'
           - 'windows-latest'
           - 'macos-latest'
         python-version:
