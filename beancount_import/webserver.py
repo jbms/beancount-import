@@ -527,9 +527,21 @@ class Application(tornado.web.Application):
             traceback.print_exc()
             pdb.post_mortem()
 
+    def stop_check_modification_observer(self):
+        """Stops and joins the file-watching threads.
+
+        Must be called before exit: some watchdog backends (e.g. Windows with
+        watchdog 7) start non-daemon threads, which otherwise keep the
+        interpreter from exiting.
+        """
+        observer = self.check_modification_observer
+        self.check_modification_observer = None
+        if observer is not None:
+            observer.stop()
+            observer.join()
+
     def start_check_modification_observer(self, loaded_reconciler):
-        if self.check_modification_observer is not None:
-            self.check_modification_observer.unschedule_all()
+        self.stop_check_modification_observer()
 
         self.check_modification_observer = watchdog.observers.Observer()
         handler = JournalModificationHandler(self)
@@ -754,7 +766,10 @@ def main(argv, **kwargs):
     print('Listening at %s' % server_url)
     if args.browser:
         webbrowser.open(server_url, new=1)
-    ioloop.start()
+    try:
+        ioloop.start()
+    finally:
+        app.stop_check_modification_observer()
 
 
 if __name__ == '__main__':
