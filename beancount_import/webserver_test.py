@@ -86,5 +86,8 @@ def test_check_modification(tmpdir: py.path.local):
         temp_dir=str(tmpdir),
     )
     snapshot_count = 5
-    for snapshot_number in range(snapshot_count):
-        tester.snapshot(snapshot_number)
+    try:
+        for snapshot_number in range(snapshot_count):
+            tester.snapshot(snapshot_number)
+    finally:
+        tester.application.stop_check_modification_observer()
