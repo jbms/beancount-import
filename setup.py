@@ -162,7 +162,7 @@ setuptools.setup(
     package_data={
         'beancount_import': ['frontend_dist/*'],
     },
-    python_requires='>=3.9',
+    python_requires='>=3.10',
     setup_requires=['setuptools_scm>=5.0.2'],
     install_requires=[
         'beancount>=2.3.5',

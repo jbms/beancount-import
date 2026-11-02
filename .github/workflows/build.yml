@@ -9,14 +9,14 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          # ubuntu-latest is now ubuntu-26.04, which has no Python 3.9 build for
-          # actions/setup-python.
+          # Pinned rather than ubuntu-latest (now ubuntu-26.04) so the Python
+          # builds available to actions/setup-python stay predictable.
           - 'ubuntu-24.04'
           - 'windows-latest'
           - 'macos-latest'
         python-version:
-          # beancount v3 requires Python >=3.9, matching setup.py python_requires.
-          - '3.9'
+          # Matches setup.py python_requires.  Python 3.9 reached end-of-life in
+          # October 2025 and is no longer supported.
           - '3.10'
           - '3.11'
           - '3.12'
@@ -53,7 +53,7 @@ jobs:
       # setuptools is no longer bundled with Python >=3.12, and installing
       # setuptools_scm explicitly avoids setup.py's legacy setup_requires egg
       # fetch (which breaks on modern setuptools).  Upgrade so the setuptools
-      # bundled with older Pythons (58.x on macOS/Windows 3.9) isn't kept
+      # bundled with older Pythons (58.x on macOS/Windows) isn't kept
       # alongside a setuptools_scm that requires a newer one.
       run: python -m pip install --upgrade tox wheel setuptools setuptools_scm
     - name: Show package version
@@ -64,7 +64,7 @@ jobs:
       run: python setup.py bdist_wheel
     - name: Upload wheels as artifacts
       uses: actions/upload-artifact@v4
-      if: ${{ runner.os == 'Linux' && matrix.python-version == '3.9' }}
+      if: ${{ runner.os == 'Linux' && matrix.python-version == '3.10' }}
       with:
         name: python-packages
         path: |
