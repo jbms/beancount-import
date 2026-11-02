@@ -9,9 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          # Pinned rather than ubuntu-latest (now ubuntu-26.04) so the Python
-          # builds available to actions/setup-python stay predictable.
-          - 'ubuntu-24.04'
+          - 'ubuntu-latest'
           - 'windows-latest'
           - 'macos-latest'
         python-version:
