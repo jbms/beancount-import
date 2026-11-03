@@ -288,7 +288,8 @@ class VenmoSource(Source):
             if t == 'Standard Transfer':
                 has_transfer = True
                 has_payment = False
-            elif t in ['Charge', 'Payment', 'Merchant Transaction']:
+            elif t in ['Charge', 'Payment', 'Merchant Transaction',
+                       'Refunded transaction']:
                 has_transfer = raw_txn[CSV_FUNDING_SOURCE_KEY] != 'Venmo balance' and raw_txn[CSV_DESTINATION_KEY] != 'Venmo balance'
                 has_payment = True
             else:
@@ -349,7 +350,12 @@ class VenmoSource(Source):
     def _make_transaction(self, raw_txn: RawTransaction, link: bool, is_transfer: bool):
         amount = original_amount = amount_parsing.parse_amount(raw_txn[CSV_AMOUNT_TOTAL_KEY])
         txn_type = raw_txn[CSV_TYPE_KEY]
-        is_payment_txn = txn_type in ['Payment', 'Charge', 'Merchant Transaction']
+        is_payment_txn = txn_type in [
+            'Payment', 'Charge', 'Merchant Transaction', 'Refunded transaction'
+        ]
+        # Money moves from From to To, as for a payment (a received refund
+        # comes From the merchant).
+        from_to = txn_type in ['Payment', 'Refunded transaction']
         if is_transfer and is_payment_txn:
             amount = -amount
         txn_time = parse_csv_date(raw_txn[CSV_DATETIME_KEY])
@@ -370,9 +376,9 @@ class VenmoSource(Source):
         payee = 'Venmo'
         if is_payment_txn:
             if original_amount.number > ZERO:
-                payee = assets_posting.meta[VENMO_PAYER_KEY] = raw_txn[CSV_FROM_KEY if txn_type == 'Payment' else CSV_TO_KEY]
+                payee = assets_posting.meta[VENMO_PAYER_KEY] = raw_txn[CSV_FROM_KEY if from_to else CSV_TO_KEY]
             else:
-                payee = assets_posting.meta[VENMO_PAYEE_KEY] = raw_txn[CSV_TO_KEY if txn_type == 'Payment' else CSV_FROM_KEY]
+                payee = assets_posting.meta[VENMO_PAYEE_KEY] = raw_txn[CSV_TO_KEY if from_to else CSV_FROM_KEY]
         if note:
             assets_posting.meta[VENMO_DESCRIPTION_KEY] = note
         if is_transfer:
