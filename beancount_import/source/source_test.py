@@ -8,10 +8,12 @@ import json
 
 import beancount.parser.parser
 import beancount.parser.printer
-from beancount.core.data import Posting, Transaction, Meta, Directive, Entries
+from beancount.core.amount import Amount
+from beancount.core.data import Posting, Transaction, Meta, Directive, Entries, Balance, Price
+from beancount.core.number import D
 
 from ..journal_editor import JournalEditor
-from . import load_source as _load_source, ImportResult, SourceResults, SourceSpec, InvalidSourceReference, PredictionInput, Source, invalid_source_reference_sort_key
+from . import load_source as _load_source, ImportResult, SourceResults, SourceSpec, InvalidSourceReference, PredictionInput, Source, invalid_source_reference_sort_key, get_latest_valid_balance_dates
 from .. import training
 from .. import test_util
 
@@ -197,3 +199,87 @@ def check_source_example(example_dir: str,
         replacements=replacements,
         write=write,
     )
+
+
+def _balance(account: str, day: int, number: str = '1') -> Balance:
+    return Balance(
+        meta={},
+        date=datetime.date(2024, 1, day),
+        account=account,
+        amount=Amount(D(number), 'USD'),
+        tolerance=None,
+        diff_amount=None)
+
+
+def _balance_result(account: str, day: int) -> ImportResult:
+    return ImportResult(
+        date=datetime.date(2024, 1, day),
+        entries=[_balance(account, day)],
+        info=None)
+
+
+def _kept_balance_days(results: SourceResults, account: str) -> List[int]:
+    return sorted(
+        entry.date.day for pending in results.pending
+        for entry in pending.entries
+        if isinstance(entry, Balance) and entry.account == account)
+
+
+def test_latest_valid_balance_dates_ignore_failing_assertions(tmpdir):
+    # The journal editor does not annotate failing balances; they are only
+    # reported as errors.
+    journal_path = os.path.join(str(tmpdir), 'journal.beancount')
+    with open(journal_path, 'w') as f:
+        f.write('2024-01-01 open Assets:A\n'
+                '2024-01-01 open Assets:B\n'
+                '2024-01-01 open Income:X\n'
+                '2024-01-02 * "Pay"\n'
+                '  Assets:A  10 USD\n'
+                '  Assets:B  5 USD\n'
+                '  Income:X\n'
+                '2024-01-10 balance Assets:A  10 USD\n'
+                '2024-01-20 balance Assets:A  99 USD\n'
+                '2024-01-15 balance Assets:B  7 USD\n')
+    editor = JournalEditor(journal_path)
+    assert get_latest_valid_balance_dates(editor.entries, editor.errors) == {
+        'Assets:A': datetime.date(2024, 1, 10),
+    }
+
+
+def test_superseded_balance_candidates_are_dropped():
+    results = SourceResults()
+    results.set_latest_valid_balance_dates(
+        get_latest_valid_balance_dates([
+            _balance('Assets:A', 10),
+            _balance('Assets:A', 20),
+        ]))
+    results.add_pending_entry(_balance_result('Assets:A', 15))  # older
+    results.add_pending_entry(_balance_result('Assets:A', 25))  # newer
+    results.add_pending_entry(_balance_result('Assets:A', 20))  # same date
+    results.add_pending_entries([
+        _balance_result('Assets:A', 12),  # older
+        _balance_result('Assets:C', 1),  # no existing balance
+    ])
+    assert _kept_balance_days(results, 'Assets:A') == [20, 25]
+    assert _kept_balance_days(results, 'Assets:C') == [1]
+
+
+def test_superseded_balances_kept_by_default():
+    results = SourceResults()
+    results.add_pending_entry(_balance_result('Assets:A', 1))
+    assert _kept_balance_days(results, 'Assets:A') == [1]
+
+
+def test_only_pure_balance_candidates_are_dropped():
+    results = SourceResults()
+    results.set_latest_valid_balance_dates(
+        {'Assets:A': datetime.date(2024, 1, 20)})
+    price = Price(meta={}, date=datetime.date(2024, 1, 5), currency='XYZ',
+                  amount=Amount(D('5'), 'USD'))
+    results.add_pending_entry(
+        ImportResult(date=price.date, entries=[price], info=None))
+    results.add_pending_entry(
+        ImportResult(date=price.date,
+                     entries=[_balance('Assets:A', 5), price],
+                     info=None))
+    assert len(results.pending) == 2

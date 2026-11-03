@@ -19,7 +19,7 @@ import beancount.parser.printer
 from . import training
 from . import matching
 from . import journal_editor
-from .source import ImportResult, load_source, SourceResults, Source, LogFunction, AssociatedData, InvalidSourceReference, invalid_source_reference_sort_key
+from .source import ImportResult, load_source, SourceResults, Source, LogFunction, AssociatedData, InvalidSourceReference, invalid_source_reference_sort_key, get_latest_valid_balance_dates
 from .posting_date import get_posting_date
 
 from .thread_helpers import call_in_new_thread
@@ -529,8 +529,16 @@ class LoadedReconciler(object):
         invalid_references = [
         ]  # type: List[Tuple[Source, InvalidSourceReference]]
         all_source_results = []  # type: List[SourceResults]
+        latest_valid_balance_dates = None
+        if self.reconciler.options.get('skip_superseded_balances'):
+            # Only the journal itself: ignored balances do not hold.
+            latest_valid_balance_dates = get_latest_valid_balance_dates(
+                self.editor.entries, self.editor.errors)
         for source in self.sources:
             source_results = SourceResults()
+            if latest_valid_balance_dates:
+                source_results.set_latest_valid_balance_dates(
+                    latest_valid_balance_dates)
             source.prepare(self.editor, source_results)
             for account in source_results.accounts:
                 self.account_source_map[account] = source

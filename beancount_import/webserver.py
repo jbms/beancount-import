@@ -747,6 +747,11 @@ def parse_arguments(argv, **kwargs):
         'Maximum amount by which the weights of two matching entries may differ.'
     )
     argparser.add_argument(
+        '--skip_superseded_balances',
+        action='store_true',
+        help='Do not offer balance entries older than the newest balance '
+        'assertion that holds in the journal for the same account.')
+    argparser.add_argument(
         '--classifier_cache',
         type=str,
         help=
