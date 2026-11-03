@@ -752,6 +752,13 @@ def parse_arguments(argv, **kwargs):
         help=
         'Cache file for automatic account prediction classifier.  This speeds up loading.'
     )
+    argparser.add_argument(
+        '--journal_cache',
+        type=str,
+        help=
+        'Cache file for the parsed journal, reused while no journal file or '
+        'plugin module has changed.  This speeds up loading.'
+    )
     argparser.set_defaults(**kwargs)
     return argparser.parse_args(argv)
 
