@@ -550,3 +550,123 @@ def test_remove_ignored(tmpdir):
   Assets:Account-B
 """)
     check_journal_entries(editor)
+
+
+def test_journal_cache(tmpdir, monkeypatch):
+    journal_path = os.path.join(str(tmpdir), 'journal.beancount')
+    included_path = os.path.join(str(tmpdir), 'included.beancount')
+    cache_path = os.path.join(str(tmpdir), 'cache.pickle')
+    with open(journal_path, 'w') as f:
+        f.write('include "included.beancount"\n'
+                '2015-01-01 open Assets:Checking\n'
+                '2015-01-01 open Expenses:Food\n'
+                '2015-01-01 custom "budget" Expenses:Food "monthly" 10 USD\n')
+    with open(included_path, 'w') as f:
+        f.write('2015-03-01 * "Store"\n'
+                '  Assets:Checking  -10 USD\n'
+                '  Expenses:Food\n')
+
+    def state(editor):
+        return ([beancount.parser.printer.format_entry(e)
+                 for e in editor.entries],
+                sorted(editor.accounts), sorted(editor.journal_filenames))
+
+    loads = []
+    real_load_file = journal_editor.load_file
+    monkeypatch.setattr(journal_editor, 'load_file',
+                        lambda *a, **kw: loads.append(a) or real_load_file(*a, **kw))
+
+    uncached = state(journal_editor.JournalEditor(journal_path))
+    assert state(journal_editor.JournalEditor(
+        journal_path, cache_path=cache_path)) == uncached
+    assert len(loads) == 2
+
+    # Unchanged files: loaded from the cache.
+    cached_editor = journal_editor.JournalEditor(journal_path,
+                                                 cache_path=cache_path)
+    assert len(loads) == 2
+    assert state(cached_editor) == uncached
+    assert cached_editor.check_any_journal_modification() == set()
+
+    # A changed included file is loaded again.
+    with open(included_path, 'w') as f:
+        f.write('2015-03-01 * "Store"\n'
+                '  Assets:Checking  -12 USD\n'
+                '  Expenses:Food\n')
+    st = os.stat(included_path)
+    os.utime(included_path, (st.st_atime, st.st_mtime + 10))
+    reloaded = journal_editor.JournalEditor(journal_path,
+                                            cache_path=cache_path)
+    assert len(loads) == 3
+    assert '-12 USD' in state(reloaded)[0][-1]
+
+
+def test_journal_cache_plugin_change(tmpdir, monkeypatch):
+    # The cache is invalidated when a plugin module's source changes, even if
+    # the plugin is only importable once the journal has been loaded.
+    plugin_dir = tmpdir.mkdir('plugins')
+    plugin_path = os.path.join(str(plugin_dir), 'my_test_plugin.py')
+    with open(plugin_path, 'w') as f:
+        f.write('__plugins__ = ["plugin"]\n'
+                'def plugin(entries, options_map):\n'
+                '    return entries, []\n')
+    monkeypatch.syspath_prepend(str(plugin_dir))
+    journal_path = os.path.join(str(tmpdir), 'journal.beancount')
+    cache_path = os.path.join(str(tmpdir), 'cache.pickle')
+    with open(journal_path, 'w') as f:
+        f.write('plugin "my_test_plugin"\n'
+                '2015-01-01 open Assets:Checking\n')
+
+    loads = []
+    real_load_file = journal_editor.load_file
+    monkeypatch.setattr(journal_editor, 'load_file',
+                        lambda *a, **kw: loads.append(a) or real_load_file(*a, **kw))
+    journal_editor.JournalEditor(journal_path, cache_path=cache_path)
+    journal_editor.JournalEditor(journal_path, cache_path=cache_path)
+    assert len(loads) == 1
+
+    st = os.stat(plugin_path)
+    os.utime(plugin_path, (st.st_atime, st.st_mtime + 10))
+    journal_editor.JournalEditor(journal_path, cache_path=cache_path)
+    assert len(loads) == 2
+
+
+def test_journal_cache_glob_include(tmpdir, monkeypatch):
+    # A new file matched by a glob include changes no file the cache
+    # recorded.
+    statements = tmpdir.mkdir('statements')
+    journal_path = os.path.join(str(tmpdir), 'journal.beancount')
+    cache_path = os.path.join(str(tmpdir), 'cache.pickle')
+    with open(journal_path, 'w') as f:
+        f.write('include "statements/*.beancount"\n'
+                '2015-01-01 open Assets:Checking\n'
+                '2015-01-01 open Expenses:Food\n')
+    statement = ('2015-03-0%d * "Store"\n'
+                 '  Assets:Checking  -10 USD\n'
+                 '  Expenses:Food\n')
+    statements.join('a.beancount').write(statement % 1)
+    first = journal_editor.JournalEditor(journal_path, cache_path=cache_path)
+    assert len(first.entries) == 3
+
+    statements.join('b.beancount').write(statement % 2)
+    second = journal_editor.JournalEditor(journal_path, cache_path=cache_path)
+    assert len(second.entries) == 4
+
+
+def test_journal_cache_restores_all_attributes(tmpdir):
+    # Everything a load sets must be cached (see _CACHED_ATTRS), or a cached
+    # editor silently lacks it.
+    journal_path = os.path.join(str(tmpdir), 'journal.beancount')
+    ignored_path = os.path.join(str(tmpdir), 'ignored.beancount')
+    cache_path = os.path.join(str(tmpdir), 'cache.pickle')
+    with open(journal_path, 'w') as f:
+        f.write('2015-01-01 open Assets:Checking\n')
+    with open(ignored_path, 'w') as f:
+        f.write('')
+    for ignored in (None, ignored_path):
+        loaded = journal_editor.JournalEditor(journal_path, ignored,
+                                              cache_path=cache_path)
+        cached = journal_editor.JournalEditor(journal_path, ignored,
+                                              cache_path=cache_path)
+        assert cached.journal_load_time == loaded.journal_load_time
+        assert sorted(vars(cached)) == sorted(vars(loaded))

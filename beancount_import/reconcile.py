@@ -375,8 +375,10 @@ class LoadedReconciler(object):
         # garbage before freezing again.
         gc.unfreeze()
         gc.collect()
-        self.editor = journal_editor.JournalEditor(reconciler.journal_path,
-                                                   reconciler.ignore_path)
+        self.editor = journal_editor.JournalEditor(
+            reconciler.journal_path,
+            reconciler.ignore_path,
+            cache_path=reconciler.options.get('journal_cache'))
         # The journal stays alive for the whole load, but each full
         # collection would still traverse all of it.  Loading sources
         # (e.g. parsing OFX files) allocates millions of short-lived
