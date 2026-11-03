@@ -307,7 +307,7 @@ class VenmoSource(Source):
                             date=txn.date, entries=[txn], info=get_info(raw_txn)))
         for raw_balance in self.raw_balances:
             start_amount_text = raw_balance[BALANCE_START_BALANCE_KEY]
-            if start_amount_text != 'unknown':
+            if start_amount_text not in ('unknown', ''):
                 start_amount = amount_parsing.parse_amount(start_amount_text)
                 start_date = parse_balance_date(raw_balance[BALANCE_START_DATE_KEY])
                 results.add_pending_entry(
@@ -326,7 +326,7 @@ class VenmoSource(Source):
                         info=get_info(raw_balance),
                     ))
             end_amount_text = raw_balance[BALANCE_END_BALANCE_KEY]
-            if end_amount_text != 'unknown':
+            if end_amount_text not in ('unknown', ''):
                 end_amount = amount_parsing.parse_amount(end_amount_text)
                 end_date = parse_balance_date(raw_balance[BALANCE_END_DATE_KEY]) + datetime.timedelta(days=1)
                 results.add_pending_entry(
