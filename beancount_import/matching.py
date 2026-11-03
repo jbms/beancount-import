@@ -914,9 +914,17 @@ def _get_uncleared_aggregate_posting_candidates(
         for subset_size in range(
                 2, min(len(posting_list) + 1, max_subset_size + 1)):
             potential_results = [] # type: List[Posting]
+            # A subset size whose candidates would push the total over
+            # MAX_AGGREGATE_POSTINGS is discarded whole, so stop generating
+            # as soon as the limit is crossed instead of enumerating every
+            # combination first (C(46, 4) is ~163k for a 46-item invoice).
+            exceeded = False
             for subset in itertools.combinations(posting_list, subset_size):
                 add_subset(potential_results, account, currency, subset)
-            if len(results) + len(potential_results) > MAX_AGGREGATE_POSTINGS:
+                if len(results) + len(potential_results) > MAX_AGGREGATE_POSTINGS:
+                    exceeded = True
+                    break
+            if exceeded:
                 break
             results.extend(potential_results)
 
