@@ -1,8 +1,8 @@
-from typing import List
-import functools
+from typing import Dict, List
+import asyncio
 import io
 import os
-import shutil
+import time
 
 import py
 import tornado.ioloop
@@ -27,11 +27,29 @@ def _encode_transaction_entries(
 
 
 class WebserverGoldenTester:
+    """Drives a webserver through a sequence of journal snapshots.
+
+    Each snapshot directory under `golden_directory` holds the journal files
+    to copy into `temp_dir`; `transactions.beancount` (and, optionally,
+    `additional/transactions.beancount`) also list the FIXME transactions the
+    reconciler is expected to report as pending once it has reloaded.
+    """
+
+    # Upper bound on how long the file watcher may take to notice a change
+    # and finish reloading the journal.
+    reload_timeout_seconds = 10.0
+    poll_interval_seconds = 0.05
+
     def __init__(self,
                  golden_directory: str,
-                 temp_dir: str):
+                 temp_dir: str,
+                 initial_snapshot: int = 0):
         self.golden_directory = golden_directory
         self.temp_dir = temp_dir
+        self._written_contents = {}  # type: Dict[str, bytes]
+        # Copy the initial journal before the application starts loading it,
+        # so the first load cannot race with the copy.
+        self._copy_snapshot(str(initial_snapshot))
         self.ioloop = tornado.ioloop.IOLoop.instance()
         self.application = webserver.Application(
             webserver.parse_arguments(
@@ -41,43 +59,85 @@ class WebserverGoldenTester:
                 default_output=os.path.join(temp_dir, 'transactions.beancount')),
             ioloop=self.ioloop)
 
-    def _check_state(self, snapshot_name: str):
-        loaded_reconciler = self.application.reconciler.loaded_future.result()
-        golden = os.path.join(self.golden_directory, snapshot_name)
+    def _copy_snapshot(self, snapshot_name: str):
+        """Copies the snapshot's files into `temp_dir`.
 
-        test_util.check_golden_contents(
-            path=os.path.join(self.temp_dir, 'transactions.beancount'),
-            expected_contents=_encode_transaction_entries(
-                loaded_reconciler.pending_data, additional=False),
-        )
-        if os.path.exists(os.path.join(self.temp_dir, 'additional', 'transactions.beancount')):
-            test_util.check_golden_contents(
-                path=os.path.join(self.temp_dir, 'additional', 'transactions.beancount'),
-                expected_contents=_encode_transaction_entries(
-                    loaded_reconciler.pending_data, additional=True),
-            )
-
-    def snapshot(self, snapshot_number):
-        snapshot_name = str(snapshot_number)
+        Only files whose contents changed are written, so that each step
+        exercises the watch on the directory that actually changed. The
+        comparison uses the contents last written rather than re-reading
+        `temp_dir`, since reading a watched file also produces watcher events.
+        """
         golden = os.path.join(self.golden_directory, snapshot_name)
-        for name in os.listdir(golden):
-            if name == 'additional':
+        for subdir in ('', 'additional'):
+            golden_dir = os.path.join(golden, subdir)
+            os.makedirs(os.path.join(self.temp_dir, subdir), exist_ok=True)
+            if not os.path.isdir(golden_dir):
                 continue
-            shutil.copyfile(
-                os.path.join(golden, name), os.path.join(self.temp_dir, name))
+            for name in os.listdir(golden_dir):
+                source = os.path.join(golden_dir, name)
+                if os.path.isdir(source):
+                    continue
+                with open(source, 'rb') as f:
+                    contents = f.read()
+                target = os.path.join(self.temp_dir, subdir, name)
+                if self._written_contents.get(target) == contents:
+                    continue
+                with open(target, 'wb') as f:
+                    f.write(contents)
+                self._written_contents[target] = contents
 
-        additional_golden_path = os.path.join(golden, 'additional')
-        additional_temp_path = os.path.join(self.temp_dir, 'additional')
-        os.makedirs(additional_temp_path, exist_ok=True)
-        if os.path.exists(additional_golden_path):
-            for name in os.listdir(additional_golden_path):
-                shutil.copyfile(
-                    os.path.join(additional_golden_path, name),
-                    os.path.join(additional_temp_path, name))
+    def _expected_pending(self, snapshot_name: str) -> Dict[str, str]:
+        golden = os.path.join(self.golden_directory, snapshot_name)
+        expected = {}
+        for key, path in (('main', 'transactions.beancount'),
+                          ('additional',
+                           os.path.join('additional', 'transactions.beancount'))):
+            full_path = os.path.join(golden, path)
+            contents = ''
+            if os.path.exists(full_path):
+                with open(full_path, 'r', encoding='utf-8') as f:
+                    contents = f.read()
+            expected[key] = contents.strip()
+        return expected
 
-        self.ioloop.add_future(self.application.reconciler.loaded_future,
-                               functools.partial(self._check_state, snapshot_name))
-        self.ioloop.run_sync(lambda: self.application.reconciler.loaded_future)
+    @staticmethod
+    def _actual_pending(
+            loaded_reconciler: reconcile.LoadedReconciler) -> Dict[str, str]:
+        return {
+            'main': _encode_transaction_entries(
+                loaded_reconciler.pending_data, additional=False).strip(),
+            'additional': _encode_transaction_entries(
+                loaded_reconciler.pending_data, additional=True).strip(),
+        }
+
+    def _wait_for_state(self, snapshot_name: str):
+        """Runs the IOLoop until the reconciler reports the snapshot's pending
+        transactions, failing if that does not happen within the timeout."""
+        expected = self._expected_pending(snapshot_name)
+        reconciler = self.application.reconciler
+
+        async def wait():
+            deadline = time.monotonic() + self.reload_timeout_seconds
+            while True:
+                future = reconciler.loaded_future
+                loaded_reconciler = await asyncio.wrap_future(future)
+                # Only compare once no newer reload has been started.
+                if future is reconciler.loaded_future:
+                    actual = self._actual_pending(loaded_reconciler)
+                    if actual == expected:
+                        return
+                    if time.monotonic() > deadline:
+                        assert actual == expected, (
+                            'snapshot %s not reloaded within %ss' %
+                            (snapshot_name, self.reload_timeout_seconds))
+                await asyncio.sleep(self.poll_interval_seconds)
+
+        self.ioloop.run_sync(wait)
+
+    def snapshot(self, snapshot_number: int):
+        snapshot_name = str(snapshot_number)
+        self._copy_snapshot(snapshot_name)
+        self._wait_for_state(snapshot_name)
 
 
 def test_check_modification(tmpdir: py.path.local):
