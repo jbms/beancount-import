@@ -73,6 +73,29 @@
     paypal_counterparty: "Bank Account"
 
 ;; date: 2013-04-29
+;; info: {"filename": "<testdata>/7PRX2QV4KD9W3MZ5T.json", "type": "application/json"}
+
+; features: [
+;             {
+;               "amount": "-45.10 USD",
+;               "date": "2013-04-29",
+;               "key_value_pairs": {
+;                 "paypal_counterparty": [
+;                   "Example Craft Supplies"
+;                 ]
+;               },
+;               "source_account": ""
+;             }
+;           ]
+2013-04-29 * "Example Craft Supplies" "Payment Received" ^paypal.7PRX2QV4KD9W3MZ5T
+  associated_data0: "{\"description\": \"Paypal transaction\", \"link\": \"paypal.7PRX2QV4KD9W3MZ5T\", \"path\": \"<testdata>/7PRX2QV4KD9W3MZ5T.html\", \"type\": \"text/html\"}"
+  Expenses:FIXME:A  -45.10 USD
+    paypal_counterparty: "Example Craft Supplies"
+  Assets:Paypal      45.10 USD
+    date: 2013-04-29
+    paypal_transaction_id: "7PRX2QV4KD9W3MZ5T"
+
+;; date: 2013-04-29
 ;; info: {"filename": "<testdata>/LZ63BPLO2CIA3MUIG.json", "type": "application/json"}
 
 ; features: [
