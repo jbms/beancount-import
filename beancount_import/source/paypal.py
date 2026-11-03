@@ -620,7 +620,8 @@ class PaypalSource(LinkBasedSource, Source):
         funding_source_inventory = SimpleInventory()
         funding_source_inventory += funding_source_amount
         funding_source_account = FIXME_ACCOUNT
-        if transaction_type_enum in ('SEND_MONEY_RECEIVED', 'EBAY_SALE'):
+        if transaction_type_enum in ('SEND_MONEY_RECEIVED', 'PAYMENT_RECEIVED',
+                                     'EBAY_SALE'):
             funding_source_account = self.assets_account
             funding_source_metadata = assets_account_metadata
 

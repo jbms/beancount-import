@@ -1,0 +1,54 @@
+{
+  "fptiTag": "moneyrec",
+  "counterparty": {
+    "detailsCounterpartyText": "Example Craft Supplies",
+    "name": "Example Craft Supplies",
+    "email": "",
+    "url": "",
+    "isBusiness": false
+  },
+  "links": {
+    "reportDispute": {
+      "target": "_blank",
+      "linkUrl": "/cgi-bin/webscr?cmd=_comres_flow&trans_id=7PRX2QV4KD9W3MZ5T&select_dispute_type=1"
+    },
+    "sellerProtectionPolicy": {
+      "target": "_blank",
+      "linkUrl": "/webapps/mpp/ua/useragreement-full#11"
+    }
+  },
+  "showClassicDetails": false,
+  "viewContext": "activity",
+  "displayStatus": "",
+  "transactionTypeEnum": "PAYMENT_RECEIVED",
+  "transactionType": "Payment Received",
+  "txnTypeServiceKey": "PAYMENT",
+  "status": "COMPLETED",
+  "date": "April 29, 2013",
+  "creationTimeBucket": "MoreThan3Months",
+  "updateTimeBucket": "MoreThan3Months",
+  "isCredit": true,
+  "isBuyer": false,
+  "isSeller": true,
+  "transactionId": "7PRX2QV4KD9W3MZ5T",
+  "amount": {
+    "grossAmount": "$45.10",
+    "netAmount": "$45.10",
+    "fullPageNetAmount": "$45.10",
+    "feeAmount": "$0.00",
+    "grossExceedsNet": false,
+    "isZeroFee": true,
+    "feeLabel": "Fee"
+  },
+  "flags": {
+    "isWinSMBEligible": true,
+    "isP2PPersonal": true,
+    "showPaymentDetails": true,
+    "hasActions": true
+  },
+  "printDetailsLink": {
+    "linkUrl": "/myaccount/transactions/print-details/7PRX2QV4KD9W3MZ5T",
+    "target": "_blank"
+  },
+  "partner": {}
+}
