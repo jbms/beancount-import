@@ -1,5 +1,6 @@
 import collections
 import datetime
+import gc
 import re
 from typing import List, Optional, Union, Callable, Dict, Mapping, Tuple, Any, Iterable, Set, NamedTuple
 import argparse
@@ -369,8 +370,19 @@ class LoadedReconciler(object):
     def __init__(self, reconciler, sources=None, classifier=None) -> None:
         self.reconciler = reconciler
         reconciler.log_status('Loading journal')
+        # Objects frozen by a previous load (see below) are never collected,
+        # so on reload unfreeze them and collect the previous load's cyclic
+        # garbage before freezing again.
+        gc.unfreeze()
+        gc.collect()
         self.editor = journal_editor.JournalEditor(reconciler.journal_path,
                                                    reconciler.ignore_path)
+        # The journal stays alive for the whole load, but each full
+        # collection would still traverse all of it.  Loading sources
+        # (e.g. parsing OFX files) allocates millions of short-lived
+        # objects and triggers many collections, so exclude the journal
+        # from them.
+        gc.freeze()
         self.errors = [('error', e[1], e[0]) for e in self.editor.errors]
 
         if sources is not None:
