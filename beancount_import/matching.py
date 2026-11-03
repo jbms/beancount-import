@@ -252,6 +252,15 @@ class PostingDatabase(object):
         self._keyed_postings = {
         }  # type: Dict[DatabaseMetadataKey, DatabaseValues]
         self.metadata_keys = metadata_keys
+        # Transactions whose aggregate postings (see
+        # `get_aggregate_posting_candidates`) have not been added yet, keyed
+        # by transaction date and then by id.  Aggregate postings carry no
+        # metadata, so they are dated by their transaction, and a lookup at
+        # date D can only see those of transactions within fuzzy_match_days
+        # of D.  They are therefore added on the first lookup near their
+        # date, which in a large journal is most of them never.
+        self._unexpanded = {
+        }  # type: Dict[datetime.date, Dict[int, Transaction]]
 
     def get_fuzzy_date_range(self, orig_date: datetime.date):
         for day_offset in range(-self.fuzzy_match_days,
@@ -301,7 +310,19 @@ class PostingDatabase(object):
             self._date_currency[dc].append(sp)
             self._date_currency_dirty[dc] = True
 
+    def _expand_aggregates(self, date: datetime.date) -> None:
+        for d in self.get_fuzzy_date_range(date):
+            transactions = self._unexpanded.pop(d, None)
+            if not transactions:
+                continue
+            for transaction in transactions.values():
+                for mp in _get_aggregate_matchable_postings(
+                        transaction.postings, self.is_cleared):
+                    self.add_posting(transaction, mp)
+
     def get_date_currency_postings(self, key: DateCurrencyKey) -> List[SearchPosting]:
+        if self._unexpanded:
+            self._expand_aggregates(key[0])
         if self._date_currency_dirty[key]:
             self._date_currency[key].sort()
             self._date_currency_dirty[key] = False
@@ -374,9 +395,12 @@ class PostingDatabase(object):
                         yield i
 
     def add_transaction(self, transaction: Transaction):
-        for mp in get_matchable_postings_from_transaction(
-                transaction, self.is_cleared):
-            self.add_posting(transaction, mp)
+        for p, weight in get_weighted_postings(transaction.postings):
+            if weight is not None:
+                self.add_posting(transaction, MatchablePosting(p, weight, (p, )))
+        if _may_have_aggregate_postings(transaction.postings):
+            self._unexpanded.setdefault(transaction.date,
+                                        {})[id(transaction)] = transaction
 
     def remove_posting(self, entry: Transaction, mp: MatchablePosting):
         source_posting_ids = _entry_and_posting_ids_key(entry, mp)
@@ -396,6 +420,14 @@ class PostingDatabase(object):
             self._date_currency[dc].remove(sp)
 
     def remove_transaction(self, transaction: Transaction):
+        unexpanded = self._unexpanded.get(transaction.date)
+        if unexpanded and unexpanded.pop(id(transaction), None) is not None:
+            # Its aggregate postings were never added.
+            for p, weight in get_weighted_postings(transaction.postings):
+                if weight is not None:
+                    self.remove_posting(transaction,
+                                        MatchablePosting(p, weight, (p, )))
+            return
         for mp in get_matchable_postings_from_transaction(
                 transaction, self.is_cleared):
             self.remove_posting(transaction, mp)
@@ -957,9 +989,31 @@ def get_matchable_postings(
         if weight is None:
             continue
         yield MatchablePosting(p, weight, (p, ))
-    for p, all_ps in get_aggregate_posting_candidates(
-        (p for p, _ in weighted_postings), is_cleared):
+    yield from _get_aggregate_matchable_postings(
+        (p for p, _ in weighted_postings), is_cleared)
+
+
+def _get_aggregate_matchable_postings(
+        postings: Iterable[Posting],
+        is_cleared: IsClearedFunction) -> Iterable[MatchablePosting]:
+    for p, all_ps in get_aggregate_posting_candidates(postings, is_cleared):
         yield MatchablePosting(p, p.units, all_ps)
+
+
+def _may_have_aggregate_postings(postings: Sequence[Posting]) -> bool:
+    """Cheap necessary condition for `get_aggregate_posting_candidates` to
+    return anything: two postings eligible for aggregation that share an
+    account and currency."""
+    seen = set()
+    for p in postings:
+        if (p.price is not None or p.cost is not None or p.units is None or
+                p.units is MISSING):
+            continue
+        key = (p.account, p.units.currency)
+        if key in seen:
+            return True
+        seen.add(key)
+    return False
 
 
 def get_matchable_posting_groups(
