@@ -20,7 +20,9 @@ each other and with existing transactions.
   automatically avoid duplicates.
 
 - Automatically predicts unknown legs of imported transactions based on a
-  learned classifier (currently decision tree-based).
+  learned classifier: a decision tree by default, or, with
+  `--classifier nearest_neighbor`, a nearest-neighbor classifier that learns
+  from each accepted transaction immediately.
 
 - Sophisticated transaction matching/merging system that can semi-automatically
   combine and reconcile both manually entered and imported transactions from

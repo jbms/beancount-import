@@ -52,10 +52,10 @@ def get_features(example: PredictionInput) -> Dict[str, bool]:
 
 class TrainingExamples(object):
     def __init__(self):
-        self.training_examples = []
+        self.training_examples = []  # type: List[Tuple[PredictionInput, str]]
 
     def add(self, example: PredictionInput, target_account: str):
-        self.training_examples.append((get_features(example), target_account))
+        self.training_examples.append((example, target_account))
 
 
 class MockTrainingExamples(object):
@@ -210,6 +210,22 @@ class FeatureExtractor(object):
                         date=get_posting_date(entry, posting),
                         amount=posting.units),
                     target_account=target_account)
+
+    def get_example_kind(self, example: PredictionInput) -> Tuple[str, ...]:
+        """Identifies which kind of posting an example describes.
+
+        The nearest-neighbor classifier only compares examples of the same
+        kind, so that e.g. an Amazon item is never predicted from the account
+        of an Amazon credit card payment merely because both share
+        `amazon_account`.  Indirect examples (predicted from the opposite
+        posting's source account) form one kind; direct examples are
+        distinguished by which posting-level metadata keys they have.
+        """
+        if example.source_account:
+            return ('indirect', )
+        return tuple(
+            sorted(k for k in example.key_value_pairs
+                   if k in self.example_posting_key_extractors))
 
     def extract_unknown_account_group_features(
             self, transaction: Transaction) -> List[Optional[PredictionInput]]:
