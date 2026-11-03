@@ -247,8 +247,16 @@ class PostingDatabase(object):
         self.fuzzy_match_days = fuzzy_match_days
         self.fuzzy_match_amount = fuzzy_match_amount
         self.is_cleared = is_cleared
-        self._date_currency = collections.defaultdict(list) # type: Dict[DateCurrencyKey, List[SearchPosting]]
-        self._date_currency_dirty = collections.defaultdict(bool) # type: Dict[DateCurrencyKey, bool]
+        # Postings by their own (date, currency).
+        self._exact_date_currency = collections.defaultdict(
+            list)  # type: Dict[DateCurrencyKey, List[SearchPosting]]
+        # Postings within fuzzy_match_days of a (date, currency), sorted by
+        # number.  Built from `_exact_date_currency` on the first lookup of
+        # that key: a large journal is only ever searched near the dates of
+        # pending entries.
+        self._date_currency = {
+        }  # type: Dict[DateCurrencyKey, List[SearchPosting]]
+        self._date_currency_dirty = set()  # type: Set[DateCurrencyKey]
         self._keyed_postings = {
         }  # type: Dict[DatabaseMetadataKey, DatabaseValues]
         self.metadata_keys = metadata_keys
@@ -306,9 +314,14 @@ class PostingDatabase(object):
             return
 
         sp = self._search_posting(source_posting_ids, entry, mp)
-        for dc in self.fuzz_date_currency_key(self._date_currency_key(entry, mp)):
-            self._date_currency[dc].append(sp)
-            self._date_currency_dirty[dc] = True
+        key = self._date_currency_key(entry, mp)
+        self._exact_date_currency[key].append(sp)
+        if self._date_currency:
+            for dc in self.fuzz_date_currency_key(key):
+                postings = self._date_currency.get(dc)
+                if postings is not None:
+                    postings.append(sp)
+                    self._date_currency_dirty.add(dc)
 
     def _expand_aggregates(self, date: datetime.date) -> None:
         for d in self.get_fuzzy_date_range(date):
@@ -323,10 +336,17 @@ class PostingDatabase(object):
     def get_date_currency_postings(self, key: DateCurrencyKey) -> List[SearchPosting]:
         if self._unexpanded:
             self._expand_aggregates(key[0])
-        if self._date_currency_dirty[key]:
-            self._date_currency[key].sort()
-            self._date_currency_dirty[key] = False
-        return self._date_currency[key]
+        postings = self._date_currency.get(key)
+        if postings is None:
+            postings = []
+            for dc in self.fuzz_date_currency_key(key):
+                postings.extend(self._exact_date_currency.get(dc, ()))
+            postings.sort()
+            self._date_currency[key] = postings
+        elif key in self._date_currency_dirty:
+            postings.sort()
+            self._date_currency_dirty.discard(key)
+        return postings
 
     def search_postings(self,
                         entry: Transaction,
@@ -416,8 +436,12 @@ class PostingDatabase(object):
                     group.pop(source_posting_ids, None)
 
         sp = self._search_posting(source_posting_ids, entry, mp)
-        for dc in self.fuzz_date_currency_key(self._date_currency_key(entry, mp)):
-            self._date_currency[dc].remove(sp)
+        key = self._date_currency_key(entry, mp)
+        self._exact_date_currency[key].remove(sp)
+        for dc in self.fuzz_date_currency_key(key):
+            postings = self._date_currency.get(dc)
+            if postings is not None:
+                postings.remove(sp)
 
     def remove_transaction(self, transaction: Transaction):
         unexpanded = self._unexpanded.get(transaction.date)
