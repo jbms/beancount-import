@@ -334,6 +334,23 @@ def _restore_custom_account_values(entries: Entries) -> Entries:
     return result
 
 
+@contextlib.contextmanager
+def _gc_paused():
+    """Pauses cyclic garbage collection.
+
+    Loading (or unpickling) a journal allocates millions of long-lived
+    objects, which trigger many full collections that each traverse
+    everything allocated so far and find nothing to free.
+    """
+    was_enabled = gc.isenabled()
+    gc.disable()
+    try:
+        yield
+    finally:
+        if was_enabled:
+            gc.enable()
+
+
 def _journal_cache_key(journal_path: str, ignored_path: Optional[str]):
     return (_JOURNAL_CACHE_VERSION, beancount.__version__, journal_path,
             ignored_path)
@@ -345,16 +362,8 @@ def _read_journal_cache(cache_path: str, journal_path: str,
     from (and every plugin module) is unchanged and every glob `include`
     still matches the same files."""
     try:
-        with open(cache_path, 'rb') as f:
-            # Unpickling allocates many objects; collections during it are
-            # wasted work.
-            gc_was_enabled = gc.isenabled()
-            gc.disable()
-            try:
-                data = pickle.load(f)
-            finally:
-                if gc_was_enabled:
-                    gc.enable()
+        with open(cache_path, 'rb') as f, _gc_paused():
+            data = pickle.load(f)
     except Exception:
         return None
     if not isinstance(data, dict) or data.get('key') != _journal_cache_key(
@@ -385,7 +394,7 @@ def _write_journal_cache(cache_path: str, editor: 'JournalEditor') -> None:
         state=state)
     try:
         with atomicwrites.atomic_write(cache_path, mode='wb',
-                                       overwrite=True) as f:
+                                       overwrite=True) as f, _gc_paused():
             pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
     except Exception as e:
         print('Failed to write journal cache %s: %s' % (cache_path, e))
@@ -415,7 +424,8 @@ class JournalEditor(object):
             if state is not None:
                 self.__dict__.update(state)
                 return
-        self._load(journal_path, ignored_path)
+        with _gc_paused():
+            self._load(journal_path, ignored_path)
         if cache_path is not None:
             _write_journal_cache(cache_path, self)
 
