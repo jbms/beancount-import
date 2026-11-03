@@ -478,7 +478,11 @@ class Application(tornado.web.Application):
                 except:
                     traceback.print_exc()
 
-    def check_modification(self):
+    def check_modification(self) -> bool:
+        """Reloads the journal if it changed; returns whether it did.
+
+        Does nothing while the journal is loading;
+        `_handle_reconciler_loaded` checks again once it is loaded."""
         if self.reconciler.loaded_future.done():
             loaded_reconciler = self.reconciler.loaded_future.result()
             modified_filenames = loaded_reconciler.editor.check_any_journal_modification(
@@ -487,6 +491,8 @@ class Application(tornado.web.Application):
                 self._notify_modified_files(list(modified_filenames))
                 self.reconciler.reload_journal()
                 self.reset()
+                return True
+        return False
 
     def reset(self):
         self.next_candidates = None
@@ -522,6 +528,10 @@ class Application(tornado.web.Application):
             self.current_errors = loaded_reconciler.errors
             self.current_invalid = loaded_reconciler.invalid_references
             self.start_check_modification_observer(loaded_reconciler)
+            # Files modified while loading were not picked up (see
+            # `check_modification`).
+            if self.check_modification():
+                return
             self.get_next_candidates(new_pending=True)
         except:
             traceback.print_exc()

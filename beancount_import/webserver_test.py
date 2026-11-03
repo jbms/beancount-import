@@ -5,6 +5,7 @@ import os
 import time
 
 import py
+import tornado.gen
 import tornado.ioloop
 
 from . import reconcile
@@ -151,3 +152,69 @@ def test_check_modification(tmpdir: py.path.local):
             tester.snapshot(snapshot_number)
     finally:
         tester.application.stop_check_modification_observer()
+
+
+def test_modification_during_reload_is_not_lost(tmpdir: py.path.local,
+                                                monkeypatch):
+    """A journal edit saved while the journal is (re)loading must still be
+    picked up once loading finishes."""
+    temp_dir = str(tmpdir)
+    journal_path = os.path.join(temp_dir, 'journal.beancount')
+
+    def write_journal(*narrations: str, mtime_offset: float):
+        with open(journal_path, 'w') as f:
+            f.write('2020-01-01 open Assets:Cash\n'
+                    '2020-01-01 open Expenses:Misc\n')
+            for narration in narrations:
+                f.write('\n2020-01-02 * "%s"\n'
+                        '  Assets:Cash  -1 USD\n'
+                        '  Expenses:Misc  1 USD\n' % narration)
+        # Ensure each version is seen as modified, whatever the file system's
+        # timestamp resolution.
+        os.utime(journal_path, (os.stat(journal_path).st_mtime + mtime_offset,
+                                os.stat(journal_path).st_mtime + mtime_offset))
+
+    write_journal(mtime_offset=-100)
+    for name in ('ignore.beancount', 'transactions.beancount'):
+        open(os.path.join(temp_dir, name), 'w').close()
+
+    ioloop = tornado.ioloop.IOLoop.instance()
+    application = webserver.Application(
+        webserver.parse_arguments(
+            argv=[],
+            journal_input=journal_path,
+            ignored_journal=os.path.join(temp_dir, 'ignore.beancount'),
+            default_output=os.path.join(temp_dir, 'transactions.beancount')),
+        ioloop=ioloop)
+    # File system events are simulated by calling check_modification.
+    monkeypatch.setattr(application, 'start_check_modification_observer',
+                        lambda loaded_reconciler: None)
+
+    def wait_until_loaded():
+        while True:
+            future = application.reconciler.loaded_future
+            ioloop.run_sync(lambda: future)
+            # Let _handle_reconciler_loaded run; it may start another load.
+            ioloop.run_sync(lambda: tornado.gen.sleep(0.01))
+            if application.reconciler.loaded_future is future:
+                return future.result()
+
+    wait_until_loaded()
+
+    original_init = reconcile.LoadedReconciler.__init__
+
+    def init_then_edit(self, *args, **kwargs):
+        original_init(self, *args, **kwargs)
+        if not getattr(init_then_edit, 'edited', False):
+            init_then_edit.edited = True
+            # Saved after this load read the journal, but before it finished.
+            write_journal('first', 'second', mtime_offset=-50)
+            application.check_modification()
+
+    monkeypatch.setattr(reconcile.LoadedReconciler, '__init__', init_then_edit)
+    write_journal('first', mtime_offset=-80)
+    application.check_modification()
+    loaded = wait_until_loaded()
+    assert loaded.editor.check_any_journal_modification() == set()
+    assert sorted(e.narration for e in loaded.editor.entries
+                  if hasattr(e, 'narration')) == ['first', 'second']
