@@ -1272,6 +1272,22 @@ class ParsedOfxStatement(object):
                         info=get_info(raw)))
 
 
+def decode_ofx(contents: bytes) -> str:
+    """Decodes an OFX file as UTF-8 or, failing that, Windows-1252.
+
+    Given bytes, BeautifulSoup guesses the encoding, and guesses wrong for
+    some ordinary files: signed zero amounts such as
+    `<MARGINBALANCE>+00000000000.00` look like UTF-7 escapes, and a few
+    Windows-1252 accented letters can be taken for another 8-bit encoding.
+    OFX 1.x files declare CHARSET:1252 (a superset of ASCII) and OFX 2.x
+    files are UTF-8; UTF-8 decoding fails on non-ASCII Windows-1252 text.
+    """
+    try:
+        return contents.decode('utf-8')
+    except UnicodeDecodeError:
+        return contents.decode('cp1252', errors='replace')
+
+
 class ParsedOfxFile(object):
     def __init__(self, seen_fitids, filename):
         self.filename = filename
@@ -1279,8 +1295,7 @@ class ParsedOfxFile(object):
 
         with open(filename, 'rb') as f:
             contents = f.read()
-        # A byte string passed to BeautifulSoup is assumed to be UTF-8
-        soup = bs4.BeautifulSoup(contents, 'html.parser')
+        soup = bs4.BeautifulSoup(decode_ofx(contents), 'html.parser')
 
         # Get the description of securities used in this file.
         securities_map = {s.uniqueid: s for s in get_securities(soup)}
