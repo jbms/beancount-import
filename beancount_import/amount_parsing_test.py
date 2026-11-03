@@ -50,6 +50,10 @@ def test_parsing():
         '£.12': Amount(D('0.12'), 'GBP'),
         '-£.12': Amount(D('-0.12'), 'GBP'),
         '-£123.45': Amount(D('-123.45'), 'GBP'),
+        '₽1,234.50': Amount(D('1234.50'), 'RUB'),
+        '-₽12.30': Amount(D('-12.30'), 'RUB'),
+        '1,234.50 ₽': Amount(D('1234.50'), 'RUB'),
+        '12.34 $': Amount(D('12.34'), 'USD'),
 
         '$': None,
         '$.': None,
@@ -62,6 +66,8 @@ def test_parsing():
         ' INS': None,
         "I'm a parrot, cluck cluck": None,
         '1,234,567.89': None,
+        '₽': None,
+        '12.34 ¥': None,
     }
     for input, expected in cases.items():
         try:

@@ -25,12 +25,23 @@ def parse_number(x):
     sign, number_str = parse_possible_negative(x)
     return sign * D(number_str)
 
+# Currency symbols accepted before or after an amount.
+CURRENCY_SYMBOLS = {'$': 'USD', '€': 'EUR', '£': 'GBP', '₽': 'RUB'}
+
+_CURRENCY_RE = '(%s|[A-Z]{3})' % '|'.join(
+    re.escape(symbol) for symbol in CURRENCY_SYMBOLS)
+_AMOUNT_RE = re.compile(
+    r'(?:[(][^)]+[)])?\s*' + _CURRENCY_RE +
+    r'?\s*((?:[0-9](?:,?[0-9])*|(?=\.))(?:\.[0-9]+)?)(?:\s+' + _CURRENCY_RE +
+    r')?')
+
+
 def parse_amount(x, assumed_currency=None):
     """Parses a number and currency."""
     if not x:
         return None
     sign, amount_str = parse_possible_negative(x)
-    m = re.fullmatch(r'(?:[(][^)]+[)])?\s*([\$€£]|[A-Z]{3})?\s*((?:[0-9](?:,?[0-9])*|(?=\.))(?:\.[0-9]+)?)(?:\s+([\$€£]|[A-Z]{3}))?', amount_str)
+    m = _AMOUNT_RE.fullmatch(amount_str)
     if m is None:
         raise ValueError('Failed to parse amount from %r' % amount_str)
     if m.group(1):
@@ -39,14 +50,14 @@ def parse_amount(x, assumed_currency=None):
             # 'EUR' or 'USD'
             currency = m.group(1)
         else:
-            currency = {'$': 'USD', '€': 'EUR', '£': 'GBP'}[m.group(1)]
+            currency = CURRENCY_SYMBOLS[m.group(1)]
     elif m.group(3):
         # unit after amount
         if len(m.group(3)) == 3:
             # 'EUR' or 'USD'
             currency = m.group(3)
         else:
-            currency = {'$': 'USD', '€': 'EUR', '£': 'GBP'}[m.group(3)]
+            currency = CURRENCY_SYMBOLS[m.group(3)]
     elif assumed_currency is not None:
         currency = assumed_currency
     else:
