@@ -165,6 +165,37 @@ def test_permissions(tmpdir):
     assert os.stat(journal_path).st_mode == original_mode
 
 
+def test_existing_empty_meta_value(tmpdir):
+    journal_path = create_journal(
+        tmpdir, """
+2015-02-01 * "Test transaction"
+  Assets:Account-A  100 USD
+    other:
+  Assets:Account-B
+""")
+    editor = journal_editor.JournalEditor(journal_path)
+    stage = editor.stage_changes()
+    old_entry = editor.entries[0]
+    assert old_entry.postings[0].meta['other'] is None
+    new_entry = old_entry._replace(postings=[
+        old_entry.postings[0]._replace(
+            meta=dict(old_entry.postings[0].meta, note="Hello")),
+        old_entry.postings[1],
+    ])
+    stage.change_entry(old_entry, new_entry)
+    result = stage.apply()
+    assert result.old_entries == [old_entry]
+    check_file_contents(
+        journal_path, """
+2015-02-01 * "Test transaction"
+  Assets:Account-A  100 USD
+    other:
+    note: "Hello"
+  Assets:Account-B
+""")
+    check_journal_entries(editor)
+
+
 def test_transaction_add_meta(tmpdir):
     journal_path = create_journal(
         tmpdir, """
