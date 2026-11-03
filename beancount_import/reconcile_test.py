@@ -346,3 +346,37 @@ def test_amazon_large_matching(tmpdir: py.path.local):
             ],
         ),
     )
+
+
+def test_reload_collects_previous_load(tmpdir: py.path.local):
+    # Loading freezes the GC (see LoadedReconciler); a reload must make
+    # cyclic garbage from before the previous freeze collectable again.
+    import gc
+    import weakref
+
+    class Node:
+        def __init__(self) -> None:
+            self.cycle = self
+
+    node = Node()
+    ref = weakref.ref(node)
+
+    tester = ReconcileGoldenTester(
+        golden_directory=os.path.join(testdata_root, 'reconcile', 'test_basic'),
+        temp_dir=str(tmpdir),
+        options=dict(data_sources=[{
+            'module': 'beancount_import.source.mint',
+            'filename': mint_data_path,
+        }]),
+    )
+    try:
+        del node
+        gc.collect()
+        assert ref() is not None  # frozen by the load
+
+        tester.reconciler.reload_journal()
+        tester.reconciler.loaded_future.result()
+        assert ref() is None
+    finally:
+        # Don't leave later tests with a frozen heap.
+        gc.unfreeze()
