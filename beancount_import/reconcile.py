@@ -5,7 +5,7 @@ import re
 from typing import List, Optional, Union, Callable, Dict, Mapping, Tuple, Any, Iterable, Set, NamedTuple, TYPE_CHECKING
 import argparse
 import os
-import tempfile
+import atomicwrites
 import hashlib
 import string
 import random
@@ -583,20 +583,9 @@ class LoadedReconciler(object):
         classifier_cache_path = self.reconciler.options['classifier_cache']
         if classifier_cache_path is None:
             return
-        renamed = False
-        with tempfile.NamedTemporaryFile(
-                mode='wb',
-                dir=os.path.dirname(classifier_cache_path),
-                prefix='.' + os.path.basename(classifier_cache_path),
-                suffix='.tmp',
-                delete=False) as cache_f:
-            try:
-                pickle.dump(cache_data, cache_f)
-                os.rename(cache_f.name, classifier_cache_path)
-                renamed = True
-            finally:
-                if not renamed:
-                    os.remove(cache_f.name)
+        with atomicwrites.atomic_write(
+                classifier_cache_path, mode='wb', overwrite=True) as cache_f:
+            pickle.dump(cache_data, cache_f)
 
     def _maybe_train_classifier(self):
         training_examples = [
