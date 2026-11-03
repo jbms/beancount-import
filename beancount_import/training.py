@@ -227,6 +227,46 @@ class FeatureExtractor(object):
             sorted(k for k in example.key_value_pairs
                    if k in self.example_posting_key_extractors))
 
+    def _get_transaction_key_value_pairs(
+            self, transaction: Transaction) -> ExampleKeyValuePairs:
+        result = dict()  # type: ExampleKeyValuePairs
+        if transaction.meta:
+            for k in transaction.meta:
+                extractor = self.example_transaction_key_extractors.get(k, None)
+                if extractor is None: continue
+                extractor(transaction.meta[k], result)
+        return result
+
+    def extract_unknown_account_posting_features(
+            self, transaction: Transaction) -> List[Optional[PredictionInput]]:
+        """Returns a prediction input for each unknown-account posting that
+        has posting-level example metadata (e.g. an Amazon item), else None.
+
+        Unlike `extract_unknown_account_group_features`, which merges all
+        postings of a group into one input, these match the per-posting
+        examples extracted from the journal for training.
+        """
+        transaction_key_value_pairs = self._get_transaction_key_value_pairs(
+            transaction)
+        result = []  # type: List[Optional[PredictionInput]]
+        for posting in get_unknown_account_postings(transaction):
+            key_value_pairs = dict()  # type: ExampleKeyValuePairs
+            for key, value in (posting.meta or {}).items():
+                extractor = self.example_posting_key_extractors.get(key)
+                if extractor is None: continue
+                extractor(value, key_value_pairs)
+            if not key_value_pairs or posting.units is None:
+                result.append(None)
+                continue
+            result.append(
+                PredictionInput(
+                    source_account='',
+                    amount=posting.units,
+                    date=transaction.date,
+                    key_value_pairs=dict(transaction_key_value_pairs,
+                                         **key_value_pairs)))
+        return result
+
     def extract_unknown_account_group_features(
             self, transaction: Transaction) -> List[Optional[PredictionInput]]:
         group_numbers = get_unknown_account_group_numbers(transaction)
