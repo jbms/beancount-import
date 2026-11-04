@@ -151,6 +151,14 @@ To run Beancount-import, create a Python script that invokes the
 [fresh](examples/fresh/run.py) and
 [manually_entered](examples/manually_entered/run.py).
 
+## Deterministic preprocessing
+
+The optional `preprocessor` callback can record, modify, or ignore pending
+imports using your own rules before account classification. See the
+[preprocessor example](examples/preprocessor/) for a runnable configuration,
+the helper API, and callback lifecycle. Entries left pending continue through
+the normal web review flow.
+
 ## Errors
 
 Any errors either from Beancount itself or one of the data sources are shown in

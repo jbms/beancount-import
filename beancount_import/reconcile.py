@@ -428,6 +428,8 @@ class LoadedReconciler(object):
         # Set of ids of transactions pending import.  Used to determine whether a transaction found
         # in the posting_db is an existing or pending transaction.
         self.pending_transaction_ids = set()  # type: Set[int]
+        # Modified journal entries are reserved for their pending replacement.
+        self._pending_entry_originals = {}  # type: Dict[int, Entries]
 
         self.balance_entries = dict(
         )  # type: Dict[Tuple[datetime.date, str, str], Decimal]
@@ -435,6 +437,9 @@ class LoadedReconciler(object):
         all_source_results = self._prepare_sources()
         self._preprocess_entries()
         self._match_sources(all_source_results)
+        Preprocessor = self.reconciler.options.get('preprocessor')
+        if Preprocessor:
+            Preprocessor(self)
         all_skip_accounts = set()
         for src in all_source_results:
             all_skip_accounts.update(src.skip_training_accounts)
@@ -850,8 +855,18 @@ class LoadedReconciler(object):
             print('predicted account = %r' % (predicted_account, ))
         return predicted_account
 
-    def _get_generic_stage(self, entries: Entries):
+    def _get_pending_entry_originals(self, entry: PendingEntry) -> Entries:
+        originals = self._pending_entry_originals.get(id(entry))
+        if originals is not None:
+            return originals
+        return [directive for directive in entry.entries
+                if id(directive) not in self.pending_transaction_ids
+                and any(directive is existing for existing in self.editor.entries)]
+
+    def _get_generic_stage(self, entries: Entries, original_entries: Entries = ()):
         stage = self.editor.stage_changes()
+        for entry in original_entries:
+            stage.remove_entry(entry)
         for entry in entries:
             output_filename = self.reconciler.entry_file_selector(entry)
             stage.add_entry(entry, output_filename)
@@ -965,6 +980,16 @@ class LoadedReconciler(object):
                                            used_transactions: List[Transaction],
                                            predicted_accounts: List[str],
                                            changes: dict = {}):
+        if self._pending_entry_originals:
+            used_transactions = list(used_transactions)
+            used_ids = {id(transaction) for transaction in used_transactions}
+            for pending in self.pending_data:
+                originals = self._pending_entry_originals.get(id(pending), ())
+                if any(id(entry) in used_ids for entry in pending.entries):
+                    for original in originals:
+                        if isinstance(original, Transaction) and id(original) not in used_ids:
+                            used_transactions.append(original)
+                            used_ids.add(id(original))
         assert isinstance(changes, dict)
         new_accounts = changes.get('accounts')
         if new_accounts is None:
@@ -1052,7 +1077,16 @@ class LoadedReconciler(object):
                 next_entry, posting_db=self.posting_db)
             # Always include the original transaction.
             match_results.append((next_entry, [next_entry]))
+            # A modified journal entry with several directives must be accepted
+            # as a whole, rather than losing directives through a partial match.
+            grouped_entry_ids = {
+                id(entry) for pending in self.pending_data
+                if id(pending) in self._pending_entry_originals
+                and len(pending.entries) != 1
+                for entry in pending.entries} if self._pending_entry_originals else set()
             for transaction, used_transactions in match_results:
+                if any(id(entry) in grouped_entry_ids for entry in used_transactions):
+                    continue
                 predicted_accounts = self._get_unknown_account_predictions(
                     transaction)
                 candidates.append(
@@ -1068,15 +1102,16 @@ class LoadedReconciler(object):
                 sources=self.sources,
             )
         else:
-            assert next_pending.source is not None
-            stage = self._get_generic_stage(next_pending.entries)
+            originals = self._get_pending_entry_originals(next_pending)
+            stage = self._get_generic_stage(next_pending.entries, originals)
             result = Candidates(
                 candidates=[
                     Candidate(
                         staged_changes=stage,
                         staged_changes_with_unique_account_names=stage,
                         used_import_results=[next_pending],
-                        used_transactions=[])
+                        used_transactions=[entry for entry in originals
+                                           if isinstance(entry, Transaction)])
                 ],
                 date=next_pending.date,
                 pending_data=self.pending_data,
@@ -1122,19 +1157,33 @@ class LoadedReconciler(object):
         old_entries = result.old_entries
         new_entries = result.new_entries
 
+        reserved_ids = {id(entry) for originals in self._pending_entry_originals.values()
+                        for entry in originals}
         for entry in old_entries:
-            if isinstance(entry, Transaction):
+            if isinstance(entry, Transaction) and id(entry) not in reserved_ids:
                 self.posting_db.remove_transaction(entry)
 
         old_entry_ids = set(id(x) for x in old_entries)
         self.uncleared_postings = [
             x for x in self.uncleared_postings if id(x[0]) not in old_entry_ids
         ]
-        for import_result in candidate.used_import_results:
-            if isinstance(import_result, Transaction):
-                if id(import_result) in self.pending_transaction_ids:
-                    self.pending_transaction_ids.remove(id(import_result))
-                    self.posting_db.remove_transaction(import_result)
+        used_import_result_ids = {id(entry) for entry in candidate.used_import_results}
+        used_pending = [pending for pending in self.pending_data
+                        if id(pending) in used_import_result_ids or
+                        id(pending.entries[0]) in used_import_result_ids]
+        # Matching can consume a transaction other than a group's first entry.
+        for entry in candidate.used_import_results:
+            if isinstance(entry, Transaction) and id(entry) in self.pending_transaction_ids:
+                self.pending_transaction_ids.remove(id(entry))
+                self.posting_db.remove_transaction(entry)
+        for pending in used_pending:
+            for entry in pending.entries:
+                if (isinstance(entry, Transaction)
+                        and id(entry) in self.pending_transaction_ids
+                        and id(pending) in used_import_result_ids):
+                    self.pending_transaction_ids.remove(id(entry))
+                    self.posting_db.remove_transaction(entry)
+            self._pending_entry_originals.pop(id(pending), None)
 
         self._add_uncleared_postings_from(new_entries)
         self.uncleared_postings.sort(key=lambda x: x[0].date)
@@ -1144,12 +1193,10 @@ class LoadedReconciler(object):
 
         self._extract_training_examples(new_entries)
 
-        used_import_result_ids = frozenset(
-            map(id, candidate.used_import_results))
+        used_pending_ids = {id(pending) for pending in used_pending}
         self.pending_data = [
             e for e in self.pending_data
-            if id(e) not in used_import_result_ids and
-            id(e.entries[0]) not in used_import_result_ids
+            if id(e) not in used_pending_ids
         ]
         return AcceptCandidateResult(
             new_entries=new_entries + result.new_ignored_entries,
