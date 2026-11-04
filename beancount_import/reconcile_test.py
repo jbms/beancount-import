@@ -509,3 +509,52 @@ def test_without_classifier(tmpdir: py.path.local, classifier: str):
     tester.reconciler.reload_journal()
     assert tester.loaded_reconciler.classifier is None
     assert tester.loaded_reconciler.training_examples.training_examples == []
+
+
+
+@pytest.mark.parametrize('classifier', reconcile.CLASSIFIERS)
+def test_candidate_confidence_survives_account_edits(tmpdir, classifier, monkeypatch):
+    from . import webserver
+
+    directory = ('test_basic_nearest_neighbor' if classifier == 'nearest_neighbor'
+                 else 'test_basic')
+    tester = ReconcileGoldenTester(
+        golden_directory=os.path.join(testdata_root, 'reconcile', directory),
+        temp_dir=str(tmpdir),
+        options=dict(classifier=classifier, data_sources=[
+            dict(module='beancount_import.source.mint', filename=mint_data_path)]))
+    loaded = tester.loaded_reconciler
+    if classifier == 'decision_tree':
+        def unexpected_scores(*args):
+            raise AssertionError('Decision trees must not request nearest-neighbor scores')
+        monkeypatch.setattr(loaded, '_predict_scores', unexpected_scores)
+    else:
+        monkeypatch.setattr(loaded, '_predict_scores', lambda _: {
+            'Expenses:Office': 0.62, 'Expenses:Household': 0.38})
+    candidate = next(
+        candidate for pending in loaded.pending_data
+        for candidate in loaded._make_candidates_from_import_result(pending).candidates
+        if candidate.substituted_accounts)
+    substitutions = candidate.substituted_accounts
+    assert substitutions
+    confidences = [entry.prediction_confidence for entry in substitutions]
+    if classifier == 'decision_tree':
+        assert all(score is None for score in confidences)
+    else:
+        assert confidences == [0.62] * len(substitutions)
+    encoded = webserver.json_encode_candidate(candidate)
+    serialized = json.loads(json.dumps(encoded['substituted_accounts']))
+    assert [row[5] for row in serialized] == confidences
+
+    edited = candidate.substitute(dict(accounts=['Expenses:Edited'] * len(substitutions)))
+    assert [entry.account_name for entry in edited.substituted_accounts] == [
+        'Expenses:Edited'] * len(substitutions)
+    assert [entry.predicted_account_name for entry in edited.substituted_accounts] == [
+        entry.predicted_account_name for entry in substitutions]
+    assert [entry.prediction_confidence for entry in edited.substituted_accounts] == confidences
+
+
+def test_account_substitution_accepts_older_constructor():
+    entry = reconcile.AccountSubstitution('unique', 'Expenses:Office', 0,
+                                          'Expenses:FIXME', 'Expenses:Office')
+    assert entry.prediction_confidence is None
