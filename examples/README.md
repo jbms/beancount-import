@@ -10,3 +10,6 @@ Examples:
   - `fresh`: Example of importing transactions starting with an empty journal.
   - `manually_entered`: Example of importing transactions corresponding to
     existing, manually-entered transactions.
+
+  - `preprocessor`: Record a fictional grocery payment using an explicit rule,
+    leaving unmatched imports for normal review.
