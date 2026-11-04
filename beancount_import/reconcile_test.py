@@ -485,3 +485,27 @@ def test_stage_missing_accounts_with_unspecified_currency(tmpdir, missing_curren
     assert opens['Expenses:Unspecified'].currencies == []
     assert all(entry.date == transaction.date for entry in opens.values())
     assert stage.get_missing_accounts() == []
+
+
+@pytest.mark.parametrize('classifier', reconcile.CLASSIFIERS)
+def test_without_classifier(tmpdir: py.path.local, classifier: str):
+    tester = ReconcileGoldenTester(
+        golden_directory=os.path.join(testdata_root, 'reconcile', 'test_basic'),
+        temp_dir=str(tmpdir),
+        options=dict(
+            classifier=classifier, build_classifier=False,
+            data_sources=[dict(module='beancount_import.source.mint',
+                               filename=mint_data_path)],
+        ),
+    )
+    loaded = tester.loaded_reconciler
+    assert loaded.classifier is None
+    assert loaded.training_examples.training_examples == []
+    assert loaded.retrain() is loaded
+    num_pending = loaded.num_pending
+    tester.accept_candidate(0)
+    assert loaded.num_pending < num_pending
+    assert loaded.training_examples.training_examples == []
+    tester.reconciler.reload_journal()
+    assert tester.loaded_reconciler.classifier is None
+    assert tester.loaded_reconciler.training_examples.training_examples == []

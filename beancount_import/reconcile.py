@@ -454,12 +454,15 @@ class LoadedReconciler(object):
         self._num_indexed_examples = 0
         self._use_nearest_neighbor = reconciler.options.get(
             'classifier', DECISION_TREE) == NEAREST_NEIGHBOR
+        self.classifier = classifier  # type: Any
+        if not reconciler.options.get('build_classifier', True):
+            self.classifier = None
+            return
         if self._use_nearest_neighbor:
             self._init_nearest_neighbor_classifier(classifier)
             return
         self._extract_training_examples(self.editor.entries)
 
-        self.classifier = classifier  # type: Any
         if self.classifier is None:
             classifier_cache_path = self.reconciler.options['classifier_cache']
             if classifier_cache_path is not None and os.path.exists(
@@ -502,6 +505,8 @@ class LoadedReconciler(object):
         self.classifier.prepare()
 
     def _extract_training_examples(self, entries: Entries) -> None:
+        if not self.reconciler.options.get('build_classifier', True):
+            return
         self._feature_extractor.extract_examples(entries,
                                                  self.training_examples)
         if self._use_nearest_neighbor:
@@ -545,6 +550,8 @@ class LoadedReconciler(object):
         return source.is_posting_cleared(posting)
 
     def retrain(self):
+        if not self.reconciler.options.get('build_classifier', True):
+            return self
         if self._use_nearest_neighbor:
             self._train_encoder()
             self.classifier.prepare()
