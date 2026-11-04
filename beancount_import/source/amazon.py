@@ -256,9 +256,15 @@ Caching Parsing Results
 
 Parsing the HTML files can be slow, so this module uses the Python pickle 
 module/file format to cache the results of parsing the individual HTML files.
-These cached results are loaded as long as their mtime is more recent than
-the HTML file to load. If you want to enable this funcionality, pass a path
-to the `pickle_dir` parameter when initializing this class.
+To enable persistent caching, pass a writable directory as `pickle_dir`.
+Successful parses, empty results (such as canceled orders), and parsing errors
+are cached. Errors are still reported on every load; caching only avoids
+repeating the parsing work. Transient IO errors are retried rather than cached.
+
+Cached outcomes are reused only while the HTML path, size and modification
+time, locale, and parser source are unchanged. Updating an invoice or parser
+therefore retries a previous failure. Delete its `.order.p` file to force a
+retry otherwise. Older caches are rebuilt once with the new fingerprint.
 
 Skipping Older Invoices
 =======================
@@ -274,10 +280,12 @@ are not accounted for in your journal.
 """
 
 import collections
-from typing import Dict, List, Tuple, Optional, Union
+from typing import Dict, List, Tuple, Optional, Union, NamedTuple
 import os
 import sys
 import pickle
+import hashlib
+import tempfile
 import logging
 
 from beancount.core.data import Transaction, Posting, Balance, Commodity, Price, EMPTY_SET, Directive
@@ -286,6 +294,7 @@ from beancount.core.flags import FLAG_OKAY
 from beancount.core.number import ZERO, ONE
 import beancount.core.amount
 
+from . import amazon_invoice
 from .amazon_invoice import LOCALES, parse_invoice, DigitalItem, Order
 
 from ..matching import FIXME_ACCOUNT, SimpleInventory
@@ -495,61 +504,77 @@ def get_order_ids_seen(journal: JournalEditor,
         order_ids.setdefault(order_id, []).append(entry)
     return order_ids
 
-class AmazonPickler():
-    def __init__( self, pickle_dir: Optional[str] ):
+# File identity plus parser content and locale prevent stale negative results
+# from suppressing retries after an input or parser fix.
+InvoiceCacheKey = Tuple[str, str, str, int, int]
+
+
+class _InvoiceParseResult(NamedTuple):
+    key: InvoiceCacheKey
+    invoice: Optional[Order]
+    error: Optional[Exception]
+
+
+class AmazonPickler:
+    def __init__(self, pickle_dir: Optional[str]):
         self.pickle_dir = pickle_dir
         if pickle_dir is not None and not os.access(pickle_dir, os.W_OK):
             raise Exception("Amazon pickled invoice path is not writable: %s" % pickle_dir)
-        
-    @staticmethod
-    def try_get_mtime( path: str ):
-        try:
-            return os.stat(path).st_mtime
-        except:
+        with open(amazon_invoice.__file__, 'rb') as parser_file:
+            self.parser_fingerprint = hashlib.sha256(parser_file.read()).hexdigest()
+
+    def cache_key(self, invoice_path: str, locale: str) -> InvoiceCacheKey:
+        stat = os.stat(invoice_path)
+        return (self.parser_fingerprint, locale, invoice_path,
+                stat.st_mtime_ns, stat.st_size)
+
+    def _build_pickle_path(self, pickle_dir: str, invoice_path: str) -> str:
+        filename = os.path.basename(invoice_path).replace('.html', '.order.p')
+        return os.path.join(pickle_dir, filename)
+
+    def load(self, results: SourceResults, invoice_path: str,
+             key: InvoiceCacheKey) -> Optional[_InvoiceParseResult]:
+        if not self.pickle_dir:
             return None
-
-    def _build_pickle_path( self, pickle_dir: str, invoice_path: str ):
-        invoice_dir, invoice_file = os.path.split(invoice_path)
-        pickle_file = invoice_file.replace(".html", ".order.p")
-        return os.path.join(pickle_dir, pickle_file)
-
-    def load( self, results: SourceResults, invoice_path: str ):
-        if not self.pickle_dir: return None
-
-        pickle_path = self._build_pickle_path( self.pickle_dir, invoice_path )
-
+        path = self._build_pickle_path(self.pickle_dir, invoice_path)
         try:
-            invoice_mtime = AmazonPickler.try_get_mtime( invoice_path )
-            pickle_mtime  = AmazonPickler.try_get_mtime( pickle_path  )
+            with open(path, 'rb') as f:
+                cached = pickle.load(f)
+            # Older bare-Order caches are rebuilt once with an input fingerprint.
+            if isinstance(cached, _InvoiceParseResult) and cached.key == key:
+                return cached
+        except FileNotFoundError:
+            pass
+        except Exception:
+            results.add_error('Failed to load pickled invoice %s: %s' %
+                              (path, sys.exc_info()))
+        return None
 
-            if invoice_mtime is None or pickle_mtime is None: return None
-            if pickle_mtime < invoice_mtime: return None
-
-            with open(pickle_path, "rb") as f:
-                return pickle.load( f )
-        except:
-            results.add_error('Failed to load pickled invoice %s: %s' % (
-                        pickle_path, sys.exc_info()))
-
-    def dump( self, results: SourceResults, invoice_path: str, invoice: Optional[Order]):
-        if not self.pickle_dir: return None
-        if not invoice: return None
-
+    def dump(self, results: SourceResults, invoice_path: str,
+             outcome: _InvoiceParseResult) -> None:
+        if not self.pickle_dir:
+            return
+        temporary_path = None
         try:
-            pickle_path = self._build_pickle_path( self.pickle_dir, invoice_path )
+            data = pickle.dumps(outcome)
+            path = self._build_pickle_path(self.pickle_dir, invoice_path)
+            with tempfile.NamedTemporaryFile(dir=self.pickle_dir, delete=False) as f:
+                temporary_path = f.name
+                f.write(data)
+            os.replace(temporary_path, path)
+        except Exception:
+            results.add_error('Failed to save pickled invoice %s: %s' %
+                              (invoice_path, sys.exc_info()))
+        finally:
+            if temporary_path is not None:
+                try:
+                    os.unlink(temporary_path)
+                except FileNotFoundError:
+                    pass
+                except OSError:
+                    results.add_error('Failed to remove temporary invoice cache %s: %s' %
+                                      (temporary_path, sys.exc_info()))
 
-            if invoice is None:
-                # remove existing pickles if invoice couldn't be parsed
-                pickle_mtime = AmazonPickler.try_get_mtime( pickle_path ) 
-                if pickle_mtime: os.remove( pickle_path )
-                return
-
-            with open(pickle_path, "wb") as f:
-                return pickle.dump( invoice, f )
-
-        except:
-            results.add_error('Failed to save pickled invoice %s: %s' % (
-                        pickle_path, sys.exc_info()))
 
 class AmazonSource(Source):
     def __init__(self,
@@ -582,22 +607,35 @@ class AmazonSource(Source):
                 continue
             order_id = filename[:-len(suffix)]
             self.invoice_filenames.append((order_id, filename))
-        self._cached_invoices = {
-        }  # type: Dict[str, Tuple[Optional[Order], str]]
+        self._cached_invoices = {}  # type: Dict[str, _InvoiceParseResult]
 
     def _get_invoice(self, results: SourceResults, order_id: str, invoice_filename: str):
-        if invoice_filename in self._cached_invoices:
-            return self._cached_invoices.get(invoice_filename)
         invoice_path = os.path.realpath(os.path.join(self.directory, invoice_filename))
-
-        invoice = self.pickler.load(results, invoice_path) # type: Optional[Order]
-        if invoice is None:
-            self.log_status('amazon: processing %s: %s' % (order_id, invoice_path, ))
-            invoice = parse_invoice(invoice_path, locale=self.locale)
-            self.pickler.dump( results, invoice_path, invoice )
-
-        self._cached_invoices[invoice_filename] = invoice, invoice_path
-        return invoice, invoice_path
+        key = self.pickler.cache_key(invoice_path, self.locale.LOCALE)
+        cached = self._cached_invoices.get(invoice_filename)
+        if cached is None or cached.key != key:
+            cached = self.pickler.load(results, invoice_path, key)
+        if cached is None:
+            self.log_status('amazon: processing %s: %s' % (order_id, invoice_path))
+            try:
+                invoice = parse_invoice(invoice_path, locale=self.locale)
+            except OSError:
+                # Permissions and other transient IO failures should be retried.
+                raise
+            except Exception as error:
+                cached = _InvoiceParseResult(key, None, error)
+            else:
+                cached = _InvoiceParseResult(key, invoice, None)
+            # Do not save an outcome if the file changed while being parsed.
+            if self.pickler.cache_key(invoice_path, self.locale.LOCALE) != key:
+                if cached.error is not None:
+                    raise cached.error
+                return cached.invoice, invoice_path
+            self.pickler.dump(results, invoice_path, cached)
+        self._cached_invoices[invoice_filename] = cached
+        if cached.error is not None:
+            raise cached.error.with_traceback(None)
+        return cached.invoice, invoice_path
 
     def prepare(self, journal: JournalEditor, results: SourceResults):
         credit_card_accounts = get_credit_card_accounts(journal)
