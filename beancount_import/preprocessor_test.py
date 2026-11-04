@@ -131,6 +131,7 @@ include "other.beancount"
     loaded.editor = journal_editor.JournalEditor(
         str(tmp_path / 'journal.beancount'), str(tmp_path / 'ignore.beancount'))
     loaded.reconciler = SimpleNamespace(
+        options={},
         ignore_path=str(tmp_path / 'ignore.beancount'),
         entry_file_selector=lambda entry: str(tmp_path / 'journal.beancount'))
     loaded.posting_db = matching.PostingDatabase(

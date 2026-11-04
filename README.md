@@ -159,6 +159,12 @@ imports using your own rules before account classification. See the
 the helper API, and callback lifecycle. Entries left pending continue through
 the normal web review flow.
 
+For rules-only callers, set `build_classifier=False` in the launch configuration
+(or the reconciler options). Source loading, matching, and preprocessing still
+run, while classifier training, indexing, and cache loading are skipped.
+Remaining unknown accounts stay `Expenses:FIXME`. Classification stays enabled
+by default.
+
 ## Errors
 
 Any errors either from Beancount itself or one of the data sources are shown in
