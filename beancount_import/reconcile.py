@@ -1153,6 +1153,24 @@ class LoadedReconciler(object):
         if ignore:
             staged_changes = staged_changes.make_with_new_output_filename(
                 ignored_path)
+        used_import_result_ids = {id(entry) for entry in candidate.used_import_results}
+        consumed_pending = []  # type: List[PendingEntry]
+        remaining_pending = []  # type: List[PendingEntry]
+        for pending in self.pending_data:
+            remaining = ([] if id(pending) in used_import_result_ids else
+                         [entry for entry in pending.entries
+                          if id(entry) not in used_import_result_ids])
+            if len(remaining) == len(pending.entries):
+                remaining_pending.append(pending)
+                continue
+            if remaining and id(pending) in self._pending_entry_originals:
+                raise ValueError('Cannot partially accept a journal-backed replacement')
+            consumed_pending.append(pending)
+            if remaining:
+                remaining_pending.append(make_pending_entry(
+                    ImportResult(date=min(entry.date for entry in remaining),
+                                 entries=remaining, info=pending.info),
+                    pending.source))
         result = staged_changes.apply()
         old_entries = result.old_entries
         new_entries = result.new_entries
@@ -1167,16 +1185,12 @@ class LoadedReconciler(object):
         self.uncleared_postings = [
             x for x in self.uncleared_postings if id(x[0]) not in old_entry_ids
         ]
-        used_import_result_ids = {id(entry) for entry in candidate.used_import_results}
-        used_pending = [pending for pending in self.pending_data
-                        if id(pending) in used_import_result_ids or
-                        id(pending.entries[0]) in used_import_result_ids]
         # Matching can consume a transaction other than a group's first entry.
         for entry in candidate.used_import_results:
             if isinstance(entry, Transaction) and id(entry) in self.pending_transaction_ids:
                 self.pending_transaction_ids.remove(id(entry))
                 self.posting_db.remove_transaction(entry)
-        for pending in used_pending:
+        for pending in consumed_pending:
             for entry in pending.entries:
                 if (isinstance(entry, Transaction)
                         and id(entry) in self.pending_transaction_ids
@@ -1193,11 +1207,7 @@ class LoadedReconciler(object):
 
         self._extract_training_examples(new_entries)
 
-        used_pending_ids = {id(pending) for pending in used_pending}
-        self.pending_data = [
-            e for e in self.pending_data
-            if id(e) not in used_pending_ids
-        ]
+        self.pending_data = remaining_pending
         return AcceptCandidateResult(
             new_entries=new_entries + result.new_ignored_entries,
             modified_filenames=staged_changes.get_modified_filenames(),
