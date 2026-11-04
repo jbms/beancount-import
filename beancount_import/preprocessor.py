@@ -1,103 +1,115 @@
-"""
-helper classes for deterministic, rule-based preprocssing of imported
-transactions, allowing one to, e.g. avoid needing to confirm repetetive
-transactions within the web-ui.  whatever object is used for the preprocessing
-should be passed to the webserver using the preprocessor key.
+"""Opt-in preprocessing of pending imports before account classification.
 
-beancount_import.webserver.main(
-    ...
-    preprocessor=mypreprocessor
-    )
-
-that preprocessor takes one agrument--a reference to the loadedreconciler, and
-can then directly modify the loaded reconciler program state. e.g. modifying
-the list of pending entries found at loadedreconciler.pending_data or writing
-to the ledger using the loadedreconciler.editor methods.
-
-to simplify managing loadedreconciler state, a basepreprocessor class is
-provided below which your custom preprocessor can inheret from and simplifies
-ignoring, recording and modifying a pending entry while still affording a high
-degree of flexibility.
-
-and for simple pending entries having just one transaction which has one
-imported posting and one unmatched fixme account where only the fixme account
-needs updating, a transactionrulemixin is provided that you can inherit from
-and specify matching rules in a dictionary-like fashion.
-
+Pass a callable accepting a LoadedReconciler as the ``preprocessor`` option.
+BasePreprocessor supplies helpers for recording, ignoring and modifying pending
+entries. Combine it with TransactionRuleMixin for simple two-posting rules.
 """
 
 from enum import Enum
-from typing import Dict, Union, Pattern, List, Optional, Iterator, Any
+from typing import Dict, Union, Pattern, List, Optional, Iterator, Any, cast, Callable
 from dataclasses import dataclass
 
 from beancount.core.data import Transaction, Posting
 
-from .reconcile import LoadedReconciler, PendingEntry
+from .reconcile import (LoadedReconciler, PendingEntry, make_pending_entry,
+                        stage_missing_accounts)
+from .source import ImportResult
+from .journal_editor import StagedChanges
 from .matching import FIXME_ACCOUNT, is_unknown_account
 
 
 class BasePreprocessor:
     def __init__(self, loaded_reconciler: LoadedReconciler):
         self.loaded_reconciler = loaded_reconciler
-        self.pending_data = loaded_reconciler.pending_data
         self.posting_db = loaded_reconciler.posting_db
         self.pending_transaction_ids = loaded_reconciler.pending_transaction_ids
         self.editor = loaded_reconciler.editor
         self.preprocess()
 
-    def ignore_pending_entry(self, entry: PendingEntry) -> None:
-        """ignores a pending entry by writing it to ignore_path and removing
-        from tracking."""
-        # remove from posting_db and pending_transaction_ids
+    @property
+    def pending_data(self) -> List[PendingEntry]:
+        """Always access the reconciler's current pending list."""
+        return self.loaded_reconciler.pending_data
+
+    @pending_data.setter
+    def pending_data(self, entries: List[PendingEntry]) -> None:
+        self.loaded_reconciler.pending_data = entries
+
+    def _remove_pending_entry(self, entry: PendingEntry) -> None:
+        """Remove an entry from the pending list and matching index."""
         for directive in entry.entries:
             if isinstance(directive, Transaction):
                 self.posting_db.remove_transaction(directive)
-                self.pending_transaction_ids.remove(id(directive))
-        # write to ignore file
-        stage = self.editor.stage_changes()
-        for directive in entry.entries:
-            stage.add_entry(directive, self.loaded_reconciler.reconciler.ignore_path)
-        stage.apply()
-        # remove from pending_data
+                self.pending_transaction_ids.discard(id(directive))
+        removed_ids = {id(directive) for directive in entry.entries}
+        loaded = self.loaded_reconciler
+        loaded.uncleared_postings = [
+            pair for pair in loaded.uncleared_postings
+            if id(pair[0]) not in removed_ids]
         self.pending_data.remove(entry)
+
+    def _stage_entry_removal(self, stage: StagedChanges, entry: PendingEntry) -> None:
+        # Pending FIXME entries can also originate in the journal itself.
+        for directive in entry.entries:
+            if id(directive) in self.pending_transaction_ids:
+                continue
+            if any(directive is existing for existing in self.editor.entries):
+                stage.remove_entry(directive)
+
+    def ignore_pending_entry(self, entry: PendingEntry) -> None:
+        """Move a pending entry to the ignore journal after writing succeeds."""
+        self.pending_data.index(entry)  # Reject stale entries before writing.
+        ignore_path = self.loaded_reconciler.reconciler.ignore_path
+        if ignore_path is None:
+            raise RuntimeError('An ignore journal is required to ignore entries')
+        stage = self.editor.stage_changes()
+        self._stage_entry_removal(stage, entry)
+        for directive in entry.entries:
+            stage.add_entry(directive, ignore_path)
+        stage.apply()
+        self._remove_pending_entry(entry)
 
     def record_pending_entry(
         self, old_entry: PendingEntry, new_entry: PendingEntry
     ) -> None:
-        """records a pending entry and removes it from tracking."""
-        for directive in old_entry.entries:
-            if isinstance(directive, Transaction):
-                self.posting_db.remove_transaction(directive)
-                self.pending_transaction_ids.remove(id(directive))
-        self.pending_data.remove(old_entry)
-        # write to journal
+        """Write all directives once, then update pending and matching state."""
+        self.pending_data.index(old_entry)
         stage = self.editor.stage_changes()
+        self._stage_entry_removal(stage, old_entry)
+        select_file = self.loaded_reconciler.reconciler.entry_file_selector
         for directive in new_entry.entries:
-            output_filename = self.loaded_reconciler.reconciler.entry_file_selector(
-                directive
-            )
-            stage.add_entry(directive, output_filename)
-            stage.apply()
+            stage.add_entry(directive, select_file(directive))
+        stage_missing_accounts(stage, select_file)
+        result = stage.apply()
+        self._remove_pending_entry(old_entry)
+        # Booking supplies canonical entries with real filenames/line numbers.
+        for directive in result.new_entries:
             if isinstance(directive, Transaction):
                 self.posting_db.add_transaction(directive)
+        loaded = self.loaded_reconciler
+        loaded._add_uncleared_postings_from(result.new_entries)
+        loaded.uncleared_postings.sort(key=lambda pair: pair[0].date)
 
     def modify_pending_entry(
         self, old_entry: PendingEntry, new_entry: PendingEntry
     ) -> None:
-        """replaces an existing pending entry with a modified version."""
-        # remove old entry from tracking
+        """Replace a pending entry without writing it to the journal."""
+        idx = self.pending_data.index(old_entry)
+        refreshed = make_pending_entry(
+            ImportResult(date=new_entry.date, entries=new_entry.entries,
+                         info=new_entry.info), new_entry.source)
         for directive in old_entry.entries:
-            if isinstance(directive, Transaction):
+            if (isinstance(directive, Transaction)
+                    and id(directive) in self.pending_transaction_ids):
                 self.posting_db.remove_transaction(directive)
                 self.pending_transaction_ids.remove(id(directive))
-        # add new entry to tracking
-        for directive in new_entry.entries:
+        # A journal-backed original stays indexed so the replacement can be
+        # matched to it and accepted as an edit instead of an extra import.
+        for directive in refreshed.entries:
             if isinstance(directive, Transaction):
                 self.posting_db.add_transaction(directive)
                 self.pending_transaction_ids.add(id(directive))
-        # replace in pending_data
-        idx = self.pending_data.index(old_entry)
-        self.pending_data[idx] = new_entry
+        self.pending_data[idx] = refreshed
 
     def get_transaction_postings(self, entry: PendingEntry) -> list[Posting]:
         """gets all postings from transactions in a pending entry."""
@@ -123,9 +135,11 @@ class BasePreprocessor:
             if not is_unknown_account(p.account)
         ]
 
-    def find_pending_entries(self, predicate) -> Iterator[PendingEntry]:
-        """finds all pending entries matching a predicate function."""
-        return filter(predicate, self.pending_data)
+    def find_pending_entries(
+        self, predicate: Callable[[PendingEntry], bool]
+    ) -> Iterator[PendingEntry]:
+        """Find matching entries in a snapshot safe to record or ignore."""
+        return filter(predicate, self.pending_data.copy())
 
     def preprocess(self) -> None:
         """override this method in subclasses to implement preprocessing logic."""
@@ -179,6 +193,10 @@ class PreprocessingRule:
     target_account: str = FIXME_ACCOUNT
     action: str = "record"  # 'record', 'modify', or 'ignore'
 
+    def __post_init__(self) -> None:
+        if self.action not in ('record', 'modify', 'ignore'):
+            raise ValueError('Unknown preprocessing action: %r' % self.action)
+
 
 class TransactionRuleMixin:
     """mixin class that adds rule-based preprocessing capabilities for simple
@@ -186,14 +204,11 @@ class TransactionRuleMixin:
     and one fixme posting needing updating"""
 
     def is_simple_pending_entry(self, entry: PendingEntry) -> bool:
-        # ensure the pending entry is a single transaction with one imported
-        # posting followed by one auto-generated, matching FIXME postng
-        return (
-            isinstance(entry.entries[0], Transaction)
-            and (len(entry.entries) == 1)
-            and not is_unknown_account(entry.entries[0].postings[0].account)
-            and is_unknown_account(entry.entries[0].postings[1].account)
-        )
+        if len(entry.entries) != 1 or not isinstance(entry.entries[0], Transaction):
+            return False
+        postings = entry.entries[0].postings
+        return (len(postings) == 2 and
+                sum(is_unknown_account(p.account) for p in postings) == 1)
 
     def _matches_pattern(self, value: Any, pattern: Union[str, Pattern]) -> bool:
         """Helper to match string against literal or regex pattern."""
@@ -267,31 +282,34 @@ class TransactionRuleMixin:
 
     def apply_rules(self, rules: List[PreprocessingRule]) -> None:
         """Apply preprocessing rules to pending entries."""
-        entries = self.pending_data.copy()
+        # Callers combine this mixin with BasePreprocessor.
+        preprocessor = cast(BasePreprocessor, self)
+        entries = preprocessor.pending_data.copy()
         for entry in entries:
             if not self.is_simple_pending_entry(entry):
                 continue
 
             transaction = entry.entries[0]
-            imported_posting = transaction.postings[0]
-            fixme_posting = transaction.postings[1]
+            imported_posting = next(
+                p for p in transaction.postings if not is_unknown_account(p.account))
 
             for rule in rules:
                 if self._matches_criteria(entry, imported_posting, transaction, rule):
                     if rule.action == "ignore":
-                        self.ignore_pending_entry(entry)
+                        preprocessor.ignore_pending_entry(entry)
                         break
 
                     new_postings = [
-                        imported_posting,
-                        fixme_posting._replace(account=rule.target_account),
+                        p._replace(account=rule.target_account)
+                        if is_unknown_account(p.account) else p
+                        for p in transaction.postings
                     ]
                     new_transaction = transaction._replace(postings=new_postings)
                     new_entry = entry._replace(entries=(new_transaction,))
 
                     if rule.action == "modify":
-                        self.modify_pending_entry(entry, new_entry)
+                        preprocessor.modify_pending_entry(entry, new_entry)
                         break
                     else:
-                        self.record_pending_entry(entry, new_entry)
+                        preprocessor.record_pending_entry(entry, new_entry)
                         break

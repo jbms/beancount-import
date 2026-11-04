@@ -95,6 +95,18 @@
   Expenses:FIXME  -22.84 USD
 
 ;; source: venmo
+;; date: 2022-02-21
+;; info: {"filename": "<testdata>/source/venmo/transactions.csv", "line": 12, "type": "text/csv"}
+
+2022-02-21 * "Distant Treats" ""
+  Assets:Venmo     22.84 USD
+    date: 2022-02-21
+    venmo_payer: "Distant Treats"
+    venmo_payment_id: "1302468135792468024"
+    venmo_type: "Refunded transaction"
+  Expenses:FIXME  -22.84 USD
+
+;; source: venmo
 ;; date: 2017-04-05
 ;; info: null
 

@@ -9,6 +9,8 @@
     venmo_type: "Payment"
   Expenses:Tutoring   220.00 USD
 
+2017-04-25 open Expenses:Tutoring                               USD
+
 2017-09-02 * "Maria Anderson" "Security deposit" ^venmo.3483695350643256240
   Assets:Venmo                   -559.00 USD
     date: 2017-09-02
@@ -17,6 +19,8 @@
     venmo_payment_id: "3483695350643256240"
     venmo_type: "Payment"
   Liabilities:Security-Deposits   559.00 USD
+
+2017-09-02 open Liabilities:Security-Deposits                   USD
 
 2017-09-06 * "Sally Smith" "Rent"
   Assets:Venmo   1150.00 USD
@@ -27,6 +31,8 @@
     venmo_type: "Payment"
   Income:Rent   -1150.00 USD
 
+2017-09-06 open Income:Rent                                     USD
+
 2017-09-06 * "Venmo" "Transfer"
   Assets:Venmo     -1150.00 USD
     date: 2017-09-06
@@ -34,6 +40,8 @@
     venmo_transfer_id: "355418184"
     venmo_type: "Standard Transfer"
   Assets:Checking   1150.00 USD
+
+2017-09-06 open Assets:Checking                                 USD
 
 2018-05-01 * "Sally Smith" "Rent"
   Assets:Venmo   1423.73 USD

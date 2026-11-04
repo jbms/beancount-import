@@ -1,9 +1,16 @@
+import datetime
+import gc
 import os
-import py
 import re
+from types import SimpleNamespace
 
-from . import reconcile_test
+import py
+import pytest
+from beancount.core.data import Transaction
+
+from . import journal_editor, matching, reconcile, reconcile_test, test_util, training
 from .preprocessor import BasePreprocessor, TransactionRuleMixin, PreprocessingRule
+from .source import ImportResult, Source
 
 testdata_root = os.path.realpath(
     os.path.join(os.path.dirname(__file__), "..", "testdata")
@@ -82,6 +89,8 @@ def test_rule_preprocessing(tmpdir: py.path.local):
         ),
         temp_dir=str(tmpdir),
         options=dict(
+            # Keep snapshots independent of decision-tree tie breaking.
+            classifier='nearest_neighbor',
             preprocessor=RuleBasedPreprocessor,
             data_sources=[
                 {
@@ -93,3 +102,309 @@ def test_rule_preprocessing(tmpdir: py.path.local):
         ),
     )
     tester.snapshot()
+
+
+# State tests use a real journal editor and posting index, with invented entries.
+
+class SyntheticSource(Source):
+    name = 'synthetic'
+
+
+def pending_entries(text):
+    entries = test_util.parse(text)
+    return reconcile.make_pending_entry(
+        ImportResult(date=entries[0].date, entries=entries, info=None),
+        SyntheticSource(log_status=lambda message: None))
+
+
+@pytest.fixture
+def processor(tmp_path):
+    (tmp_path / 'journal.beancount').write_text('''
+include "other.beancount"
+2019-01-01 open Assets:Checking USD
+2019-01-01 open Expenses:FIXME USD
+2019-01-01 open Expenses:Groceries USD
+''')
+    (tmp_path / 'other.beancount').write_text('')
+    (tmp_path / 'ignore.beancount').write_text('')
+    loaded = reconcile.LoadedReconciler.__new__(reconcile.LoadedReconciler)
+    loaded.editor = journal_editor.JournalEditor(
+        str(tmp_path / 'journal.beancount'), str(tmp_path / 'ignore.beancount'))
+    loaded.reconciler = SimpleNamespace(
+        ignore_path=str(tmp_path / 'ignore.beancount'),
+        entry_file_selector=lambda entry: str(tmp_path / 'journal.beancount'))
+    loaded.posting_db = matching.PostingDatabase(
+        fuzzy_match_days=0, fuzzy_match_amount=0,
+        is_cleared=lambda posting: False, metadata_keys=frozenset())
+    loaded.pending_data = []
+    loaded.pending_transaction_ids = set()
+    loaded.uncleared_postings = []
+    loaded.cleared_dates = {}
+    loaded.account_source_map = {}
+    return BasePreprocessor(loaded)
+
+
+def add_pending(processor, entry):
+    processor.loaded_reconciler.pending_data.append(entry)
+    for transaction in entry.entries:
+        if isinstance(transaction, Transaction):
+            processor.loaded_reconciler.pending_transaction_ids.add(id(transaction))
+            processor.loaded_reconciler.posting_db.add_transaction(transaction)
+
+
+def index_ids(processor):
+    return {id(posting.entry) for date in (datetime.date(2020, 1, 1),
+                                         datetime.date(2020, 1, 2))
+            for posting in processor.posting_db.get_date_currency_postings(
+                (date, 'USD'))}
+
+
+def synthetic_pending():
+    return pending_entries('''
+2020-01-01 * "First"
+  Assets:Checking -10 USD
+  Expenses:FIXME 10 USD
+''')
+
+
+def test_pending_data_tracks_reconciler_replacement(processor):
+    entry = synthetic_pending()
+    add_pending(processor, entry)
+    processor.loaded_reconciler.pending_data = []
+    assert processor.pending_data is processor.loaded_reconciler.pending_data
+
+
+def test_record_multiple_directives_once_and_index_persisted_entries(processor, tmp_path):
+    entry = pending_entries('''
+2020-01-01 * "First"
+  Assets:Checking -10 USD
+  Expenses:Groceries 10 USD
+2020-01-02 * "Second"
+  Assets:Checking -20 USD
+  Expenses:Groceries 20 USD
+''')
+    add_pending(processor, entry)
+    processor.loaded_reconciler.reconciler.entry_file_selector = lambda e: str(
+        tmp_path / ('other.beancount' if getattr(e, 'narration', '') == 'Second'
+                    else 'journal.beancount'))
+    processor.record_pending_entry(entry, entry)
+    persisted = [e for e in processor.editor.entries if isinstance(e, Transaction)]
+    assert len(persisted) == 2
+    assert processor.pending_data == []
+    assert processor.pending_transaction_ids == set()
+    assert index_ids(processor) == {id(e) for e in persisted}
+    reloaded = journal_editor.JournalEditor(processor.editor.journal_path)
+    assert len([e for e in reloaded.entries if isinstance(e, Transaction)]) == 2
+
+
+def test_record_opens_missing_accounts(processor):
+    entry = pending_entries('''
+2020-01-01 * "First"
+  Assets:Checking -10 USD
+  Expenses:New 10 USD
+''')
+    add_pending(processor, entry)
+    processor.record_pending_entry(entry, entry)
+    assert 'Expenses:New' in processor.editor.accounts
+
+
+@pytest.mark.parametrize('operation', ['record', 'ignore'])
+def test_failed_write_preserves_pending_state(processor, monkeypatch, operation):
+    entry = synthetic_pending()
+    add_pending(processor, entry)
+    before_ids = index_ids(processor)
+
+    def fail(stage):
+        raise OSError('synthetic write failure')
+
+    monkeypatch.setattr(journal_editor.StagedChanges, 'apply', fail)
+    with pytest.raises(OSError, match='synthetic write failure'):
+        if operation == 'record':
+            processor.record_pending_entry(entry, entry)
+        else:
+            processor.ignore_pending_entry(entry)
+    assert processor.pending_data == [entry]
+    assert processor.pending_transaction_ids == {id(entry.entries[0])}
+    assert index_ids(processor) == before_ids
+
+
+def test_ignore_removes_pending_index_and_persists_once(processor):
+    entry = synthetic_pending()
+    add_pending(processor, entry)
+    processor.ignore_pending_entry(entry)
+    assert processor.pending_data == []
+    assert processor.pending_transaction_ids == set()
+    assert index_ids(processor) == set()
+    assert len([e for e in processor.editor.ignored_entries
+                if isinstance(e, Transaction)]) == 1
+
+
+def test_modify_refreshes_pending_display_and_index(processor):
+    entry = synthetic_pending()
+    add_pending(processor, entry)
+    transaction = entry.entries[0]
+    changed = transaction._replace(postings=[
+        transaction.postings[0],
+        transaction.postings[1]._replace(account='Expenses:Groceries')])
+    processor.modify_pending_entry(entry, entry._replace(entries=[changed]))
+    modified, = processor.pending_data
+    assert modified.id != entry.id
+    assert 'Expenses:Groceries' in modified.formatted
+    assert processor.pending_transaction_ids == {id(changed)}
+    assert index_ids(processor) == {id(changed)}
+
+
+@pytest.mark.parametrize('reverse', [False, True])
+def test_rules_are_posting_order_independent(processor, reverse):
+    class Rules(TransactionRuleMixin, BasePreprocessor):
+        pass
+
+    entry = synthetic_pending()
+    if reverse:
+        transaction = entry.entries[0]
+        entry = entry._replace(entries=[transaction._replace(
+            postings=list(reversed(transaction.postings)))])
+    add_pending(processor, entry)
+    rules = Rules(processor.loaded_reconciler)
+    rules.apply_rules([PreprocessingRule(target_account='Expenses:Groceries',
+                                        action='modify')])
+    accounts = [p.account for p in rules.pending_data[0].entries[0].postings]
+    expected = ['Assets:Checking', 'Expenses:Groceries']
+    assert accounts == (list(reversed(expected)) if reverse else expected)
+
+
+@pytest.mark.parametrize('postings', ['', '  Assets:Checking -10 USD\n',
+    '  Assets:Checking -10 USD\n  Expenses:FIXME 5 USD\n  Expenses:FIXME 5 USD\n'])
+def test_rules_skip_non_simple_transactions(processor, postings):
+    class Rules(TransactionRuleMixin, BasePreprocessor):
+        pass
+
+    entry = synthetic_pending()
+    transaction = entry.entries[0]._replace(postings=[])
+    if postings:
+        transaction, = test_util.parse('2020-01-01 * "First"\n' + postings)
+    entry = entry._replace(entries=[transaction])
+    assert not Rules(processor.loaded_reconciler).is_simple_pending_entry(entry)
+
+
+def test_pending_data_assignment_updates_reconciler(processor):
+    entry = synthetic_pending()
+    processor.pending_data = [entry]
+    assert processor.loaded_reconciler.pending_data == [entry]
+
+
+def test_invalid_action_is_rejected():
+    with pytest.raises(ValueError, match='action'):
+        PreprocessingRule(action='recrod')
+
+
+@pytest.mark.parametrize('operation', ['record', 'ignore', 'modify'])
+def test_journal_backed_pending_entry(processor, operation):
+    raw = synthetic_pending()
+    stage = processor.editor.stage_changes()
+    stage.add_entry(raw.entries[0], processor.editor.journal_path)
+    original, = stage.apply().new_entries
+    entry = reconcile.make_pending_entry(
+        ImportResult(date=original.date, entries=[original], info=None), None)
+    processor.pending_data.append(entry)
+    processor.posting_db.add_transaction(original)
+    changed = original._replace(postings=[original.postings[0],
+        original.postings[1]._replace(account='Expenses:Groceries')])
+    new_entry = entry._replace(entries=[changed])
+    if operation == 'record':
+        processor.record_pending_entry(entry, new_entry)
+        persisted = [e for e in processor.editor.entries if isinstance(e, Transaction)]
+        assert len(persisted) == 1
+        assert persisted[0].postings[1].account == 'Expenses:Groceries'
+        assert index_ids(processor) == {id(persisted[0])}
+    elif operation == 'ignore':
+        processor.ignore_pending_entry(entry)
+        assert not any(isinstance(e, Transaction) for e in processor.editor.entries)
+        assert len(processor.editor.ignored_entries) == 1
+        assert index_ids(processor) == set()
+    else:
+        loaded = processor.loaded_reconciler
+        loaded.classifier = None
+        loaded._use_nearest_neighbor = False
+        loaded.sources = []
+        loaded.training_examples = training.TrainingExamples()
+        loaded._feature_extractor = training.FeatureExtractor(
+            account_source_map={}, sources=[], skip_accounts=set())
+        processor.modify_pending_entry(entry, new_entry)
+        assert index_ids(processor) == {id(original), id(changed)}
+        candidates = loaded._make_candidates_from_import_result(processor.pending_data[0])
+        candidate = next(c for c in candidates.candidates
+                         if any(t is original for t in c.used_transactions))
+        loaded.accept_candidate(candidate)
+        persisted = [e for e in processor.editor.entries if isinstance(e, Transaction)]
+        assert len(persisted) == 1
+        assert persisted[0].postings[1].account == 'Expenses:Groceries'
+    assert processor.pending_data == []
+
+
+@pytest.mark.parametrize('classifier', reconcile.CLASSIFIERS)
+def test_callback_actions_survive_reload(tmp_path, classifier):
+    journal = tmp_path / 'journal.beancount'
+    ignored = tmp_path / 'ignore.beancount'
+    csv_path = tmp_path / 'transactions.csv'
+    journal.write_text('''
+2019-01-01 open Assets:Checking USD
+  mint_id: "Synthetic Checking"
+''')
+    ignored.write_text('')
+    csv_path.write_text(
+        'Date,Description,Original Description,Amount,Transaction Type,Category,Account Name,Labels,Notes\n'
+        '01/01/2020,Rule Record,RULE RECORD,10.00,debit,,Synthetic Checking,,\n'
+        '01/02/2020,Rule Ignore,RULE IGNORE,20.00,debit,,Synthetic Checking,,\n'
+        '01/03/2020,Rule Modify,RULE MODIFY,30.00,debit,,Synthetic Checking,,\n'
+        '01/04/2020,Unmatched,UNMATCHED,40.00,debit,,Synthetic Checking,,\n')
+
+    class Rules(TransactionRuleMixin, BasePreprocessor):
+        def preprocess(self):
+            self.apply_rules([
+                PreprocessingRule(posting_meta={'source_desc': 'RULE RECORD'},
+                                  target_account='Expenses:Groceries'),
+                PreprocessingRule(posting_meta={'source_desc': 'RULE IGNORE'},
+                                  action='ignore'),
+                PreprocessingRule(posting_meta={'source_desc': 'RULE MODIFY'},
+                                  target_account='Expenses:Groceries', action='modify'),
+            ])
+
+    options = dict(
+        default_output=str(journal), transaction_output_map=[],
+        open_account_output_map=[], balance_account_output_map=[], price_output=None,
+        fuzzy_match_days=5, fuzzy_match_amount=0, account_pattern=None,
+        ignore_account_for_classification_pattern=training.DEFAULT_IGNORE_ACCOUNT_FOR_CLASSIFICATION_PATTERN, classifier_cache=None,
+        classifier=classifier, preprocessor=Rules,
+        data_sources=[dict(module='beancount_import.source.mint', filename=str(csv_path))])
+    reconciler = reconcile.Reconciler(str(journal), lambda message: None,
+                                     str(ignored), options)
+    try:
+        for iteration in range(2):
+            loaded = reconciler.loaded_future.result(timeout=30)
+            assert len(loaded.pending_data) == 2
+            assert len([e for e in loaded.editor.entries if isinstance(e, Transaction)]) == 1
+            assert len([e for e in loaded.editor.ignored_entries
+                        if isinstance(e, Transaction)]) == 1
+            modified = next(e for e in loaded.pending_data
+                            if 'RULE MODIFY' in e.formatted)
+            assert 'Expenses:Groceries' in modified.formatted
+            assert len(loaded.training_examples.training_examples) > 0
+            if iteration == 0:
+                reconciler.reload_journal()
+    finally:
+        gc.unfreeze()
+
+
+def test_find_pending_entries_can_be_consumed_while_recording(processor):
+    first = synthetic_pending()
+    second = pending_entries('''
+2020-01-02 * "Second"
+  Assets:Checking -20 USD
+  Expenses:Groceries 20 USD
+''')
+    add_pending(processor, first)
+    add_pending(processor, second)
+    for entry in processor.find_pending_entries(lambda entry: True):
+        processor.record_pending_entry(entry, entry)
+    assert processor.pending_data == []
