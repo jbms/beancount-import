@@ -694,6 +694,26 @@ def test_transaction_metadata_incompatibility():
             cleared: TRUE
         """)
 
+
+def test_missing_price_currency_does_not_crash_search():
+    # An importer that returns unbooked entries can leave the currency of a
+    # price unspecified.  The weight of that posting has a `MISSING`
+    # currency, while the other posting on the same date has `USD`; sorting
+    # their (date, currency) search keys used to raise TypeError.
+    assert_match(
+        pending_candidate="""
+        2016-01-01 * "Fictional Rail Co"
+          Assets:Checking  -55.00 USD
+            cleared: TRUE
+          Expenses:FIXME  50.00 EUR @ 1.10
+        """,
+        pending="""
+        2016-01-01 * "Fictional Rail Co"
+          Assets:Checking  -55.00 USD
+          Expenses:Travel  50.00 EUR @ 1.10
+        """)
+
+
 def test_match_fuzzy_amount():
   # We match despite a skew of 0.01 USD, our configured fuzzy_match_amount.
   assert_match(

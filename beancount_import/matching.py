@@ -236,6 +236,21 @@ SearchPosting = NamedTuple('SearchPosting', [
 
 DateCurrencyKey = Tuple[datetime.date, str]
 
+
+def _date_currency_sort_key(key: DateCurrencyKey) -> Tuple[datetime.date, bool, str]:
+    """Orders `DateCurrencyKey`s chronologically, then by currency.
+
+    A posting that has not been through booking, e.g. one an importer parsed
+    from `-50.00 EUR @ 1.10`, can have a weight whose currency is `MISSING`
+    or `None`.  Those cannot be compared with a `str`, so they sort after the
+    known currencies of the same date.
+    """
+    date, currency = key
+    if isinstance(currency, str):
+        return (date, False, currency)
+    return (date, True, '')
+
+
 CHECK_KEY = 'check'
 
 
@@ -366,7 +381,7 @@ class PostingDatabase(object):
         for dc, items in postings_date_currency.items():
             items.sort()
 
-        keys = sorted(postings_date_currency.keys())
+        keys = sorted(postings_date_currency.keys(), key=_date_currency_sort_key)
 
         for key in keys:
             db = self.get_date_currency_postings(key)
