@@ -45,15 +45,30 @@ const AccountSubstitutionBackground = styled.div<{ groupNumber: number }>`
     groupBackgroundColors[p.groupNumber % groupBackgroundColors.length]};
 `;
 
-const AccountSubstitutionElement = styled.div<{ active: boolean }>`
+const LOW_CONFIDENCE = 0.7;
+
+const AccountSubstitutionElement = styled.div<{
+  active: boolean;
+  lowConfidence: boolean;
+}>`
   display: inline;
   position: relative;
   cursor: pointer;
-  border: 1px solid ${p => (p.active ? "black" : "transparent")};
+  border: 1px ${p => (p.lowConfidence && !p.active ? "dashed" : "solid")}
+    ${p => p.active ? "black" : p.lowConfidence ? "var(--color-low-confidence-border)" : "transparent"};
 
   :hover {
     text-decoration: underline;
   }
+`;
+
+const PredictionConfidenceElement = styled.span`
+  margin-left: 0.5em;
+  padding: 0 0.25em;
+  border-radius: 3px;
+  background: var(--color-low-confidence-bg);
+  color: var(--color-low-confidence-text);
+  font-size: 0.85em;
 `;
 
 const AccountSubstitutionIndicatorElement = styled.div`
@@ -223,7 +238,9 @@ export class CandidateComponent extends React.PureComponent<
       } else {
         let start = 0;
         let fieldNumber = 0;
-        for (const [uniqueName, accountName, groupNumber] of substituted) {
+        for (const [
+          uniqueName, accountName, groupNumber, , predictedAccountName, confidence
+        ] of substituted) {
           const i = line.indexOf(uniqueName);
           if (i === -1) {
             ++fieldNumber;
@@ -238,12 +255,22 @@ export class CandidateComponent extends React.PureComponent<
           addText(line.substring(0, i));
           const groupBackgroundColor =
             groupBackgroundColors[groupNumber % groupBackgroundColors.length];
+          const hasConfidence =
+            accountName === predictedAccountName &&
+            typeof confidence === "number" &&
+            Number.isFinite(confidence) && confidence >= 0 && confidence <= 1;
+          const lowConfidence = hasConfidence && confidence! < LOW_CONFIDENCE;
+          const percentage = hasConfidence ? Math.round(confidence! * 100) : null;
+          const confidenceNote = hasConfidence
+            ? `${lowConfidence ? "Low-confidence prediction. " : ""}Nearest-neighbor vote share: ${percentage}% (not a probability of correctness).  `
+            : "";
           addElement(
             <AccountSubstitutionElement
-              title={`Click to change all group ${groupNumber +
+              title={`${confidenceNote}Click to change all group ${groupNumber +
                 1} posting accounts (keyboard shortcut ${groupNumber +
                 1}).   Shift click to change this posting account only.`}
               active={active}
+              lowConfidence={lowConfidence}
               key={currentElements.length}
               style={{ backgroundColor: groupBackgroundColor }}
               data-field-number={fieldNumber}
@@ -256,6 +283,9 @@ export class CandidateComponent extends React.PureComponent<
                 {"" + (groupNumber + 1)}
               </AccountSubstitutionIndicatorElement>
               {accountName}
+              {lowConfidence && (
+                <PredictionConfidenceElement>{percentage}%</PredictionConfidenceElement>
+              )}
             </AccountSubstitutionElement>
           );
           start = i + uniqueName.length;

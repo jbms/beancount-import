@@ -26,9 +26,12 @@ export interface InvalidReference {
 }
 
 /**
- * uniqueName, accountName, groupNumber, originalName, predictedName
+ * uniqueName, accountName, groupNumber, originalName, predictedName,
+ * optional nearest-neighbor vote share (null for other classifiers).
  */
-export type SubstitutedAccount = [string, string, number, string, string];
+export type SubstitutedAccount = [
+  string, string, number, string, string, (number | null)?
+];
 
 /**
  * originalStartLine, originalEndLine

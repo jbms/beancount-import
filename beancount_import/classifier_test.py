@@ -1,4 +1,5 @@
 import datetime
+import pytest
 
 from beancount.core.amount import Amount
 from beancount.core.number import D
@@ -274,3 +275,69 @@ def test_reused_vectors_ignore_other_encoder():
     c.prepare()
     np.testing.assert_allclose(
         c._embeddings, c.encoder.transform(previous._examples), atol=1e-6)
+
+
+
+def test_prediction_confidence_is_the_winning_vote_share():
+    loaded = _bare_reconciler([
+        (_item('Example notebook'), 'Expenses:Office'),
+        (_item('Example notebook'), 'Expenses:Office'),
+        (_item('Example notebook'), 'Expenses:Household'),
+    ])
+    transaction, = test_util.parse("""
+        2020-02-01 * "Example seller" "Order"
+          amazon_account: "example@example.com"
+          Expenses:FIXME:A  10 USD
+            amazon_item_description: "Example notebook"
+          Expenses:FIXME:A   1 USD
+            amazon_invoice_description: "Sales Tax"
+          Expenses:FIXME   -11 USD
+        """)
+    predictions = loaded._predict_unknown_accounts(transaction)
+    assert [account for account, _ in predictions] == [
+        'Expenses:Office', 'Expenses:Office', reconcile.FIXME_ACCOUNT]
+    assert predictions[0][1] == pytest.approx(2 / 3)
+    assert predictions[1][1] == predictions[0][1]
+    assert predictions[2][1] is None
+
+
+def test_item_confidence_follows_smoothed_prediction_and_largest_item(monkeypatch):
+    loaded = _bare_reconciler([])
+    transaction, = test_util.parse("""
+        2020-02-01 * "Example seller" "Order"
+          amazon_account: "example@example.com"
+          Expenses:FIXME:A  10 USD
+            amazon_item_description: "Example notebook"
+          Expenses:FIXME:A  20 USD
+            amazon_item_description: "Example towel"
+          Expenses:FIXME:A   3 USD
+            amazon_invoice_description: "Sales Tax"
+          Liabilities:Card -33 USD
+        """)
+    scores = iter([
+        {'Expenses:Office': 0.8, 'Expenses:Household': 0.2},
+        {'Expenses:Office': 0.1, 'Expenses:Household': 0.9},
+    ])
+    monkeypatch.setattr(loaded, '_predict_scores', lambda _: next(scores))
+    first, second, tax = loaded._predict_unknown_accounts(transaction)
+    smoothing = reconcile.ITEM_SMOOTHING
+    assert first[0] == 'Expenses:Office'
+    assert first[1] == pytest.approx((1 - smoothing) * 0.8 + smoothing * 0.45)
+    assert second[0] == 'Expenses:Household'
+    assert second[1] == pytest.approx((1 - smoothing) * 0.9 + smoothing * 0.55)
+    assert tax == second
+
+
+@pytest.mark.parametrize('nearest_neighbor', [False, True])
+def test_disabled_classifier_has_no_confidence(nearest_neighbor):
+    loaded = _bare_reconciler([])
+    loaded._use_nearest_neighbor = nearest_neighbor
+    loaded.classifier = None
+    transaction, = test_util.parse("""
+        2020-02-01 * "Example seller" "Order"
+          amazon_account: "example@example.com"
+          Expenses:FIXME  10 USD
+            amazon_item_description: "Example notebook"
+          Liabilities:Card -10 USD
+        """)
+    assert loaded._predict_unknown_accounts(transaction) == [(reconcile.FIXME_ACCOUNT, None)]
