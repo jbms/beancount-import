@@ -41,20 +41,17 @@ class BasePreprocessor:
             if isinstance(directive, Transaction):
                 self.posting_db.remove_transaction(directive)
                 self.pending_transaction_ids.discard(id(directive))
-        removed_ids = {id(directive) for directive in entry.entries}
         loaded = self.loaded_reconciler
+        originals = loaded._pending_entry_originals.pop(id(entry), ())
+        removed_ids = {id(directive) for directive in (*entry.entries, *originals)}
         loaded.uncleared_postings = [
             pair for pair in loaded.uncleared_postings
             if id(pair[0]) not in removed_ids]
         self.pending_data.remove(entry)
 
     def _stage_entry_removal(self, stage: StagedChanges, entry: PendingEntry) -> None:
-        # Pending FIXME entries can also originate in the journal itself.
-        for directive in entry.entries:
-            if id(directive) in self.pending_transaction_ids:
-                continue
-            if any(directive is existing for existing in self.editor.entries):
-                stage.remove_entry(directive)
+        for directive in self.loaded_reconciler._get_pending_entry_originals(entry):
+            stage.remove_entry(directive)
 
     def ignore_pending_entry(self, entry: PendingEntry) -> None:
         """Move a pending entry to the ignore journal after writing succeeds."""
@@ -95,16 +92,25 @@ class BasePreprocessor:
     ) -> None:
         """Replace a pending entry without writing it to the journal."""
         idx = self.pending_data.index(old_entry)
+        loaded = self.loaded_reconciler
+        originals = loaded._get_pending_entry_originals(old_entry)
+        original_ids = {id(entry) for entry in originals}
+        # Even a no-op modification needs a distinct pending representation.
+        entries = [entry._replace() if isinstance(entry, Transaction)
+                   and id(entry) in original_ids else entry
+                   for entry in new_entry.entries]
         refreshed = make_pending_entry(
-            ImportResult(date=new_entry.date, entries=new_entry.entries,
+            ImportResult(date=new_entry.date, entries=entries,
                          info=new_entry.info), new_entry.source)
         for directive in old_entry.entries:
-            if (isinstance(directive, Transaction)
-                    and id(directive) in self.pending_transaction_ids):
+            if isinstance(directive, Transaction):
                 self.posting_db.remove_transaction(directive)
-                self.pending_transaction_ids.remove(id(directive))
-        # A journal-backed original stays indexed so the replacement can be
-        # matched to it and accepted as an edit instead of an extra import.
+                self.pending_transaction_ids.discard(id(directive))
+        # Keep journal provenance separate from matching: cleared postings
+        # cannot be fuzzy-matched to another copy of themselves.
+        loaded._pending_entry_originals.pop(id(old_entry), None)
+        if originals:
+            loaded._pending_entry_originals[id(refreshed)] = originals
         for directive in refreshed.entries:
             if isinstance(directive, Transaction):
                 self.posting_db.add_transaction(directive)

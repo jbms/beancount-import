@@ -25,8 +25,11 @@ Omitting the option leaves the normal import flow unchanged.
 - `ignore_pending_entry(entry)` writes to the configured ignore journal and
   removes the pending entry from review and matching.
 - `modify_pending_entry(old, new)` updates the pending entry and its display,
-  identity, and matching index without writing it. Journal-backed originals
-  remain available for matching so acceptance can update the existing entry.
+  identity, and matching index without writing it. It retains an explicit link
+  to journal-backed originals, which are reserved for the replacement. Acceptance,
+  recording, and ignoring update those originals directly, including after
+  repeated modifications; they do not rely on fuzzy matching. A replacement with
+  several directives is accepted as a whole.
 - `find_pending_entries(predicate)` iterates a snapshot, allowing the matching
   entries to be recorded or ignored during iteration.
 

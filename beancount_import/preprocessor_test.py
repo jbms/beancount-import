@@ -138,6 +138,7 @@ include "other.beancount"
         is_cleared=lambda posting: False, metadata_keys=frozenset())
     loaded.pending_data = []
     loaded.pending_transaction_ids = set()
+    loaded._pending_entry_originals = {}
     loaded.uncleared_postings = []
     loaded.cleared_dates = {}
     loaded.account_source_map = {}
@@ -331,7 +332,7 @@ def test_journal_backed_pending_entry(processor, operation):
         loaded._feature_extractor = training.FeatureExtractor(
             account_source_map={}, sources=[], skip_accounts=set())
         processor.modify_pending_entry(entry, new_entry)
-        assert index_ids(processor) == {id(original), id(changed)}
+        assert index_ids(processor) == {id(changed)}
         candidates = loaded._make_candidates_from_import_result(processor.pending_data[0])
         candidate = next(c for c in candidates.candidates
                          if any(t is original for t in c.used_transactions))
@@ -408,3 +409,195 @@ def test_find_pending_entries_can_be_consumed_while_recording(processor):
     for entry in processor.find_pending_entries(lambda entry: True):
         processor.record_pending_entry(entry, entry)
     assert processor.pending_data == []
+
+
+@pytest.fixture
+def mint_journal_pending(tmp_path):
+    journal = tmp_path / 'journal.beancount'
+    ignored = tmp_path / 'ignore.beancount'
+    csv_path = tmp_path / 'transactions.csv'
+    journal.write_text('''
+2019-01-01 open Assets:Checking USD
+  mint_id: "Synthetic Checking"
+2019-01-01 open Expenses:FIXME USD
+2020-01-01 * "RULE MODIFY"
+  Assets:Checking -10 USD
+    date: 2020-01-01
+    source_desc: "RULE MODIFY"
+  Expenses:FIXME 10 USD
+''')
+    ignored.write_text('')
+    csv_path.write_text(
+        'Date,Description,Original Description,Amount,Transaction Type,Category,Account Name,Labels,Notes\n'
+        '01/01/2020,Rule Modify,RULE MODIFY,10.00,debit,,Synthetic Checking,,\n')
+    options = dict(
+        default_output=str(journal), transaction_output_map=[],
+        open_account_output_map=[], balance_account_output_map=[], price_output=None,
+        fuzzy_match_days=5, fuzzy_match_amount=0, account_pattern=None,
+        ignore_account_for_classification_pattern=training.DEFAULT_IGNORE_ACCOUNT_FOR_CLASSIFICATION_PATTERN,
+        classifier_cache=None,
+        data_sources=[dict(module='beancount_import.source.mint', filename=str(csv_path))])
+    reconciler = reconcile.Reconciler(str(journal), lambda message: None,
+                                     str(ignored), options)
+    try:
+        loaded = reconciler.loaded_future.result(timeout=30)
+        assert len(loaded.pending_data) == 1
+        original = loaded.pending_data[0].entries[0]
+        assert loaded.is_posting_cleared(original.postings[0])
+        yield reconciler, BasePreprocessor(loaded), original
+    finally:
+        gc.unfreeze()
+
+
+def modify_account(processor, account):
+    entry, = processor.pending_data
+    transaction = entry.entries[0]
+    changed = transaction._replace(postings=[transaction.postings[0],
+        transaction.postings[1]._replace(account=account)])
+    processor.modify_pending_entry(entry, entry._replace(entries=[changed]))
+
+
+@pytest.mark.parametrize('operation', ['accept', 'accept_ignored', 'record', 'ignore'])
+def test_modified_cleared_journal_entry_keeps_provenance(mint_journal_pending, operation):
+    reconciler, processor, original = mint_journal_pending
+    modify_account(processor, 'Expenses:Groceries')
+    # A second modification must still refer to the first journal original.
+    modify_account(processor, 'Expenses:Household')
+    if operation.startswith('accept'):
+        loaded = processor.loaded_reconciler
+        candidates, _, _ = loaded.get_next_candidates()
+        for candidate in candidates.candidates:
+            assert any(t is original for t in candidate.used_transactions)
+        loaded.accept_candidate(candidates.candidates[0], ignore=operation == 'accept_ignored')
+    elif operation == 'record':
+        entry, = processor.pending_data
+        processor.record_pending_entry(entry, entry)
+    else:
+        processor.ignore_pending_entry(processor.pending_data[0])
+    assert processor.pending_data == []
+    assert processor.pending_transaction_ids == set()
+    assert id(original) not in index_ids(processor)
+    reconciler.reload_journal()
+    reloaded = reconciler.loaded_future.result(timeout=30)
+    assert reloaded.pending_data == []
+    assert reloaded.invalid_references == []
+    ignored = operation in ('ignore', 'accept_ignored')
+    journal_transactions = [e for e in reloaded.editor.entries if isinstance(e, Transaction)]
+    ignored_transactions = [e for e in reloaded.editor.ignored_entries if isinstance(e, Transaction)]
+    assert len(journal_transactions) == (0 if ignored else 1)
+    assert len(ignored_transactions) == (1 if ignored else 0)
+    persisted, = ignored_transactions if ignored else journal_transactions
+    assert persisted.postings[1].account == 'Expenses:Household'
+    assert persisted.postings[0].meta['source_desc'] == 'RULE MODIFY'
+    assert persisted.postings[0].meta['date'] == original.postings[0].meta['date']
+
+
+def test_noop_modify_keeps_journal_provenance(mint_journal_pending):
+    reconciler, processor, original = mint_journal_pending
+    entry, = processor.pending_data
+    processor.modify_pending_entry(entry, entry)
+    loaded = processor.loaded_reconciler
+    candidates, _, _ = loaded.get_next_candidates()
+    loaded.accept_candidate(candidates.candidates[0])
+    persisted = [e for e in loaded.editor.entries if isinstance(e, Transaction)]
+    assert len(persisted) == 1
+    assert processor.pending_data == []
+    assert processor.pending_transaction_ids == set()
+
+
+@pytest.mark.parametrize('operation', ['record', 'ignore'])
+def test_failed_write_retains_modified_journal_provenance(
+        mint_journal_pending, monkeypatch, operation):
+    reconciler, processor, original = mint_journal_pending
+    modify_account(processor, 'Expenses:Groceries')
+    entry, = processor.pending_data
+    before_ids = index_ids(processor)
+
+    def fail(stage):
+        raise OSError('synthetic write failure')
+
+    with monkeypatch.context() as patch:
+        patch.setattr(journal_editor.StagedChanges, 'apply', fail)
+        with pytest.raises(OSError, match='synthetic write failure'):
+            if operation == 'record':
+                processor.record_pending_entry(entry, entry)
+            else:
+                processor.ignore_pending_entry(entry)
+    assert processor.pending_data == [entry]
+    assert index_ids(processor) == before_ids
+    # Retrying after the failed write must still consume the journal original.
+    if operation == 'record':
+        processor.record_pending_entry(entry, entry)
+    else:
+        processor.ignore_pending_entry(entry)
+    reconciler.reload_journal()
+    loaded = reconciler.loaded_future.result(timeout=30)
+    assert loaded.pending_data == []
+    assert loaded.invalid_references == []
+
+
+def add_balance_to_modified_entry(processor):
+    entry, = processor.pending_data
+    balance, = test_util.parse('2020-01-02 balance Assets:Checking -10 USD')
+    processor.modify_pending_entry(entry, entry._replace(entries=[*entry.entries, balance]))
+    return processor.pending_data[0]
+
+
+def test_accept_modified_journal_entry_with_multiple_directives(mint_journal_pending):
+    reconciler, processor, original = mint_journal_pending
+    modify_account(processor, 'Expenses:Groceries')
+    add_balance_to_modified_entry(processor)
+    loaded = processor.loaded_reconciler
+    candidates, _, _ = loaded.get_next_candidates()
+    loaded.accept_candidate(candidates.candidates[0])
+    assert processor.pending_data == []
+    assert processor.pending_transaction_ids == set()
+    assert loaded._pending_entry_originals == {}
+    reconciler.reload_journal()
+    reloaded = reconciler.loaded_future.result(timeout=30)
+    assert reloaded.pending_data == []
+    assert reloaded.invalid_references == []
+    assert len([e for e in reloaded.editor.entries if isinstance(e, Transaction)]) == 1
+
+
+def test_matching_cannot_consume_part_of_modified_journal_entry(mint_journal_pending):
+    reconciler, processor, original = mint_journal_pending
+    modify_account(processor, 'Expenses:Groceries')
+    grouped = add_balance_to_modified_entry(processor)
+    imported = synthetic_pending()
+    add_pending(processor, imported)
+    candidates = processor.loaded_reconciler._make_candidates_from_import_result(imported)
+    assert all(not any(t is grouped.entries[0] for t in candidate.used_transactions)
+               for candidate in candidates.candidates)
+
+
+def test_accept_cleans_consumed_transaction_from_middle_of_pending_group(processor):
+    loaded = processor.loaded_reconciler
+    loaded.classifier = None
+    loaded._use_nearest_neighbor = False
+    loaded.sources = []
+    loaded.training_examples = training.TrainingExamples()
+    loaded._feature_extractor = training.FeatureExtractor(
+        account_source_map={}, sources=[], skip_accounts=set())
+    grouped = pending_entries('''
+2020-01-01 * "First"
+  Assets:Checking -10 USD
+  Expenses:FIXME 10 USD
+2020-01-02 * "Second"
+  Assets:Checking -20 USD
+  Expenses:FIXME 20 USD
+''')
+    imported = pending_entries('''
+2020-01-02 * "Second"
+  Assets:Checking -20 USD
+  Expenses:Groceries 20 USD
+''')
+    add_pending(processor, grouped)
+    add_pending(processor, imported)
+    second = grouped.entries[1]
+    candidates = loaded._make_candidates_from_import_result(imported)
+    matched = next(candidate for candidate in candidates.candidates
+                   if any(entry is second for entry in candidate.used_transactions))
+    loaded.accept_candidate(matched)
+    assert id(second) not in processor.pending_transaction_ids
+    assert id(second) not in index_ids(processor)
