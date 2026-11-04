@@ -150,6 +150,7 @@ class Locale_en_US(Locale_Data):
         '.*[0-9]+% Off.*',
         'Courtesy Credit',
         'Extra Savings',
+        'Exclusive Promotion Applied',
         '(?:.*) Discount',
         'Gift[ -]Wrap',
     ]) + ') *:')
@@ -757,7 +758,9 @@ def parse_credit_card_transactions_from_payments_table(
     return credit_card_transactions
 
 
-def parse_credit_card_transactions(soup, locale=Locale_en_US) -> List[CreditCardTransaction]:
+def parse_credit_card_transactions(
+        soup, locale=Locale_en_US, require_full_date: bool = False
+) -> List[CreditCardTransaction]:
     """ Parse Credit Card Transactions from bottom sub-table of payments table.
     Transactions are listed with type, 4 digits, transaction date and amount.
     """
@@ -780,6 +783,8 @@ def parse_credit_card_transactions(soup, locale=Locale_en_US) -> List[CreditCard
         m = re.match(locale.credit_card_last_digits, description,
                     re.UNICODE)
         assert m is not None
+        if require_full_date and re.fullmatch(r'[A-Za-z]+ \d{1,2}, \d{4}', m.group(3)) is None:
+            raise ValueError('Invalid card transaction date: %r' % m.group(3))
         transactions.append(
             CreditCardTransaction(
                 date=locale.parse_date(m.group(3)),
@@ -809,6 +814,9 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     errors = []  # type: Errors
     with open(path, 'rb') as f:
         soup: BeautifulSoup = bs4.BeautifulSoup(f.read(), 'lxml')
+
+    if locale.LOCALE == 'en_US' and soup.find(attrs={'data-component': 'orderId'}):
+        return parse_new_style_invoice(soup, locale=locale)
     
     # -----------------
     # Order ID & Order placed date
@@ -1013,6 +1021,119 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
         errors=sum((shipment.errors
                     for shipment in shipments), cast(Errors, [])) + errors,
         **output_fields)
+
+
+def parse_new_style_invoice(soup: BeautifulSoup, locale=Locale_en_US) -> Order:
+    """Parse the component-based US order-details layout.
+
+    The page gives order-wide amounts rather than per-shipment amounts, so
+    represent its items in one shipment without inventing a shipment date.
+    """
+    def component(parent, name: str) -> Tag:
+        return require_find(parent, attrs={'data-component': name})
+
+    order_id_text = component(soup, 'orderId').get_text(' ', strip=True)
+    match = re.fullmatch(r'\d{3}-\d{7}-\d{7}', order_id_text)
+    if match is None:
+        raise ValueError('Invalid order ID: %r' % order_id_text)
+    order_id = match.group()
+    date_text = component(soup, 'orderDate').get_text(' ', strip=True)
+    if re.fullmatch(r'[A-Za-z]+ \d{1,2}, \d{4}', date_text) is None:
+        raise ValueError('Invalid order date: %r' % date_text)
+    order_date = locale.parse_date(date_text)
+
+    items = []  # type: List[Union[Item, DigitalItem]]
+    for container in soup.find_all(attrs={'data-component': 'purchasedItemsRightGrid'}):
+        description = component(container, 'itemTitle').get_text(' ', strip=True)
+        if not description:
+            raise ValueError('Missing item description')
+        price_node = component(container, 'unitPrice')
+        # Amazon repeats prices for screen readers and visual presentation.
+        price_node = price_node.find(class_='a-offscreen') or price_node
+        price_text = price_node.get_text(' ', strip=True)
+        if not price_text:
+            raise ValueError('Missing item price')
+        price = locale.parse_amount(price_text)
+
+        quantity_node = container.find(attrs={'data-component': 'quantity'})
+        quantity_text = quantity_node.get_text(' ', strip=True) if quantity_node else ''
+        if not quantity_text:
+            left_grid = require_find_parent(container, 'div').find(
+                attrs={'data-component': 'purchasedItemsLeftGrid'})
+            quantity_node = left_grid.find(class_='od-item-view-qty') if left_grid else None
+            quantity_text = quantity_node.get_text(' ', strip=True) if quantity_node else ''
+        quantity = D(re.sub(r'^Qty:\s*', '', quantity_text)) if quantity_text else D(1)
+        if not quantity.is_finite() or quantity <= ZERO:
+            raise ValueError('Invalid item quantity: %r' % quantity_text)
+        seller = container.find(attrs={'data-component': 'orderedMerchant'})
+        condition = container.find(attrs={'data-component': 'itemCondition'})
+        items.append(Item(
+            quantity=quantity, description=description, price=price,
+            sold_by=re.sub(r'^Sold by:\s*', '', seller.get_text(' ', strip=True))
+            if seller else None,
+            condition=(condition.get_text(' ', strip=True) or None) if condition else None))
+    if not items:
+        raise ValueError('No items found in component-based order details')
+
+    summary = component(soup, 'orderSummary')
+    rows = []  # type: List[Tuple[str, Amount]]
+    for row in summary.find_all(class_='od-line-item-row'):
+        label = require_find(row, class_='od-line-item-row-label').get_text(' ', strip=True)
+        value = require_find(row, class_='od-line-item-row-content')
+        value = value.find(class_='a-offscreen') or value
+        rows.append((label, locale.parse_amount(value.get_text(' ', strip=True))))
+
+    def summary_amount(pattern: str, required: bool = True) -> Optional[Amount]:
+        amounts = [amount for label, amount in rows
+                   if re.fullmatch(pattern, label, re.IGNORECASE)]
+        if len(amounts) != 1:
+            if required or amounts:
+                raise ValueError('Expected one summary field matching %r' % pattern)
+            return None
+        return amounts[0]
+
+    def adjustments(pattern: str) -> List[Adjustment]:
+        return [Adjustment(label.rstrip(':').strip(), amount)
+                for label, amount in rows if re.fullmatch(pattern, label, re.IGNORECASE)]
+
+    subtotal = summary_amount(locale.items_subtotal)
+    grand_total = summary_amount(locale.regular_total_order)
+    assert subtotal is not None and grand_total is not None
+    pretax = adjustments(locale.pretax_adjustment_fields_pattern)
+    posttax = adjustments(locale.posttax_adjustment_fields_pattern)
+    before_tax = summary_amount(locale.total_before_tax, required=False)
+    expected_before_tax = reduce_amounts([subtotal] + [a.amount for a in pretax])
+    if before_tax is None:
+        before_tax = expected_before_tax
+    tax = summary_amount(locale.regular_estimated_tax, required=False)
+    if tax is None:
+        tax = Amount(ZERO, subtotal.currency)
+    total = beancount.core.amount.add(before_tax, tax)
+    errors = []  # type: Errors
+    comparisons = [
+        ('items subtotal', reduce_amounts(beancount.core.amount.mul(item.price, item.quantity)
+                                         for item in items), subtotal),
+        ('total before tax', expected_before_tax, before_tax),
+        ('grand total', reduce_amounts([total] + [a.amount for a in posttax]), grand_total),
+    ]
+    for label, expected, actual in comparisons:
+        if expected != actual:
+            errors.append('expected %s is %s, but parsed value is %s' % (label, expected, actual))
+
+    # A displayed payment method does not establish a charge amount or date.
+    payments = parse_credit_card_transactions(soup, locale=locale, require_full_date=True)
+    if payments and reduce_amounts(p.amount for p in payments) != grand_total:
+        errors.append('total payment amount is %s, but grand total is %s' %
+                      (reduce_amounts(p.amount for p in payments), grand_total))
+    shipment = Shipment(
+        shipped_date=None, items=items, items_subtotal=subtotal,
+        pretax_adjustments=pretax, total_before_tax=before_tax,
+        posttax_adjustments=[], tax=[Adjustment('Sales Tax', tax)],
+        total=total, errors=[])
+    return Order(
+        order_id=order_id, order_date=order_date, shipments=[shipment],
+        credit_card_transactions=payments, pretax_adjustments=pretax,
+        posttax_adjustments=posttax, tax=tax, errors=errors)
 
 
 def get_text_lines(parent_node):
