@@ -251,6 +251,38 @@ def test_basic(tmpdir: py.path.local):
     tester.snapshot()
 
 
+def test_decision_tree_predictions_are_independent_of_global_random_seed():
+    import datetime
+    from types import SimpleNamespace
+
+    import numpy as np
+    from beancount.core.amount import Amount
+
+    def example(a, b):
+        return training.PredictionInput(
+            source_account='Assets:Checking', amount=Amount.from_string('10 USD'),
+            date=datetime.date(2020, 1, 1), key_value_pairs={'a': a, 'b': b})
+
+    loaded = reconcile.LoadedReconciler.__new__(reconcile.LoadedReconciler)
+    loaded.reconciler = SimpleNamespace(
+        options={'classifier_cache': None}, log_status=lambda message: None)
+    loaded._use_nearest_neighbor = False
+    loaded.training_examples = training.TrainingExamples()
+    loaded.training_examples.add(example('one', 'one'), 'Expenses:Groceries')
+    loaded.training_examples.add(example('zero', 'zero'), 'Expenses:Dining')
+    # Both features fit training equally well, but disagree on this query.
+    query = example('one', 'zero')
+    previous_state = np.random.get_state()
+    predictions = set()
+    try:
+        for seed in range(32):
+            np.random.seed(seed)
+            loaded._maybe_train_classifier()
+            predictions.add(loaded.predict_account(query))
+    finally:
+        np.random.set_state(previous_state)
+    assert len(predictions) == 1
+
 def test_basic_nearest_neighbor(tmpdir: py.path.local):
     cache_path = str(tmpdir.join('classifier_cache'))
     journal_dir = tmpdir.mkdir('journal')
@@ -453,36 +485,3 @@ def test_stage_missing_accounts_with_unspecified_currency(tmpdir, missing_curren
     assert opens['Expenses:Unspecified'].currencies == []
     assert all(entry.date == transaction.date for entry in opens.values())
     assert stage.get_missing_accounts() == []
-
-
-def test_decision_tree_predictions_are_independent_of_global_random_seed():
-    import datetime
-    from types import SimpleNamespace
-
-    import numpy as np
-    from beancount.core.amount import Amount
-
-    def example(a, b):
-        return training.PredictionInput(
-            source_account='Assets:Checking', amount=Amount.from_string('10 USD'),
-            date=datetime.date(2020, 1, 1), key_value_pairs={'a': a, 'b': b})
-
-    loaded = reconcile.LoadedReconciler.__new__(reconcile.LoadedReconciler)
-    loaded.reconciler = SimpleNamespace(
-        options={'classifier_cache': None}, log_status=lambda message: None)
-    loaded._use_nearest_neighbor = False
-    loaded.training_examples = training.TrainingExamples()
-    loaded.training_examples.add(example('one', 'one'), 'Expenses:Groceries')
-    loaded.training_examples.add(example('zero', 'zero'), 'Expenses:Dining')
-    # Both features fit training equally well, but disagree on this query.
-    query = example('one', 'zero')
-    previous_state = np.random.get_state()
-    predictions = set()
-    try:
-        for seed in range(32):
-            np.random.seed(seed)
-            loaded._maybe_train_classifier()
-            predictions.add(loaded.predict_account(query))
-    finally:
-        np.random.set_state(previous_state)
-    assert len(predictions) == 1
