@@ -49,6 +49,11 @@ nearest_neighbor_cache_version_number = 'nearest_neighbor-1'
 ENCODER_MAX_AGE_DAYS = 30
 ENCODER_MAX_GROWTH = 1.05
 
+# Weight of the transaction-wide average when the nearest-neighbor classifier
+# predicts several items of one transaction (e.g. an Amazon order)
+# individually.
+ITEM_SMOOTHING = 0.3
+
 PendingEntry = NamedTuple('PendingEntry', [
     ('date', datetime.date),
     ('entries', Entries),
@@ -868,6 +873,8 @@ class LoadedReconciler(object):
 
     def _get_unknown_account_predictions(self,
                                          transaction: Transaction) -> List[str]:
+        if self._use_nearest_neighbor:
+            return self._predict_unknown_accounts_per_item(transaction)
         group_prediction_inputs = self._feature_extractor.extract_unknown_account_group_features(
             transaction)
         group_predictions = [
@@ -878,6 +885,79 @@ class LoadedReconciler(object):
         return [
             group_predictions[group_number] for group_number in group_numbers
         ]
+
+    def _predict_unknown_accounts_per_item(
+            self, transaction: Transaction) -> List[str]:
+        """Predicts each unknown-account posting.
+
+        Training examples are extracted per posting where postings carry
+        their own example metadata (e.g. the items of an Amazon shipment), but
+        such postings share one unknown account group, whose descriptions
+        `extract_unknown_account_group_features` merges into one input.
+        Groups with several such postings are therefore predicted per
+        posting instead, with the transaction-wide average blended in so that
+        ambiguous items lean towards their siblings.  Postings of such a group
+        without example metadata (tax, shipping, discounts) follow the largest
+        item.  Other groups are predicted as before.
+        """
+        extractor = self._feature_extractor
+        group_numbers = training.get_unknown_account_group_numbers(transaction)
+        group_inputs = extractor.extract_unknown_account_group_features(
+            transaction)
+        posting_inputs = extractor.extract_unknown_account_posting_features(
+            transaction)
+        postings = training.get_unknown_account_postings(transaction)
+        members = collections.defaultdict(
+            list)  # type: Dict[int, List[int]]
+        for i, group_number in enumerate(group_numbers):
+            members[group_number].append(i)
+
+        itemized = [
+            i for indices in members.values()
+            if sum(posting_inputs[i] is not None for i in indices) >= 2
+            for i in indices if posting_inputs[i] is not None
+        ]
+        scores = {i: self._predict_scores(posting_inputs[i]) for i in itemized}
+        if len(itemized) >= 2 and ITEM_SMOOTHING:
+            mean = collections.defaultdict(float)  # type: Dict[str, float]
+            for i in itemized:
+                for account, score in scores[i].items():
+                    mean[account] += score / len(itemized)
+            for i in itemized:
+                blended = collections.defaultdict(
+                    float)  # type: Dict[str, float]
+                for account, score in scores[i].items():
+                    blended[account] = (1 - ITEM_SMOOTHING) * score
+                for account, score in mean.items():
+                    blended[account] += ITEM_SMOOTHING * score
+                scores[i] = blended
+
+        def amount(i: int) -> Decimal:
+            units = postings[i].units
+            if units is None or units is MISSING or units.number is None:
+                return ZERO
+            return abs(units.number)
+
+        def best(scores: Dict[str, float]) -> str:
+            if not scores:
+                return FIXME_ACCOUNT
+            return max(scores, key=scores.__getitem__)
+
+        predictions = [FIXME_ACCOUNT] * len(group_numbers)
+        for group_number, indices in members.items():
+            items = [i for i in indices if i in scores]
+            if not items:
+                predicted = self.predict_account(group_inputs[group_number])
+                for i in indices:
+                    predictions[i] = predicted
+                continue
+            for i in items:
+                predictions[i] = best(scores[i])
+            largest = max(items, key=amount)
+            for i in indices:
+                if i not in scores:
+                    predictions[i] = predictions[largest]
+        return predictions
 
     def _make_candidate_with_substitutions(self,
                                            transaction: Transaction,

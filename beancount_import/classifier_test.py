@@ -3,6 +3,8 @@ import datetime
 from beancount.core.amount import Amount
 from beancount.core.number import D
 
+from . import reconcile
+from . import test_util
 from . import training
 from .classifier import NearestNeighborClassifier
 
@@ -105,6 +107,73 @@ def test_encoder_blend_smoke():
     assert c.predict(_ofx('SAFEWAY STORE 9')) == 'Expenses:Groceries'
     c.add(_ofx('CORNER GROCER'), 'Expenses:Groceries')
     assert c.predict(_ofx('CORNER GROCER')) == 'Expenses:Groceries'
+
+
+class _AmazonLikeSource(object):
+    example_posting_key_extractors = {
+        'amazon_item_description': None,
+        'amazon_credit_card_description': None,
+    }
+    example_transaction_key_extractors = {'amazon_account': None}
+
+
+def _bare_reconciler(examples):
+    loaded = reconcile.LoadedReconciler.__new__(reconcile.LoadedReconciler)
+    loaded._feature_extractor = training.FeatureExtractor(
+        account_source_map={}, sources=[_AmazonLikeSource()], skip_accounts=set())
+    loaded._use_nearest_neighbor = True
+    loaded.classifier = NearestNeighborClassifier()
+    for example, target in examples:
+        loaded.classifier.add(
+            example, target, kind=loaded._feature_extractor.get_example_kind(example))
+    return loaded
+
+
+def test_items_in_one_shipment_are_predicted_individually():
+    loaded = _bare_reconciler([
+        (_item('Organic Whole Milk'), 'Expenses:Groceries'),
+        (_item('Organic Bananas'), 'Expenses:Groceries'),
+        (_item('Fluoride Toothpaste Mint'), 'Expenses:Health-and-Beauty'),
+    ])
+    transaction, = test_util.parse("""
+        2020-02-01 * "Amazon.com" "Order"
+          amazon_account: "a@example.com"
+          Expenses:FIXME:A   4.00 USD
+            amazon_item_description: "Organic Whole Milk"
+          Expenses:FIXME:A   5.00 USD
+            amazon_item_description: "Fluoride Toothpaste Mint"
+          Expenses:FIXME:A   1.00 USD
+            amazon_invoice_description: "Sales Tax"
+          Liabilities:Card  -10.00 USD
+        """)
+    assert loaded._get_unknown_account_predictions(transaction) == [
+        'Expenses:Groceries',
+        'Expenses:Health-and-Beauty',
+        # Tax follows the largest item.
+        'Expenses:Health-and-Beauty',
+    ]
+
+
+def test_groups_without_item_metadata_are_predicted_as_a_whole():
+    loaded = _bare_reconciler([
+        (_item('Organic Whole Milk'), 'Expenses:Groceries'),
+    ])
+    transaction, = test_util.parse("""
+        2020-02-01 * "Amazon.com" "Order"
+          amazon_account: "a@example.com"
+          Expenses:FIXME:A   4.00 USD
+            amazon_item_description: "Organic Whole Milk"
+          Expenses:FIXME:A   1.00 USD
+            amazon_invoice_description: "Sales Tax"
+          Expenses:FIXME   -5.00 USD
+        """)
+    assert loaded._get_unknown_account_predictions(transaction) == [
+        # A single item: its group is predicted from the merged input.
+        'Expenses:Groceries',
+        'Expenses:Groceries',
+        # Nothing to go on.
+        reconcile.FIXME_ACCOUNT,
+    ]
 
 
 def test_cardholder_prefix_is_not_a_merchant():
