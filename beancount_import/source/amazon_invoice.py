@@ -29,7 +29,17 @@ main(...)
     |
     +-> returns Order
 """
-from typing import NamedTuple, Optional, List, Union, Iterable, Dict, Sequence, cast, Type
+from typing import (
+    NamedTuple,
+    Optional,
+    List,
+    Union,
+    Iterable,
+    Dict,
+    Sequence,
+    cast,
+    Type,
+    Callable )
 from abc import ABC, abstractmethod
 import collections
 import re
@@ -39,10 +49,14 @@ import datetime
 import logging
 
 import bs4
+from bs4 import BeautifulSoup, Tag, ResultSet, PageElement
+
+from beancount_import.api_proxies.beautifulsoup import require_find, require_find_parent
 import dateutil.parser
 import beancount.core.amount
 from beancount.core.amount import Amount
-from beancount.core.number import D, ZERO, Decimal
+from beancount.core.number import D, ZERO
+from decimal import Decimal
 
 from ..amount_parsing import parse_amount, parse_number
 
@@ -217,7 +231,7 @@ class Locale_de_DE(Locale_Data):
         # 'Extra Savings', '(?:.*) Discount', 'Gift[ -]Wrap',
     ]) + ') *:')
     # most adjustments in DE are posttax:
-    posttax_adjustment_fields_pattern='Gutschein eingelöst:|Geschenkgutschein\(e\):'
+    posttax_adjustment_fields_pattern=r'Gutschein eingelöst:|Geschenkgutschein\(e\):'
     
     # Payment Table & Credit Card Transactions
     grand_total=r'\n\s*(?:Gesamtsumme|Endsumme):\s+(.*)\n' # regular: Gesamtsumme, digital: Endsumme
@@ -367,11 +381,21 @@ def add_amount(a: Optional[Amount], b: Optional[Amount]) -> Optional[Amount]:
         return a
     return beancount.core.amount.add(a, b)
 
+def reduce_amounts_may_return_none(amounts: Iterable[Amount]) -> Optional[Amount]:
+    return functools.reduce(add_amount, amounts, None)
 
-def reduce_amounts(amounts: Iterable[Amount]) -> Optional[Amount]:
+
+def reduce_amounts(amounts: Iterable[Amount]) -> Amount:
     """Reduce iterable of amounts to sum by applying `add_amount`.
     """
-    return functools.reduce(add_amount, amounts, None)
+
+    reduced_amounts = functools.reduce(add_amount, amounts, None)
+    if reduced_amounts is None:
+        raise ValueError("amount iterable is empty, must be checked before reducing.")
+    else:
+        return reduced_amounts
+
+
 
 
 def get_field_in_table(table, pattern, allow_multiple=False,
@@ -639,7 +663,7 @@ def parse_shipment_payments(
     items_subtotal = locale.parse_amount(
         get_field_in_table(shipment_table, locale.items_subtotal))
 
-    expected_items_subtotal = reduce_amounts(
+    expected_items_subtotal = reduce_amounts_may_return_none(
         beancount.core.amount.mul(x.price, D(x.quantity)) for x in items)
     if (items_subtotal is not None and
         expected_items_subtotal != items_subtotal):
@@ -784,13 +808,17 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     """
     errors = []  # type: Errors
     with open(path, 'rb') as f:
-        soup = bs4.BeautifulSoup(f.read(), 'lxml')
+        soup: BeautifulSoup = bs4.BeautifulSoup(f.read(), 'lxml')
     
     # -----------------
     # Order ID & Order placed date
     # -----------------
     logger.debug('parsing order id and order placed date...')
-    title = soup.find('title').text.strip()
+    title_element = soup.find('title')
+    if title_element is None:
+        raise ValueError("soup.find('title') returned None")
+    else:
+        title = title_element.text.strip()
     m = re.fullmatch(locale.regular_order_id, title.strip())
     assert m is not None
     order_id=m.group(1)
@@ -799,7 +827,7 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
         m = re.fullmatch(locale.regular_order_placed, node.text.strip())
         return m is not None
 
-    node = soup.find(is_order_placed_node)
+    node = require_find(soup,is_order_placed_node)
     m = re.fullmatch(locale.regular_order_placed, node.text.strip())
     assert m is not None
     order_date = locale.parse_date(m.group(1))
@@ -827,9 +855,10 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     # Aim: Parse all pre- and posttax adjustments
     #      consistency check grand total against sum of item costs
     logger.debug('parsing payment table...')
-    payment_table_header = soup.find(
-        lambda node: node.name == 'table' and re.match(
-            locale.payment_information, node.text.strip()))
+
+    matcher : Callable[[Tag], bool] = lambda node: node.name == 'table' and re.match(
+        locale.payment_information, node.text.strip()) is not None
+    payment_table_header = require_find(soup, matcher)
 
     payment_table = payment_table_header.find_parent('table')
 
@@ -843,7 +872,7 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
     # detect which this is
     
     # payment table pretax adjustments
-    pretax_amount = reduce_amounts(
+    pretax_amount = reduce_amounts_may_return_none(
         a.amount for a in output_fields['pretax_adjustments'])
     
     shipments_pretax_amount = None
@@ -919,16 +948,17 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
         get_field_in_table(payment_table, locale.regular_estimated_tax))
 
     # tax from shipment tables
-    expected_tax = reduce_amounts(
-        a.amount for shipment in shipments for a in shipment.tax)
-    if expected_tax is None:
+    shipment_amounts = [a.amount for shipment in shipments for a in shipment.tax]
+    if len(shipment_amounts) == 0:
         # tax not given on shipment level
         if not locale.tax_included_in_price:
             # add tax to adjustments if not already included in item prices
             shipments_total_adjustments.append(tax)
-    elif expected_tax != tax:
-        errors.append(
-            'expected tax is %s, but parsed value is %s' % (expected_tax, tax))
+    else:
+        expected_tax = reduce_amounts(shipment_amounts)
+        if expected_tax != tax:
+            errors.append(
+                'expected tax is %s, but parsed value is %s' % (expected_tax, tax))
 
     if locale.tax_included_in_price:
         # tax is already inlcuded in item prices
@@ -936,8 +966,8 @@ def parse_regular_order_invoice(path: str, locale=Locale_en_US) -> Order:
         tax = None
 
     logger.debug('consistency check grand total...')
-    payments_total_adjustment = reduce_amounts(payments_total_adjustments)
-    shipments_total_adjustment = reduce_amounts(shipments_total_adjustments)
+    payments_total_adjustment = reduce_amounts_may_return_none(payments_total_adjustments)
+    shipments_total_adjustment = reduce_amounts_may_return_none(shipments_total_adjustments)
 
     expected_total = add_amount(shipments_total_adjustment,
                                 reduce_amounts(x.total for x in shipments))
@@ -1032,8 +1062,8 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
         except:
             return False
 
-    digital_order_header = soup.find(is_digital_order_row)
-    digital_order_table = digital_order_header.find_parent('table')
+    digital_order_header = require_find(soup, is_digital_order_row)
+    digital_order_table : Tag = require_find_parent(digital_order_header, 'table')
     m = re.match(locale.digital_order, digital_order_header.text.strip())
     if m is None:
         msg = ('Identified digital order invoice but no digital orders were found.')
@@ -1043,10 +1073,9 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
         assert m is not None
     order_date = locale.parse_date(m.group(1))
 
-    order_id_td = soup.find(
-        lambda node: node.name == 'td' and
-        re.match(locale.digital_order_id, node.text.strip())
-        )
+    matcher: Callable[[Tag], bool] = lambda node: node.name == 'td' and re.match(locale.digital_order_id, node.text.strip()) is not None
+
+    order_id_td = require_find(soup, matcher)
     m = re.match(locale.digital_order_id, order_id_td.text.strip())
     assert m is not None
     order_id = m.group(1)
@@ -1055,28 +1084,30 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
     # Parse Items
     # -----------
     logger.debug('parsing items...')
-    items_ordered_header = digital_order_table.find(
+    items_ordered_header = require_find(digital_order_table,
         lambda node: is_items_ordered_header(node, locale))
-    item_rows = items_ordered_header.find_next_siblings('tr')
-    
+    item_rows_raw : ResultSet[PageElement] = items_ordered_header.find_next_siblings('tr')
+    # the find_all below needs them to be the narrower type Tag, so cast right away
+    item_rows : ResultSet[Tag] = cast(ResultSet[Tag], item_rows_raw)
+
     items = []  # Sequence[DigitalItem]
     other_fields_td = None
 
     for item_row in item_rows:
-        tds = item_row('td')
+        tds = item_row.find_all('td')
         if len(tds) != 2:
             # payment information on order level (not payment table)
             # differently formatted, take first column only
             other_fields_td = tds[0]
             continue
-        description_node = tds[0]
+        description_node : Tag = cast(Tag, tds[0])
         price_node = tds[1]
         price = price_node.text.strip()
 
-        a = description_node.find('a')
+        a = cast(Tag,description_node.find('a'))
         if a is not None:
             description = a.text.strip()
-            url = a['href']
+            url = cast(str,a['href'])
         else:
             bold_node = description_node.find('b')
             description = bold_node.text.strip()
@@ -1156,7 +1187,7 @@ def parse_digital_order_invoice(path: str, locale=Locale_en_US) -> Optional[Orde
         locale.pretax_adjustment_fields_pattern)
     pretax_parts = ([items_subtotal] +
                     [a.amount for a in output_fields['pretax_adjustments']])
-    expected_total_before_tax = reduce_amounts(pretax_parts)
+    expected_total_before_tax = reduce_amounts_may_return_none(pretax_parts)
     if expected_total_before_tax != total_before_tax:
         errors.append('expected total before tax is %s, but parsed value is %s'
                     % (expected_total_before_tax, total_before_tax))

@@ -1,5 +1,6 @@
 import os
 
+import bs4
 import pytest
 
 from . import ofx
@@ -66,3 +67,26 @@ def test_find_ofx_id_for_account():
         ('Assets:Vanguard:401k:PreTax:Excessive:VGI1', None),
     ]:
         assert ofx.find_ofx_id_for_account(account, ofx_ids) == want, account
+
+
+_OFX_HEADER = (b'OFXHEADER:100\r\nDATA:OFXSGML\r\nVERSION:102\r\n'
+               b'SECURITY:NONE\r\nENCODING:USASCII\r\nCHARSET:1252\r\n'
+               b'COMPRESSION:NONE\r\nOLDFILEUID:NONE\r\nNEWFILEUID:NONE\r\n\r\n')
+
+
+def test_decode_ofx_zero_balances_are_not_utf7():
+    # Several signed zero amounts made BeautifulSoup's encoding detection
+    # pick UTF-7, garbling every value.
+    contents = _OFX_HEADER + (
+        b'<OFX><INVPOS><MKTVAL>+00000000000.00<DTPRICEASOF>20200131</INVPOS>'
+        b'<INVBAL><AVAILCASH>+00000000000.00<MARGINBALANCE>+00000000000.00'
+        b'<SHORTBALANCE>+00000000000.00<BUYPOWER>+00000000000.00<BALLIST>'
+        b'</INVBAL></OFX>')
+    soup = bs4.BeautifulSoup(ofx.decode_ofx(contents), 'html.parser')
+    assert ofx.find_child(soup, 'mktval') == '+00000000000.00'
+    assert ofx.find_child(soup, 'buypower') == '+00000000000.00'
+
+
+def test_decode_ofx_windows_1252():
+    assert ofx.decode_ofx(b'<NAME>Caf\xe9 Rouge') == '<NAME>Caf\xe9 Rouge'
+    assert ofx.decode_ofx('<NAME>Caf\xe9'.encode('utf-8')) == '<NAME>Caf\xe9'

@@ -37,3 +37,25 @@
 ;; info: {"filename": "<testdata>/balances.csv", "line": 5, "type": "text/csv"}
 
 2018-01-21 balance Assets:Venmo                                    0.00 USD
+
+;; date: 2022-02-21
+;; info: {"filename": "<testdata>/transactions.csv", "line": 12, "type": "text/csv"}
+
+; features: [
+;             {
+;               "amount": "22.84 USD",
+;               "date": "2022-02-21",
+;               "key_value_pairs": {
+;                 "venmo_payer": "Distant Treats",
+;                 "venmo_type": "Refunded transaction"
+;               },
+;               "source_account": "Assets:Venmo"
+;             }
+;           ]
+2022-02-21 * "Distant Treats" ""
+  Assets:Venmo     22.84 USD
+    date: 2022-02-21
+    venmo_payer: "Distant Treats"
+    venmo_payment_id: "1302468135792468024"
+    venmo_type: "Refunded transaction"
+  Expenses:FIXME  -22.84 USD

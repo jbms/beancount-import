@@ -11,7 +11,7 @@ import sys
 import logging
 import traceback
 import pdb
-import pkg_resources
+import importlib.resources
 import json
 import os
 import tempfile
@@ -209,8 +209,8 @@ class StaticHandler(tornado.web.RequestHandler):
         else:
             content_type = 'application/octet-stream'
         self.set_header('Content-Type', content_type)
-        contents = pkg_resources.resource_string(__name__,
-                                                 'frontend_dist/%s' % name)
+        contents = (importlib.resources.files(__package__)
+                    / 'frontend_dist' / name).read_bytes()
         if name == 'app.js':
             contents = contents.replace(
                 self.application.secret_key_pattern.encode(),  # type: ignore
@@ -478,7 +478,11 @@ class Application(tornado.web.Application):
                 except:
                     traceback.print_exc()
 
-    def check_modification(self):
+    def check_modification(self) -> bool:
+        """Reloads the journal if it changed; returns whether it did.
+
+        Does nothing while the journal is loading;
+        `_handle_reconciler_loaded` checks again once it is loaded."""
         if self.reconciler.loaded_future.done():
             loaded_reconciler = self.reconciler.loaded_future.result()
             modified_filenames = loaded_reconciler.editor.check_any_journal_modification(
@@ -487,6 +491,8 @@ class Application(tornado.web.Application):
                 self._notify_modified_files(list(modified_filenames))
                 self.reconciler.reload_journal()
                 self.reset()
+                return True
+        return False
 
     def reset(self):
         self.next_candidates = None
@@ -522,14 +528,30 @@ class Application(tornado.web.Application):
             self.current_errors = loaded_reconciler.errors
             self.current_invalid = loaded_reconciler.invalid_references
             self.start_check_modification_observer(loaded_reconciler)
+            # Files modified while loading were not picked up (see
+            # `check_modification`).
+            if self.check_modification():
+                return
             self.get_next_candidates(new_pending=True)
         except:
             traceback.print_exc()
             pdb.post_mortem()
 
+    def stop_check_modification_observer(self):
+        """Stops and joins the file-watching threads.
+
+        Must be called before exit: some watchdog backends (e.g. Windows with
+        watchdog 7) start non-daemon threads, which otherwise keep the
+        interpreter from exiting.
+        """
+        observer = self.check_modification_observer
+        self.check_modification_observer = None
+        if observer is not None:
+            observer.stop()
+            observer.join()
+
     def start_check_modification_observer(self, loaded_reconciler):
-        if self.check_modification_observer is not None:
-            self.check_modification_observer.unschedule_all()
+        self.stop_check_modification_observer()
 
         self.check_modification_observer = watchdog.observers.Observer()
         handler = JournalModificationHandler(self)
@@ -725,10 +747,30 @@ def parse_arguments(argv, **kwargs):
         'Maximum amount by which the weights of two matching entries may differ.'
     )
     argparser.add_argument(
+        '--skip_superseded_balances',
+        action='store_true',
+        help='Do not offer balance entries older than the newest balance '
+        'assertion that holds in the journal for the same account.')
+    argparser.add_argument(
+        '--classifier',
+        choices=reconcile.CLASSIFIERS,
+        default=reconcile.DECISION_TREE,
+        help='Classifier for automatic account prediction.  '
+        'nearest_neighbor votes among the most similar past postings and '
+        'learns from each accepted transaction immediately; decision_tree '
+        'learns only when retrained.')
+    argparser.add_argument(
         '--classifier_cache',
         type=str,
         help=
         'Cache file for automatic account prediction classifier.  This speeds up loading.'
+    )
+    argparser.add_argument(
+        '--journal_cache',
+        type=str,
+        help=
+        'Cache file for the parsed journal, reused while no journal file or '
+        'plugin module has changed.  This speeds up loading.'
     )
     argparser.set_defaults(**kwargs)
     return argparser.parse_args(argv)
@@ -754,7 +796,10 @@ def main(argv, **kwargs):
     print('Listening at %s' % server_url)
     if args.browser:
         webbrowser.open(server_url, new=1)
-    ioloop.start()
+    try:
+        ioloop.start()
+    finally:
+        app.stop_check_modification_observer()
 
 
 if __name__ == '__main__':

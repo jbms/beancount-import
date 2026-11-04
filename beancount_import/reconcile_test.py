@@ -7,8 +7,10 @@ import shutil
 
 import py
 import pytest
-from beancount.core.data import Directive, Posting, Transaction
+from beancount.core.data import Directive, Open, Posting, Transaction
+from beancount.core.number import MISSING
 
+from . import journal_editor
 from . import reconcile
 from . import test_util
 from . import training
@@ -249,6 +251,46 @@ def test_basic(tmpdir: py.path.local):
     tester.snapshot()
 
 
+def test_basic_nearest_neighbor(tmpdir: py.path.local):
+    cache_path = str(tmpdir.join('classifier_cache'))
+    journal_dir = tmpdir.mkdir('journal')
+    tester = ReconcileGoldenTester(
+        golden_directory=os.path.join(testdata_root, 'reconcile',
+                                      'test_basic_nearest_neighbor'),
+        temp_dir=str(journal_dir),
+        options=dict(
+            data_sources=[
+                {
+                    'module': 'beancount_import.source.mint',
+                    'filename': mint_data_path,
+                },
+            ],
+            classifier='nearest_neighbor',
+        ),
+    )
+    tester.reconciler.options['classifier_cache'] = cache_path
+
+    tester.accept_candidate(0)
+    # Unlike the decision tree (see test_basic), the accepted transaction
+    # informs the next prediction without retraining.
+    tester.snapshot()
+    tester.change_candidate(0, dict(accounts=['Expenses:Coffee'], ))
+    tester.accept_candidate(0)
+    tester.snapshot()
+
+    # Retraining writes the encoder cache; reloading reuses the encoder.
+    tester.reconciler.retrain()
+    loaded = tester.loaded_reconciler
+    assert os.path.exists(cache_path)
+    encoder = loaded.classifier.encoder
+    assert encoder is not None
+    tester.reconciler.reload_journal()
+    reloaded = tester.loaded_reconciler
+    assert reloaded is not loaded
+    assert reloaded.classifier.encoder is encoder
+    assert len(reloaded.classifier) == len(loaded.classifier)
+
+
 def test_ignore(tmpdir: py.path.local):
     tester = ReconcileGoldenTester(
         golden_directory=os.path.join(testdata_root, 'reconcile',
@@ -346,3 +388,68 @@ def test_amazon_large_matching(tmpdir: py.path.local):
             ],
         ),
     )
+
+
+def test_reload_collects_previous_load(tmpdir: py.path.local):
+    # Loading freezes the GC (see LoadedReconciler); a reload must make
+    # cyclic garbage from before the previous freeze collectable again.
+    import gc
+    import weakref
+
+    class Node:
+        def __init__(self) -> None:
+            self.cycle = self
+
+    node = Node()
+    ref = weakref.ref(node)
+
+    tester = ReconcileGoldenTester(
+        golden_directory=os.path.join(testdata_root, 'reconcile', 'test_basic'),
+        temp_dir=str(tmpdir),
+        options=dict(data_sources=[{
+            'module': 'beancount_import.source.mint',
+            'filename': mint_data_path,
+        }]),
+    )
+    try:
+        del node
+        gc.collect()
+        assert ref() is not None  # frozen by the load
+
+        tester.reconciler.reload_journal()
+        tester.reconciler.loaded_future.result()
+        assert ref() is None
+    finally:
+        # Don't leave later tests with a frozen heap.
+        gc.unfreeze()
+
+
+@pytest.mark.parametrize('missing_currency', [MISSING, None])
+def test_stage_missing_accounts_with_unspecified_currency(tmpdir, missing_currency):
+    journal_path = str(tmpdir.join('journal.beancount'))
+    tmpdir.join('journal.beancount').write('')
+    editor = journal_editor.JournalEditor(journal_path)
+    stage = editor.stage_changes()
+    transaction, = test_util.parse("""
+        2016-01-01 * "Synthetic transaction"
+          Assets:New  -10 USD
+          Expenses:New  10 USD
+          Expenses:New  20 EUR
+    """)
+    posting = transaction.postings[-1]
+    transaction = transaction._replace(postings=transaction.postings + [
+        posting._replace(units=posting.units._replace(currency=missing_currency)),
+        posting._replace(account='Expenses:Unspecified',
+                         units=posting.units._replace(currency=missing_currency)),
+    ])
+    stage.add_entry(transaction, journal_path)
+
+    reconcile.stage_missing_accounts(stage, lambda entry: journal_path)
+
+    opens = {entry.account: entry for entry in stage.get_all_new_entries()
+             if isinstance(entry, Open)}
+    assert opens['Assets:New'].currencies == ['USD']
+    assert opens['Expenses:New'].currencies == ['EUR', 'USD']
+    assert opens['Expenses:Unspecified'].currencies == []
+    assert all(entry.date == transaction.date for entry in opens.values())
+    assert stage.get_missing_accounts() == []

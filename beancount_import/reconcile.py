@@ -1,10 +1,11 @@
 import collections
 import datetime
+import gc
 import re
-from typing import List, Optional, Union, Callable, Dict, Mapping, Tuple, Any, Iterable, Set, NamedTuple
+from typing import List, Optional, Union, Callable, Dict, Mapping, Tuple, Any, Iterable, Set, NamedTuple, TYPE_CHECKING
 import argparse
 import os
-import tempfile
+import atomicwrites
 import hashlib
 import string
 import random
@@ -18,16 +19,40 @@ import beancount.parser.printer
 from . import training
 from . import matching
 from . import journal_editor
-from .source import ImportResult, load_source, SourceResults, Source, LogFunction, AssociatedData, InvalidSourceReference, invalid_source_reference_sort_key
+from .source import ImportResult, load_source, SourceResults, Source, LogFunction, AssociatedData, InvalidSourceReference, invalid_source_reference_sort_key, get_latest_valid_balance_dates
 from .posting_date import get_posting_date
 
 from .thread_helpers import call_in_new_thread
 
 from .matching import FIXME_ACCOUNT, is_unknown_account, CLEARED_KEY
 
+if TYPE_CHECKING:
+    from . import classifier as nn_classifier
+
 display_prediction_explanation = False
 
 classifier_cache_version_number = 1
+
+# Values of the `classifier` option.
+DECISION_TREE = 'decision_tree'
+NEAREST_NEIGHBOR = 'nearest_neighbor'
+CLASSIFIERS = (DECISION_TREE, NEAREST_NEIGHBOR)
+
+# The nearest-neighbor classifier caches only its encoder, under a different
+# version so that switching classifiers retrains rather than misreads the
+# cache.
+nearest_neighbor_cache_version_number = 'nearest_neighbor-1'
+
+# The encoder is retrained when the cached one is older than this, or was
+# trained on noticeably fewer examples than the journal now has.  The
+# nearest-neighbor index itself is always rebuilt from the journal.
+ENCODER_MAX_AGE_DAYS = 30
+ENCODER_MAX_GROWTH = 1.05
+
+# Weight of the transaction-wide average when the nearest-neighbor classifier
+# predicts several items of one transaction (e.g. an Amazon order)
+# individually.
+ITEM_SMOOTHING = 0.3
 
 PendingEntry = NamedTuple('PendingEntry', [
     ('date', datetime.date),
@@ -343,7 +368,8 @@ def stage_missing_accounts(stage, entry_file_selector, account_map=None):
         open_entry = Open(
             date=date,
             account=account,
-            currencies=sorted(list(currencies)),
+            # Unbooked importer entries may have an unspecified currency.
+            currencies=sorted(c for c in currencies if isinstance(c, str)),
             meta=None,
             booking=None)
         stage.add_entry(open_entry, entry_file_selector(open_entry))
@@ -369,8 +395,21 @@ class LoadedReconciler(object):
     def __init__(self, reconciler, sources=None, classifier=None) -> None:
         self.reconciler = reconciler
         reconciler.log_status('Loading journal')
-        self.editor = journal_editor.JournalEditor(reconciler.journal_path,
-                                                   reconciler.ignore_path)
+        # Objects frozen by a previous load (see below) are never collected,
+        # so on reload unfreeze them and collect the previous load's cyclic
+        # garbage before freezing again.
+        gc.unfreeze()
+        gc.collect()
+        self.editor = journal_editor.JournalEditor(
+            reconciler.journal_path,
+            reconciler.ignore_path,
+            cache_path=reconciler.options.get('journal_cache'))
+        # The journal stays alive for the whole load, but each full
+        # collection would still traverse all of it.  Loading sources
+        # (e.g. parsing OFX files) allocates millions of short-lived
+        # objects and triggers many collections, so exclude the journal
+        # from them.
+        gc.freeze()
         self.errors = [('error', e[1], e[0]) for e in self.editor.errors]
 
         if sources is not None:
@@ -410,9 +449,15 @@ class LoadedReconciler(object):
             skip_accounts=all_skip_accounts,
         )
         self.training_examples = training.TrainingExamples()
+        self._num_indexed_examples = 0
+        self._use_nearest_neighbor = reconciler.options.get(
+            'classifier', DECISION_TREE) == NEAREST_NEIGHBOR
+        if self._use_nearest_neighbor:
+            self._init_nearest_neighbor_classifier(classifier)
+            return
         self._extract_training_examples(self.editor.entries)
 
-        self.classifier = classifier
+        self.classifier = classifier  # type: Any
         if self.classifier is None:
             classifier_cache_path = self.reconciler.options['classifier_cache']
             if classifier_cache_path is not None and os.path.exists(
@@ -432,9 +477,46 @@ class LoadedReconciler(object):
         if self.classifier is None:
             self._maybe_train_classifier()
 
+    def _init_nearest_neighbor_classifier(self, previous_classifier) -> None:
+        # Imported here so that the decision tree does not pay for it.
+        from . import classifier as nn_classifier
+        # A previous LoadedReconciler's classifier (on journal reload)
+        # contributes its encoder and the vectors of examples that did not
+        # change; the index is rebuilt from the journal.
+        self.classifier = nn_classifier.NearestNeighborClassifier()
+        if previous_classifier is not None:
+            self.classifier.reuse_vectors_of(previous_classifier)
+        self._extract_training_examples(self.editor.entries)
+        encoder = (previous_classifier.encoder
+                   if previous_classifier is not None else None)
+        if encoder is None:
+            encoder = self._load_cached_encoder()
+        if encoder is None:
+            self._train_encoder()
+        else:
+            self.classifier.set_encoder(encoder)
+        # Index (and embed) all examples in this loading thread, so the first
+        # prediction in the UI does not stall.
+        self.classifier.prepare()
+
     def _extract_training_examples(self, entries: Entries) -> None:
         self._feature_extractor.extract_examples(entries,
                                                  self.training_examples)
+        if self._use_nearest_neighbor:
+            self._index_training_examples()
+
+    def _index_training_examples(self) -> None:
+        """Adds examples not yet in the nearest-neighbor classifier, so that
+        accepted transactions inform the very next prediction."""
+        classifier = self.classifier
+        examples = self.training_examples.training_examples
+        for example, target in examples[self._num_indexed_examples:]:
+            if target == FIXME_ACCOUNT:
+                continue
+            classifier.add(
+                example, target,
+                kind=self._feature_extractor.get_example_kind(example))
+        self._num_indexed_examples = len(examples)
 
     def _load_sources(self):
         sources = self.sources = [
@@ -461,13 +543,64 @@ class LoadedReconciler(object):
         return source.is_posting_cleared(posting)
 
     def retrain(self):
-        self._maybe_train_classifier()
+        if self._use_nearest_neighbor:
+            self._train_encoder()
+            self.classifier.prepare()
+        else:
+            self._maybe_train_classifier()
         return self
+
+    def _load_cached_encoder(self) -> Optional['nn_classifier.TripletEncoder']:
+        cache_path = self.reconciler.options['classifier_cache']
+        if cache_path is None or not os.path.exists(cache_path):
+            return None
+        try:
+            with open(cache_path, 'rb') as cache_f:
+                cache_data = pickle.load(cache_f)
+            if not isinstance(cache_data, dict) or cache_data.get(
+                    'version') != nearest_neighbor_cache_version_number:
+                return None
+            age = (datetime.date.today() - cache_data['trained_date']).days
+            growth = len(self.classifier) / max(1, cache_data['num_examples'])
+            if age > ENCODER_MAX_AGE_DAYS or growth > ENCODER_MAX_GROWTH:
+                return None
+            return cache_data['encoder']
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            print('Not using classifier cache due to above error')
+            return None
+
+    def _train_encoder(self) -> None:
+        classifier = self.classifier
+        num_examples = len(classifier)
+        if num_examples == 0:
+            return
+        self.reconciler.log_status(
+            'Training classifier with %d examples' % num_examples)
+        classifier.fit_encoder()
+        self.reconciler.log_status(
+            'Trained classifier with %d examples.' % num_examples)
+        self._write_classifier_cache({
+            'version': nearest_neighbor_cache_version_number,
+            'encoder': classifier.encoder,
+            'trained_date': datetime.date.today(),
+            'num_examples': num_examples,
+        })
+
+    def _write_classifier_cache(self, cache_data: dict) -> None:
+        classifier_cache_path = self.reconciler.options['classifier_cache']
+        if classifier_cache_path is None:
+            return
+        with atomicwrites.atomic_write(
+                classifier_cache_path, mode='wb', overwrite=True) as cache_f:
+            pickle.dump(cache_data, cache_f)
 
     def _maybe_train_classifier(self):
         training_examples = [
-            x for x in self.training_examples.training_examples
-            if x[1] != FIXME_ACCOUNT
+            (training.get_features(example), target)
+            for example, target in self.training_examples.training_examples
+            if target != FIXME_ACCOUNT
         ]
         if len(training_examples) > 0:
             self.reconciler.log_status(
@@ -480,27 +613,10 @@ class LoadedReconciler(object):
             self.classifier.train(training_examples)
             self.reconciler.log_status(
                 'Trained classifier with %d examples.' % len(training_examples))
-            classifier_cache_path = self.reconciler.options['classifier_cache']
-            if classifier_cache_path is None:
-                return
-            renamed = False
-            cache_data = {
+            self._write_classifier_cache({
                 'version': classifier_cache_version_number,
                 'classifier': self.classifier
-            }
-            with tempfile.NamedTemporaryFile(
-                    mode='wb',
-                    dir=os.path.dirname(classifier_cache_path),
-                    prefix='.' + os.path.basename(classifier_cache_path),
-                    suffix='.tmp',
-                    delete=False) as cache_f:
-                try:
-                    pickle.dump(cache_data, cache_f)
-                    os.rename(cache_f.name, classifier_cache_path)
-                    renamed = True
-                finally:
-                    if not renamed:
-                        os.remove(cache_f.name)
+            })
             # sklearn.tree.export_graphviz(self.classifier._clf,
             #                              feature_names=self.classifier._vectorizer.get_feature_names(),
             #                              class_names=self.classifier._encoder.classes_,
@@ -518,8 +634,16 @@ class LoadedReconciler(object):
         invalid_references = [
         ]  # type: List[Tuple[Source, InvalidSourceReference]]
         all_source_results = []  # type: List[SourceResults]
+        latest_valid_balance_dates = None
+        if self.reconciler.options.get('skip_superseded_balances'):
+            # Only the journal itself: ignored balances do not hold.
+            latest_valid_balance_dates = get_latest_valid_balance_dates(
+                self.editor.entries, self.editor.errors)
         for source in self.sources:
             source_results = SourceResults()
+            if latest_valid_balance_dates:
+                source_results.set_latest_valid_balance_dates(
+                    latest_valid_balance_dates)
             source.prepare(self.editor, source_results)
             for account in source_results.accounts:
                 self.account_source_map[account] = source
@@ -621,7 +745,7 @@ class LoadedReconciler(object):
         for account_name in sorted(self.editor.accounts):
             account = self.editor.accounts[account_name]
             meta = account.meta
-            if meta is None: continue
+            if meta is None: meta = dict()
             parts = account_name.split(':')
             cleared_before = datetime.date.min
             cleared_after = datetime.date.max
@@ -695,10 +819,32 @@ class LoadedReconciler(object):
     def num_pending(self) -> int:
         return len(self.pending_data)
 
+    def _predict_scores(
+            self, prediction_input: Optional[training.PredictionInput]
+    ) -> Dict[str, float]:
+        """Account -> share of the nearest-neighbor vote, or {}."""
+        if prediction_input is None or self.classifier is None:
+            return {}
+        return self.classifier.predict_scores(
+            prediction_input,
+            kind=self._feature_extractor.get_example_kind(prediction_input))
+
     def predict_account(
             self, prediction_input: Optional[training.PredictionInput]) -> str:
         if self.classifier is None or prediction_input is None:
             return FIXME_ACCOUNT
+        if self._use_nearest_neighbor:
+            scores = self._predict_scores(prediction_input)
+            if not scores:
+                return FIXME_ACCOUNT
+            predicted_account = max(scores, key=scores.__getitem__)
+            if display_prediction_explanation:
+                print(prediction_input)
+                for account, score in sorted(
+                        scores.items(), key=lambda x: -x[1])[:5]:
+                    print('  %.3f %s' % (score, account))
+                print('predicted account = %r' % (predicted_account, ))
+            return predicted_account
         features = training.get_features(prediction_input)
         explanation = get_prediction_explanation(self.classifier, features)
         predicted_account = self.classifier.classify(features)
@@ -731,6 +877,8 @@ class LoadedReconciler(object):
 
     def _get_unknown_account_predictions(self,
                                          transaction: Transaction) -> List[str]:
+        if self._use_nearest_neighbor:
+            return self._predict_unknown_accounts_per_item(transaction)
         group_prediction_inputs = self._feature_extractor.extract_unknown_account_group_features(
             transaction)
         group_predictions = [
@@ -741,6 +889,79 @@ class LoadedReconciler(object):
         return [
             group_predictions[group_number] for group_number in group_numbers
         ]
+
+    def _predict_unknown_accounts_per_item(
+            self, transaction: Transaction) -> List[str]:
+        """Predicts each unknown-account posting.
+
+        Training examples are extracted per posting where postings carry
+        their own example metadata (e.g. the items of an Amazon shipment), but
+        such postings share one unknown account group, whose descriptions
+        `extract_unknown_account_group_features` merges into one input.
+        Groups with several such postings are therefore predicted per
+        posting instead, with the transaction-wide average blended in so that
+        ambiguous items lean towards their siblings.  Postings of such a group
+        without example metadata (tax, shipping, discounts) follow the largest
+        item.  Other groups are predicted as before.
+        """
+        extractor = self._feature_extractor
+        group_numbers = training.get_unknown_account_group_numbers(transaction)
+        group_inputs = extractor.extract_unknown_account_group_features(
+            transaction)
+        posting_inputs = extractor.extract_unknown_account_posting_features(
+            transaction)
+        postings = training.get_unknown_account_postings(transaction)
+        members = collections.defaultdict(
+            list)  # type: Dict[int, List[int]]
+        for i, group_number in enumerate(group_numbers):
+            members[group_number].append(i)
+
+        itemized = [
+            i for indices in members.values()
+            if sum(posting_inputs[i] is not None for i in indices) >= 2
+            for i in indices if posting_inputs[i] is not None
+        ]
+        scores = {i: self._predict_scores(posting_inputs[i]) for i in itemized}
+        if len(itemized) >= 2 and ITEM_SMOOTHING:
+            mean = collections.defaultdict(float)  # type: Dict[str, float]
+            for i in itemized:
+                for account, score in scores[i].items():
+                    mean[account] += score / len(itemized)
+            for i in itemized:
+                blended = collections.defaultdict(
+                    float)  # type: Dict[str, float]
+                for account, score in scores[i].items():
+                    blended[account] = (1 - ITEM_SMOOTHING) * score
+                for account, score in mean.items():
+                    blended[account] += ITEM_SMOOTHING * score
+                scores[i] = blended
+
+        def amount(i: int) -> Decimal:
+            units = postings[i].units
+            if units is None or units is MISSING or units.number is None:
+                return ZERO
+            return abs(units.number)
+
+        def best(scores: Dict[str, float]) -> str:
+            if not scores:
+                return FIXME_ACCOUNT
+            return max(scores, key=scores.__getitem__)
+
+        predictions = [FIXME_ACCOUNT] * len(group_numbers)
+        for group_number, indices in members.items():
+            items = [i for i in indices if i in scores]
+            if not items:
+                predicted = self.predict_account(group_inputs[group_number])
+                for i in indices:
+                    predictions[i] = predicted
+                continue
+            for i in items:
+                predictions[i] = best(scores[i])
+            largest = max(items, key=amount)
+            for i in indices:
+                if i not in scores:
+                    predictions[i] = predictions[largest]
+        return predictions
 
     def _make_candidate_with_substitutions(self,
                                            transaction: Transaction,

@@ -20,7 +20,9 @@ each other and with existing transactions.
   automatically avoid duplicates.
 
 - Automatically predicts unknown legs of imported transactions based on a
-  learned classifier (currently decision tree-based).
+  learned classifier: a decision tree by default, or, with
+  `--classifier nearest_neighbor`, a nearest-neighbor classifier that learns
+  from each accepted transaction immediately.
 
 - Sophisticated transaction matching/merging system that can semi-automatically
   combine and reconcile both manually entered and imported transactions from
@@ -138,7 +140,7 @@ The currently supported set of data sources is:
 - [beancount_import.source.ultipro_google](beancount_import/source/ultipro_google.py):
   imports Google employee Ultipro payroll statements.
 - [beancount_import.source.generic_importer_source](beancount_import/source/generic_importer_source.py):
-  imports from `beancount.ingest.importer.ImporterProtocol` subclass Importers. See [beancount's documentation](https://beancount.github.io/docs/importing_external_data.html#the-importing-process) on how to write one and checkout the [examples](examples/) directory for a simple csv importer
+  imports from `beangulp.importer.Importer` (or legacy `beangulp.importer.ImporterProtocol`) subclass Importers. See [beangulp's documentation](https://github.com/beancount/beangulp) on how to write one and checkout the [examples](examples/) directory for a simple csv importer
 
 Refer to the individual data source documentation for details on configuration.
 
@@ -203,6 +205,32 @@ several ways to correct any incorrectly-predicted accounts:
    then accept this entry, the transaction including these FIXME accounts will
    be added to your journal, and the next time you start Beancount-import the
    transaction will be treated as a pending entry.
+
+## Choosing the account classifier
+
+Two classifiers are available for predicting unknown accounts:
+ - `decision_tree` (the default) is trained when Beancount-import starts, or
+   loaded from `classifier_cache`, and only learns from newly accepted
+   transactions when you click `Retrain`.
+ - `nearest_neighbor` predicts from the most similar past postings, favoring
+   recent ones, and learns from each accepted transaction immediately.  It
+   tends to need fewer corrections, especially for payees you have booked
+   differently over time.  With `classifier_cache` set, it caches a small
+   learned model, retrained automatically when it is over 30 days old or the
+   journal has grown by more than 5%.
+
+To use `nearest_neighbor`, pass it to `beancount_import.webserver.main` in your
+script:
+
+```python
+beancount_import.webserver.main(
+    argv,
+    journal_input=...,
+    data_sources=data_sources,
+    classifier_cache=os.path.join(journal_dir, 'classifier_cache'),
+    classifier='nearest_neighbor',
+)
+```
 
 ## Viewing associated source data
 

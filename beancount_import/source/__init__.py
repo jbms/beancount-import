@@ -93,7 +93,7 @@ import datetime
 from typing import Iterable, NamedTuple, List, Dict, Mapping, Any, Tuple, Union, Callable, Optional
 import importlib
 
-from beancount.core.data import Transaction, Entries, Directive, Posting, Meta
+from beancount.core.data import Transaction, Entries, Directive, Posting, Meta, Balance
 
 if False:
     from ..journal_editor import JournalEditor  # For type annotations only.
@@ -117,9 +117,39 @@ def invalid_source_reference_sort_key(
     return [p[0].date for p in x.transaction_posting_pairs]
 
 
+def get_latest_valid_balance_dates(entries: Entries,
+                                   errors: Iterable[Any] = ()
+                                   ) -> Dict[str, datetime.date]:
+    """Returns account -> date of the newest Balance directive in `entries`
+    whose assertion holds.
+
+    The journal editor's entries are not annotated with failures
+    (`diff_amount` stays None); a failing assertion appears in the load
+    `errors` instead, as an error whose `entry` is the Balance.
+    """
+    failing = set()
+    for error in errors:
+        entry = getattr(error, 'entry', None)
+        if isinstance(entry, Balance):
+            failing.add((entry.date, entry.account, entry.amount))
+    result = {}  # type: Dict[str, datetime.date]
+    for entry in entries:
+        if not isinstance(entry, Balance) or entry.diff_amount is not None:
+            continue
+        if (entry.date, entry.account, entry.amount) in failing:
+            continue
+        existing = result.get(entry.account)
+        if existing is None or entry.date > existing:
+            result[entry.account] = entry.date
+    return result
+
+
 class SourceResults:
     def __init__(self):
         self.pending = []  # type: List[ImportResult]
+        # account -> date before which balance candidates are dropped; see
+        # `set_latest_valid_balance_dates`.
+        self._latest_valid_balance_date = {}  # type: Dict[str, datetime.date]
         self.accounts = set()  # type: Set[str]
         self.skip_training_accounts = set() # type: Set[str]
         self.invalid_references = []  # type: List[InvalidSourceReference]
@@ -127,13 +157,36 @@ class SourceResults:
         self.seen_messages = set(
         )  # type: Set[Tuple[str, str, FrozenSet[Tuple[str, Any]]]]
 
+    def set_latest_valid_balance_dates(
+            self, dates: Dict[str, datetime.date]) -> None:
+        """Drops balance candidates that are older than the newest valid
+        balance already in the journal for the same account (see
+        `get_latest_valid_balance_dates`): such a balance adds nothing."""
+        self._latest_valid_balance_date = dates
+
+    def _is_superseded(self, entry: ImportResult) -> bool:
+        """True if `entry` consists only of Balance directives, each older
+        than the newest valid balance for its account."""
+        if not entry.entries:
+            return False
+        for directive in entry.entries:
+            if not isinstance(directive, Balance):
+                return False
+            latest = self._latest_valid_balance_date.get(directive.account)
+            if latest is None or directive.date >= latest:
+                return False
+        return True
+
     def add_pending_entry(self, entry: ImportResult):
         """Adds a generated ImportResult."""
+        if self._latest_valid_balance_date and self._is_superseded(entry):
+            return
         self.pending.append(entry)
 
     def add_pending_entries(self, entries: Iterable[ImportResult]):
         """Calls `add_pending_entry` for each entry in `entries`."""
-        self.pending.extend(entries)
+        for entry in entries:
+            self.add_pending_entry(entry)
 
     def add_account(self, account: str) -> None:
         """Indicates that the source is authoritative for `account`."""

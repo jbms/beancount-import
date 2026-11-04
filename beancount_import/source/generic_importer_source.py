@@ -1,5 +1,5 @@
 """This module implements a Source Subclass for wrapping
-`beancount.ingest.importer.ImporterProtocol` subclasses importers.
+`beangulp.importer.Importer` or `beangulp.importer.ImporterProtocol` importers.
 The importers are considered athoritative of the account they represent.
 
 The Transaction.narration set by each importer is copied to Posting.meta[source_desc]
@@ -16,13 +16,13 @@ import os
 from glob import glob
 from collections import OrderedDict
 import itertools
-from typing import Hashable, List, Dict, Optional
+from typing import Hashable, List, Dict, Optional, Union
 
 from beancount.core.data import Balance, Transaction, Posting,  Directive
 from beancount.core.amount import Amount
 from beancount.core.convert import get_weight
-from beancount.ingest.importer import ImporterProtocol
-from beancount.ingest.cache import get_file
+from beangulp.importer import Importer, ImporterProtocol, Adapter
+from beangulp.cache import get_file
 from beancount.parser.booking_full import convert_costspec_to_cost
 
 from ..matching import FIXME_ACCOUNT, SimpleInventory
@@ -36,32 +36,38 @@ class ImporterSource(DescriptionBasedSource):
     def __init__(self,
                  directory: str,
                  account: str,
-                 importer: ImporterProtocol,
+                 importer: Union[Importer, ImporterProtocol],
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = os.path.expanduser(directory)
-        self.importer = importer
+        # The beangulp `Importer` interface operates on file paths, whereas the
+        # legacy `ImporterProtocol` operates on `_FileMemo` objects. Wrap legacy
+        # importers in `Adapter` so the rest of this class can uniformly use the
+        # `Importer` interface (and so native `beangulp.Importer` subclasses are
+        # supported directly).
+        if isinstance(importer, Importer):
+            self.importer = importer
+        else:
+            self.importer = Adapter(importer)
         self.account = account
 
-        # get _FileMemo object for each file
-        files = [get_file(os.path.abspath(f)) for f in
-                    filter(os.path.isfile,
-                 glob(os.path.join(directory, '**', '*'), recursive=True)
-                           )
-        ]
+        # get the absolute path of each file in the directory
+        all_files = [os.path.abspath(f) for f in
+                     filter(os.path.isfile,
+                            glob(os.path.join(directory, '**', '*'), recursive=True))]
         # filter the valid files for this importer
-        self.files = [f for f in files if self.importer.identify(f)]
+        self.files = [f for f in all_files if self.importer.identify(f)]
 
     @property
     def name(self) -> str:
-        return self.importer.name()
+        return self.importer.name
 
     def prepare(self, journal: 'JournalEditor', results: SourceResults) -> None:
         results.add_account(self.account)
 
         entries = OrderedDict() #type: Dict[Hashable, List[Directive]]
         for f in self.files:
-            f_entries = self.importer.extract(f, existing_entries=journal.entries)
+            f_entries = self.importer.extract(f, journal.entries)
             # collect  all entries in current statement, grouped by hash
             hashed_entries = OrderedDict() #type: Dict[Hashable, Directive]
             for entry in f_entries:

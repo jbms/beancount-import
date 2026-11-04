@@ -23,14 +23,20 @@ from typing import Union, Dict, Tuple, List, Optional, Set, NamedTuple, Sequence
 import datetime
 import collections
 import contextlib
+import gc
+import glob
+import importlib.util
 import io
 import os
+import pickle
 import re
+import sys
 import threading
 import time
 
 import atomicwrites
 from beancount.core.data import Open, Transaction, Balance, Commodity, Entries, Directive, Meta, Posting
+import beancount.core.account
 import beancount.core.data
 import beancount.loader
 import beancount.parser.printer
@@ -106,8 +112,16 @@ def get_accounts_and_commodities(
 _intercept_parse_file_lock = threading.Lock()
 
 
+def _glob_include(search_path: str) -> List[str]:
+    """The files an `include` glob matches, as the beancount loader expands
+    it."""
+    return sorted(
+        os.path.normpath(f) for f in glob.glob(search_path, recursive=True))
+
+
 @contextlib.contextmanager
-def _intercepted_parse_file(file_modification_times: Dict[str, float]):
+def _intercepted_parse_file(file_modification_times: Dict[str, float],
+                            include_globs: Optional[Dict[str, List[str]]] = None):
     with _intercept_parse_file_lock:
         orig_parse_file = beancount.parser.parser.parse_file
 
@@ -118,7 +132,14 @@ def _intercepted_parse_file(file_modification_times: Dict[str, float]):
                     filename).st_mtime
             except OSError:
                 pass
-            return orig_parse_file(filename, **kw)
+            result = orig_parse_file(filename, **kw)
+            if include_globs is not None:
+                for include in result[2].get('include', ()):
+                    if glob.has_magic(include):
+                        search_path = os.path.join(
+                            os.path.dirname(filename), include)
+                        include_globs[search_path] = _glob_include(search_path)
+            return result
         beancount.parser.parser.parse_file = intercept_parse_file
         try:
             yield
@@ -128,7 +149,8 @@ def _intercepted_parse_file(file_modification_times: Dict[str, float]):
 _load_file_lock = threading.Lock()
 
 
-def load_file(filename: str, encoding: Optional[str] = None):
+def load_file(filename: str, encoding: Optional[str] = None,
+              include_globs: Optional[Dict[str, List[str]]] = None):
     """Loads the specified journal.
 
     Returns a tuple containing:
@@ -143,7 +165,8 @@ def load_file(filename: str, encoding: Optional[str] = None):
     # Since we are monkey patching beancount functions, ensure this function
     # isn't called from multiple threads concurrently.
     file_modification_times = dict()  # type: Dict[str, float]
-    with _load_file_lock, _intercepted_parse_file(file_modification_times):
+    with _load_file_lock, _intercepted_parse_file(file_modification_times,
+                                                  include_globs):
         filename = os.path.realpath(filename)
 
         orig_book_func = beancount.parser.booking.book
@@ -235,11 +258,22 @@ def get_partially_booked_entries(pre_booking_entries: Entries,
 
 
 class _AtomicWriter(atomicwrites.AtomicWriter):
-    """Wrapper that calls `os.stat` after close but before the rename."""
+    """Wrapper that preserves permissions and calls `os.stat` after close.
+
+    Two changes on top of AtomicWriter:
+    - Preserve permissions of the file.
+    - Calls `os.stat` after close but before the rename.
+    """
 
     def __init__(self, path, **kwargs):
         super().__init__(path, **kwargs)
         self.stat_result_after_close = None
+        self._permissions = os.stat(path).st_mode
+
+    def get_fileobject(self, **kwargs):
+        f = super().get_fileobject(**kwargs)
+        os.chmod(f.name, mode=self._permissions)
+        return f
 
     def sync(self, f):
         super().sync(f)
@@ -252,21 +286,162 @@ def _get_journal_contents(filename: str):
         return f.read()
 
 
+_JOURNAL_CACHE_VERSION = 3
+
+# JournalEditor attributes restored from the journal cache.
+_CACHED_ATTRS = (
+    'journal_path', 'errors', 'options_map', 'journal_load_time', 'entries',
+    'accounts', 'commodities', 'ignored_path', 'ignored_entries',
+    'ignored_options_map', 'journal_filenames', 'ignored_journal_filenames',
+    'include_globs')
+
+
+def _plugin_files(options_map) -> Dict[str, float]:
+    """Source files and their mtimes of the journal's (already loaded) plugin
+    modules, so that editing a plugin invalidates the cache."""
+    result = {}  # type: Dict[str, float]
+    for name, _ in options_map.get('plugin', []):
+        origin = None  # type: Optional[str]
+        module = sys.modules.get(name)
+        try:
+            if module is not None:
+                origin = getattr(module, "__file__", None)
+            else:
+                spec = importlib.util.find_spec(name)
+                origin = spec.origin if spec is not None else None
+            if origin is not None:
+                result[origin] = os.stat(origin).st_mtime
+        except (ImportError, ValueError, OSError):
+            pass
+    return result
+
+
+def _restore_custom_account_values(entries: Entries) -> Entries:
+    """Account-typed `custom` values are marked by the dtype
+    `beancount.core.account.TYPE`, a string compared by identity (e.g. by the
+    printer), which unpickling does not preserve."""
+    account_type = beancount.core.account.TYPE
+    result = []
+    for entry in entries:
+        if isinstance(entry, beancount.core.data.Custom) and any(
+                v.dtype == account_type and v.dtype is not account_type
+                for v in entry.values):
+            entry = entry._replace(values=[
+                v._replace(dtype=account_type) if v.dtype == account_type else v
+                for v in entry.values
+            ])
+        result.append(entry)
+    return result
+
+
+@contextlib.contextmanager
+def _gc_paused():
+    """Pauses cyclic garbage collection.
+
+    Loading (or unpickling) a journal allocates millions of long-lived
+    objects, which trigger many full collections that each traverse
+    everything allocated so far and find nothing to free.
+    """
+    was_enabled = gc.isenabled()
+    gc.disable()
+    try:
+        yield
+    finally:
+        if was_enabled:
+            gc.enable()
+
+
+def _journal_cache_key(journal_path: str, ignored_path: Optional[str]):
+    return (_JOURNAL_CACHE_VERSION, beancount.__version__, journal_path,
+            ignored_path)
+
+
+def _read_journal_cache(cache_path: str, journal_path: str,
+                        ignored_path: Optional[str]) -> Optional[dict]:
+    """Returns the cached JournalEditor state, if every file it was loaded
+    from (and every plugin module) is unchanged and every glob `include`
+    still matches the same files."""
+    try:
+        with open(cache_path, 'rb') as f, _gc_paused():
+            data = pickle.load(f)
+    except Exception:
+        return None
+    if not isinstance(data, dict) or data.get('key') != _journal_cache_key(
+            journal_path, ignored_path):
+        return None
+    state = data['state']
+    try:
+        for files in (state['journal_load_time'], data['plugin_files']):
+            for filename, mtime in files.items():
+                if os.stat(filename).st_mtime != mtime:
+                    return None
+    except OSError:
+        return None
+    for search_path, matched in state['include_globs'].items():
+        if _glob_include(search_path) != matched:
+            return None
+    state['entries'] = _restore_custom_account_values(state['entries'])
+    state['ignored_entries'] = _restore_custom_account_values(
+        state['ignored_entries'])
+    return state
+
+
+def _write_journal_cache(cache_path: str, editor: 'JournalEditor') -> None:
+    state = {k: getattr(editor, k) for k in _CACHED_ATTRS}
+    data = dict(
+        key=_journal_cache_key(editor.journal_path, editor.ignored_path),
+        plugin_files=_plugin_files(editor.options_map),
+        state=state)
+    try:
+        with atomicwrites.atomic_write(cache_path, mode='wb',
+                                       overwrite=True) as f, _gc_paused():
+            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+    except Exception as e:
+        print('Failed to write journal cache %s: %s' % (cache_path, e))
+
+
 class JournalEditor(object):
     def __init__(self, journal_path: str,
-                 ignored_path: Optional[str] = None) -> None:
+                 ignored_path: Optional[str] = None,
+                 cache_path: Optional[str] = None) -> None:
+        """Loads the journal.
+
+        If `cache_path` is given, the loaded state is pickled there and reused
+        by later loads while none of the journal files (as recorded in
+        `journal_load_time`) or plugin modules have changed and every glob
+        `include` matches the same files.  Python modules imported by a plugin
+        are not checked.
+        """
 
         self.default_journal_load_time = time.time()
         journal_path = os.path.realpath(journal_path)
+        self.cached_lines = {}  # type: Dict[str, List[str]]
+        self._all_entries = None  # type: Optional[Entries]
+        if cache_path is not None:
+            state = _read_journal_cache(
+                cache_path, journal_path,
+                None if ignored_path is None else os.path.realpath(ignored_path))
+            if state is not None:
+                self.__dict__.update(state)
+                return
+        with _gc_paused():
+            self._load(journal_path, ignored_path)
+        if cache_path is not None:
+            _write_journal_cache(cache_path, self)
+
+    def _load(self, journal_path: str, ignored_path: Optional[str]) -> None:
         self.journal_path = journal_path
 
+        # Files matched by each glob `include`, to detect new matches.
+        self.include_globs = {}  # type: Dict[str, List[str]]
         (final_entries, self.errors, self.options_map, pre_booking_entries,
          post_booking_entries,
-         self.journal_load_time) = load_file(journal_path)
+         self.journal_load_time) = load_file(
+             journal_path, include_globs=self.include_globs)
         del final_entries
         self.entries = get_partially_booked_entries(pre_booking_entries,
                                                     post_booking_entries)
-        self.cached_lines = {}  # type: Dict[str, List[str]]
+        self.cached_lines = {}
         self.accounts, self.commodities = get_accounts_and_commodities(
             self.entries)
         journal_paths = [journal_path] + self.options_map['include']
@@ -274,7 +449,8 @@ class JournalEditor(object):
         if ignored_path is not None:
             ignored_path = os.path.realpath(ignored_path)
             self.ignored_path = ignored_path  # type: Optional[str]
-            with _intercepted_parse_file(self.journal_load_time):
+            with _intercepted_parse_file(self.journal_load_time,
+                                         self.include_globs):
                 (pre_booking_ignored_entries, ignored_errors,
                  self.ignored_options_map) = beancount.loader._parse_recursive(
                      [(ignored_path, True)], log_timings=False)
@@ -291,7 +467,7 @@ class JournalEditor(object):
         self.journal_filenames = set(os.path.realpath(x) for x in journal_paths)
         self.ignored_journal_filenames = set(
             os.path.realpath(x) for x in ignored_journal_paths)
-        self._all_entries = None  # type: Optional[Entries]
+        self._all_entries = None
 
     @property
     def all_entries(self) -> Entries:
@@ -632,12 +808,18 @@ def get_meta_ignore() -> FrozenSet[str]:
     printer = beancount.parser.printer.EntryPrinter()
     meta_ignore = set(printer.META_IGNORE)
     meta_ignore.add('__tolerances__')
+    # Beancount v3 attaches these metadata keys to auto-inserted postings
+    # (interpolate.AUTOMATIC_META / AUTOMATIC_RESIDUAL): __automatic__ on any
+    # interpolated amount, and __residual__ additionally on rounding postings
+    # inserted for the account_rounding option. Neither should affect matching.
+    meta_ignore.add('__automatic__')
+    meta_ignore.add('__residual__')
     return frozenset(meta_ignore)
 
 
 META_IGNORE = get_meta_ignore()
 
-metadata_line_re = '^ +([a-z][a-zA-Z0-9\\-_]*) *: *([^a-zA-Z].*)$'
+metadata_line_re = '^ +([a-z][a-zA-Z0-9\\-_]*) *:( *[^a-zA-Z].*)?$'
 
 
 def compute_metadata_changes(builder, old_meta, new_meta, indent):

@@ -52,10 +52,10 @@ def get_features(example: PredictionInput) -> Dict[str, bool]:
 
 class TrainingExamples(object):
     def __init__(self):
-        self.training_examples = []
+        self.training_examples = []  # type: List[Tuple[PredictionInput, str]]
 
     def add(self, example: PredictionInput, target_account: str):
-        self.training_examples.append((get_features(example), target_account))
+        self.training_examples.append((example, target_account))
 
 
 class MockTrainingExamples(object):
@@ -210,6 +210,62 @@ class FeatureExtractor(object):
                         date=get_posting_date(entry, posting),
                         amount=posting.units),
                     target_account=target_account)
+
+    def get_example_kind(self, example: PredictionInput) -> Tuple[str, ...]:
+        """Identifies which kind of posting an example describes.
+
+        The nearest-neighbor classifier only compares examples of the same
+        kind, so that e.g. an Amazon item is never predicted from the account
+        of an Amazon credit card payment merely because both share
+        `amazon_account`.  Indirect examples (predicted from the opposite
+        posting's source account) form one kind; direct examples are
+        distinguished by which posting-level metadata keys they have.
+        """
+        if example.source_account:
+            return ('indirect', )
+        return tuple(
+            sorted(k for k in example.key_value_pairs
+                   if k in self.example_posting_key_extractors))
+
+    def _get_transaction_key_value_pairs(
+            self, transaction: Transaction) -> ExampleKeyValuePairs:
+        result = dict()  # type: ExampleKeyValuePairs
+        if transaction.meta:
+            for k in transaction.meta:
+                extractor = self.example_transaction_key_extractors.get(k, None)
+                if extractor is None: continue
+                extractor(transaction.meta[k], result)
+        return result
+
+    def extract_unknown_account_posting_features(
+            self, transaction: Transaction) -> List[Optional[PredictionInput]]:
+        """Returns a prediction input for each unknown-account posting that
+        has posting-level example metadata (e.g. an Amazon item), else None.
+
+        Unlike `extract_unknown_account_group_features`, which merges all
+        postings of a group into one input, these match the per-posting
+        examples extracted from the journal for training.
+        """
+        transaction_key_value_pairs = self._get_transaction_key_value_pairs(
+            transaction)
+        result = []  # type: List[Optional[PredictionInput]]
+        for posting in get_unknown_account_postings(transaction):
+            key_value_pairs = dict()  # type: ExampleKeyValuePairs
+            for key, value in (posting.meta or {}).items():
+                extractor = self.example_posting_key_extractors.get(key)
+                if extractor is None: continue
+                extractor(value, key_value_pairs)
+            if not key_value_pairs or posting.units is None:
+                result.append(None)
+                continue
+            result.append(
+                PredictionInput(
+                    source_account='',
+                    amount=posting.units,
+                    date=transaction.date,
+                    key_value_pairs=dict(transaction_key_value_pairs,
+                                         **key_value_pairs)))
+        return result
 
     def extract_unknown_account_group_features(
             self, transaction: Transaction) -> List[Optional[PredictionInput]]:

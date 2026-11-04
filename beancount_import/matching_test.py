@@ -694,6 +694,26 @@ def test_transaction_metadata_incompatibility():
             cleared: TRUE
         """)
 
+
+def test_missing_price_currency_does_not_crash_search():
+    # An importer that returns unbooked entries can leave the currency of a
+    # price unspecified.  The weight of that posting has a `MISSING`
+    # currency, while the other posting on the same date has `USD`; sorting
+    # their (date, currency) search keys used to raise TypeError.
+    assert_match(
+        pending_candidate="""
+        2016-01-01 * "Fictional Rail Co"
+          Assets:Checking  -55.00 USD
+            cleared: TRUE
+          Expenses:FIXME  50.00 EUR @ 1.10
+        """,
+        pending="""
+        2016-01-01 * "Fictional Rail Co"
+          Assets:Checking  -55.00 USD
+          Expenses:Travel  50.00 EUR @ 1.10
+        """)
+
+
 def test_match_fuzzy_amount():
   # We match despite a skew of 0.01 USD, our configured fuzzy_match_amount.
   assert_match(
@@ -983,3 +1003,24 @@ def test_match_ofx_investment_issue113():
           Expenses:Fees               0.02 USD
         """,
     )
+
+
+def test_aggregate_candidates_stop_at_limit():
+    # One account with 46 same-sign postings, like a large itemized invoice.
+    # Sizes 2 and 3 fit under MAX_AGGREGATE_POSTINGS; size 4 (C(46, 4) =
+    # 163185) does not and is dropped, as is everything after it.
+    from beancount.core.amount import Amount
+    from beancount.core.data import Posting
+    from beancount.core.number import D
+    postings = [
+        Posting('Expenses:Groceries', Amount(D(i), 'USD'), None, None, None,
+                None) for i in range(1, 47)
+    ]
+    results = matching.get_aggregate_posting_candidates(
+        postings, is_cleared=lambda p: False)
+    sizes = [len(subset) for _, subset in results]
+    assert sizes.count(46) == 1  # the maximal same-sign subset
+    assert sizes.count(2) == 1035
+    assert sizes.count(3) == 15180
+    assert sizes.count(4) == 0
+    assert len(results) == 1 + 1035 + 15180

@@ -236,6 +236,21 @@ SearchPosting = NamedTuple('SearchPosting', [
 
 DateCurrencyKey = Tuple[datetime.date, str]
 
+
+def _date_currency_sort_key(key: DateCurrencyKey) -> Tuple[datetime.date, bool, str]:
+    """Orders `DateCurrencyKey`s chronologically, then by currency.
+
+    A posting that has not been through booking, e.g. one an importer parsed
+    from `-50.00 EUR @ 1.10`, can have a weight whose currency is `MISSING`
+    or `None`.  Those cannot be compared with a `str`, so they sort after the
+    known currencies of the same date.
+    """
+    date, currency = key
+    if isinstance(currency, str):
+        return (date, False, currency)
+    return (date, True, '')
+
+
 CHECK_KEY = 'check'
 
 
@@ -247,11 +262,28 @@ class PostingDatabase(object):
         self.fuzzy_match_days = fuzzy_match_days
         self.fuzzy_match_amount = fuzzy_match_amount
         self.is_cleared = is_cleared
-        self._date_currency = collections.defaultdict(list) # type: Dict[DateCurrencyKey, List[SearchPosting]]
-        self._date_currency_dirty = collections.defaultdict(bool) # type: Dict[DateCurrencyKey, bool]
+        # Postings by their own (date, currency).
+        self._exact_date_currency = collections.defaultdict(
+            list)  # type: Dict[DateCurrencyKey, List[SearchPosting]]
+        # Postings within fuzzy_match_days of a (date, currency), sorted by
+        # number.  Built from `_exact_date_currency` on the first lookup of
+        # that key: a large journal is only ever searched near the dates of
+        # pending entries.
+        self._date_currency = {
+        }  # type: Dict[DateCurrencyKey, List[SearchPosting]]
+        self._date_currency_dirty = set()  # type: Set[DateCurrencyKey]
         self._keyed_postings = {
         }  # type: Dict[DatabaseMetadataKey, DatabaseValues]
         self.metadata_keys = metadata_keys
+        # Transactions whose aggregate postings (see
+        # `get_aggregate_posting_candidates`) have not been added yet, keyed
+        # by transaction date and then by id.  Aggregate postings carry no
+        # metadata, so they are dated by their transaction, and a lookup at
+        # date D can only see those of transactions within fuzzy_match_days
+        # of D.  They are therefore added on the first lookup near their
+        # date, which in a large journal is most of them never.
+        self._unexpanded = {
+        }  # type: Dict[datetime.date, Dict[int, Transaction]]
 
     def get_fuzzy_date_range(self, orig_date: datetime.date):
         for day_offset in range(-self.fuzzy_match_days,
@@ -297,15 +329,39 @@ class PostingDatabase(object):
             return
 
         sp = self._search_posting(source_posting_ids, entry, mp)
-        for dc in self.fuzz_date_currency_key(self._date_currency_key(entry, mp)):
-            self._date_currency[dc].append(sp)
-            self._date_currency_dirty[dc] = True
+        key = self._date_currency_key(entry, mp)
+        self._exact_date_currency[key].append(sp)
+        if self._date_currency:
+            for dc in self.fuzz_date_currency_key(key):
+                postings = self._date_currency.get(dc)
+                if postings is not None:
+                    postings.append(sp)
+                    self._date_currency_dirty.add(dc)
+
+    def _expand_aggregates(self, date: datetime.date) -> None:
+        for d in self.get_fuzzy_date_range(date):
+            transactions = self._unexpanded.pop(d, None)
+            if not transactions:
+                continue
+            for transaction in transactions.values():
+                for mp in _get_aggregate_matchable_postings(
+                        transaction.postings, self.is_cleared):
+                    self.add_posting(transaction, mp)
 
     def get_date_currency_postings(self, key: DateCurrencyKey) -> List[SearchPosting]:
-        if self._date_currency_dirty[key]:
-            self._date_currency[key].sort()
-            self._date_currency_dirty[key] = False
-        return self._date_currency[key]
+        if self._unexpanded:
+            self._expand_aggregates(key[0])
+        postings = self._date_currency.get(key)
+        if postings is None:
+            postings = []
+            for dc in self.fuzz_date_currency_key(key):
+                postings.extend(self._exact_date_currency.get(dc, ()))
+            postings.sort()
+            self._date_currency[key] = postings
+        elif key in self._date_currency_dirty:
+            postings.sort()
+            self._date_currency_dirty.discard(key)
+        return postings
 
     def search_postings(self,
                         entry: Transaction,
@@ -325,7 +381,7 @@ class PostingDatabase(object):
         for dc, items in postings_date_currency.items():
             items.sort()
 
-        keys = sorted(postings_date_currency.keys())
+        keys = sorted(postings_date_currency.keys(), key=_date_currency_sort_key)
 
         for key in keys:
             db = self.get_date_currency_postings(key)
@@ -374,9 +430,12 @@ class PostingDatabase(object):
                         yield i
 
     def add_transaction(self, transaction: Transaction):
-        for mp in get_matchable_postings_from_transaction(
-                transaction, self.is_cleared):
-            self.add_posting(transaction, mp)
+        for p, weight in get_weighted_postings(transaction.postings):
+            if weight is not None:
+                self.add_posting(transaction, MatchablePosting(p, weight, (p, )))
+        if _may_have_aggregate_postings(transaction.postings):
+            self._unexpanded.setdefault(transaction.date,
+                                        {})[id(transaction)] = transaction
 
     def remove_posting(self, entry: Transaction, mp: MatchablePosting):
         source_posting_ids = _entry_and_posting_ids_key(entry, mp)
@@ -392,10 +451,22 @@ class PostingDatabase(object):
                     group.pop(source_posting_ids, None)
 
         sp = self._search_posting(source_posting_ids, entry, mp)
-        for dc in self.fuzz_date_currency_key(self._date_currency_key(entry, mp)):
-            self._date_currency[dc].remove(sp)
+        key = self._date_currency_key(entry, mp)
+        self._exact_date_currency[key].remove(sp)
+        for dc in self.fuzz_date_currency_key(key):
+            postings = self._date_currency.get(dc)
+            if postings is not None:
+                postings.remove(sp)
 
     def remove_transaction(self, transaction: Transaction):
+        unexpanded = self._unexpanded.get(transaction.date)
+        if unexpanded and unexpanded.pop(id(transaction), None) is not None:
+            # Its aggregate postings were never added.
+            for p, weight in get_weighted_postings(transaction.postings):
+                if weight is not None:
+                    self.remove_posting(transaction,
+                                        MatchablePosting(p, weight, (p, )))
+            return
         for mp in get_matchable_postings_from_transaction(
                 transaction, self.is_cleared):
             self.remove_posting(transaction, mp)
@@ -914,9 +985,17 @@ def _get_uncleared_aggregate_posting_candidates(
         for subset_size in range(
                 2, min(len(posting_list) + 1, max_subset_size + 1)):
             potential_results = [] # type: List[Posting]
+            # A subset size whose candidates would push the total over
+            # MAX_AGGREGATE_POSTINGS is discarded whole, so stop generating
+            # as soon as the limit is crossed instead of enumerating every
+            # combination first (C(46, 4) is ~163k for a 46-item invoice).
+            exceeded = False
             for subset in itertools.combinations(posting_list, subset_size):
                 add_subset(potential_results, account, currency, subset)
-            if len(results) + len(potential_results) > MAX_AGGREGATE_POSTINGS:
+                if len(results) + len(potential_results) > MAX_AGGREGATE_POSTINGS:
+                    exceeded = True
+                    break
+            if exceeded:
                 break
             results.extend(potential_results)
 
@@ -949,9 +1028,31 @@ def get_matchable_postings(
         if weight is None:
             continue
         yield MatchablePosting(p, weight, (p, ))
-    for p, all_ps in get_aggregate_posting_candidates(
-        (p for p, _ in weighted_postings), is_cleared):
+    yield from _get_aggregate_matchable_postings(
+        (p for p, _ in weighted_postings), is_cleared)
+
+
+def _get_aggregate_matchable_postings(
+        postings: Iterable[Posting],
+        is_cleared: IsClearedFunction) -> Iterable[MatchablePosting]:
+    for p, all_ps in get_aggregate_posting_candidates(postings, is_cleared):
         yield MatchablePosting(p, p.units, all_ps)
+
+
+def _may_have_aggregate_postings(postings: Sequence[Posting]) -> bool:
+    """Cheap necessary condition for `get_aggregate_posting_candidates` to
+    return anything: two postings eligible for aggregation that share an
+    account and currency."""
+    seen = set()
+    for p in postings:
+        if (p.price is not None or p.cost is not None or p.units is None or
+                p.units is MISSING):
+            continue
+        key = (p.account, p.units.currency)
+        if key in seen:
+            return True
+        seen.add(key)
+    return False
 
 
 def get_matchable_posting_groups(

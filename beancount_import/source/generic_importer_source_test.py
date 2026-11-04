@@ -3,8 +3,8 @@ import os
 import pytest
 
 from .source_test import check_source_example
-from beancount.ingest.importers.csv import Importer as CSVImporter, Col
-from beancount.ingest.importer import ImporterProtocol
+from beangulp.importers.csv import Importer as CSVImporter, Col
+from beangulp.importer import ImporterProtocol
 from beancount.parser.parser import parse_file
 
 testdata_dir = os.path.realpath(
