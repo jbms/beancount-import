@@ -601,3 +601,76 @@ def test_accept_cleans_consumed_transaction_from_middle_of_pending_group(process
     loaded.accept_candidate(matched)
     assert id(second) not in processor.pending_transaction_ids
     assert id(second) not in index_ids(processor)
+
+
+@pytest.mark.parametrize('consumed_index', [0, 1])
+@pytest.mark.parametrize('ignore', [False, True])
+def test_partial_group_acceptance_retains_only_unconsumed_entries(processor, consumed_index, ignore):
+    loaded = processor.loaded_reconciler
+    loaded.classifier = None
+    loaded._use_nearest_neighbor = False
+    loaded.sources = []
+    loaded.training_examples = training.TrainingExamples()
+    loaded._feature_extractor = training.FeatureExtractor(
+        account_source_map={}, sources=[], skip_accounts=set())
+    grouped = pending_entries('''
+2020-01-01 * "First"
+  Assets:Checking -10 USD
+  Expenses:FIXME 10 USD
+2020-01-02 * "Second"
+  Assets:Checking -20 USD
+  Expenses:FIXME 20 USD
+''')
+    matched = grouped.entries[consumed_index]
+    other = grouped.entries[1 - consumed_index]
+    postings = [matched.postings[0],
+                matched.postings[1]._replace(account='Expenses:Groceries')]
+    imported = reconcile.make_pending_entry(
+        ImportResult(date=matched.date,
+                     entries=[matched._replace(postings=postings)], info=None),
+        grouped.source)
+    add_pending(processor, grouped)
+    add_pending(processor, imported)
+    candidates = loaded._make_candidates_from_import_result(imported)
+    candidate = next(c for c in candidates.candidates
+                     if any(entry is matched for entry in c.used_transactions))
+    loaded.accept_candidate(candidate, ignore=ignore)
+    remaining, = loaded.pending_data
+    assert list(remaining.entries) == [other]
+    assert remaining.id != grouped.id
+    assert remaining.date == other.date
+    assert matched.narration not in remaining.formatted
+    assert other.narration in remaining.formatted
+    assert loaded.pending_transaction_ids == {id(other)}
+    assert id(matched) not in index_ids(processor)
+
+    candidates, _, _ = loaded.get_next_candidates()
+    loaded.accept_candidate(candidates.candidates[-1])
+    assert loaded.pending_data == []
+    assert loaded.pending_transaction_ids == set()
+    transactions = [entry for entry in loaded.editor.entries
+                    if isinstance(entry, Transaction)]
+    ignored = [entry for entry in loaded.editor.ignored_entries
+               if isinstance(entry, Transaction)]
+    assert len(transactions) == (1 if ignore else 2)
+    assert len(ignored) == (1 if ignore else 0)
+    transactions.extend(ignored)
+    assert len(transactions) == 2
+    assert sum(p.units.number for entry in transactions for p in entry.postings
+               if p.account == 'Assets:Checking') == -30
+
+
+def test_partial_journal_replacement_acceptance_fails_before_writing(mint_journal_pending):
+    reconciler, processor, original = mint_journal_pending
+    modify_account(processor, 'Expenses:Groceries')
+    grouped = add_balance_to_modified_entry(processor)
+    loaded = processor.loaded_reconciler
+    candidate = loaded._make_candidate_with_substitutions(
+        grouped.entries[0], [grouped.entries[0]], predicted_accounts=[])
+    with open(loaded.editor.journal_path) as stream:
+        before = stream.read()
+    with pytest.raises(ValueError, match='partially accept'):
+        loaded.accept_candidate(candidate)
+    with open(loaded.editor.journal_path) as stream:
+        assert stream.read() == before
+    assert loaded.pending_data == [grouped]
