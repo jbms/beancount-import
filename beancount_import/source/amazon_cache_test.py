@@ -149,3 +149,18 @@ def test_file_changed_during_parse_is_not_cached(cache_case, monkeypatch, synthe
     prepare(source)
     assert len(calls) == 2
     assert list(cache.iterdir()) == []
+
+
+
+def test_read_only_cache_does_not_prevent_source_loading(cache_case, monkeypatch):
+    path, cache, calls, make_source, prepare = cache_case
+
+    def fail(*args, **kwargs):
+        raise PermissionError('Invented read-only cache')
+
+    monkeypatch.setattr(amazon.os, 'access', lambda *args: False)
+    monkeypatch.setattr(amazon.tempfile, 'NamedTemporaryFile', fail)
+    results = prepare(make_source())
+    assert len(results.pending) == 1
+    assert len(results.messages) == 1
+    assert 'Failed to save pickled invoice' in results.messages[0][1]

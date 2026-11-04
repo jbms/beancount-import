@@ -518,8 +518,6 @@ class _InvoiceParseResult(NamedTuple):
 class AmazonPickler:
     def __init__(self, pickle_dir: Optional[str]):
         self.pickle_dir = pickle_dir
-        if pickle_dir is not None and not os.access(pickle_dir, os.W_OK):
-            raise Exception("Amazon pickled invoice path is not writable: %s" % pickle_dir)
         with open(amazon_invoice.__file__, 'rb') as parser_file:
             self.parser_fingerprint = hashlib.sha256(parser_file.read()).hexdigest()
 
