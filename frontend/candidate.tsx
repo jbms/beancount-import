@@ -262,7 +262,7 @@ export class CandidateComponent extends React.PureComponent<
           const lowConfidence = hasConfidence && confidence! < LOW_CONFIDENCE;
           const percentage = hasConfidence ? Math.round(confidence! * 100) : null;
           const confidenceNote = hasConfidence
-            ? `${lowConfidence ? "Low-confidence prediction. " : ""}Nearest-neighbor vote share: ${percentage}% (not a probability of correctness).  `
+            ? `${lowConfidence ? "Low-confidence prediction. " : ""}Nearest-neighbor weighted vote share: ${percentage}% (not a probability of correctness).  `
             : "";
           addElement(
             <AccountSubstitutionElement
