@@ -611,7 +611,7 @@ class LoadedReconciler(object):
             import sklearn.tree
 
             self.classifier = nltk.classify.scikitlearn.SklearnClassifier(
-                estimator=sklearn.tree.DecisionTreeClassifier())
+                estimator=sklearn.tree.DecisionTreeClassifier(random_state=0))
             self.classifier.train(training_examples)
             self.reconciler.log_status(
                 'Trained classifier with %d examples.' % len(training_examples))
