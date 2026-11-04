@@ -368,7 +368,8 @@ def stage_missing_accounts(stage, entry_file_selector, account_map=None):
         open_entry = Open(
             date=date,
             account=account,
-            currencies=sorted(list(currencies)),
+            # Unbooked importer entries may have an unspecified currency.
+            currencies=sorted(c for c in currencies if isinstance(c, str)),
             meta=None,
             booking=None)
         stage.add_entry(open_entry, entry_file_selector(open_entry))
