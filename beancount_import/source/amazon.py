@@ -76,6 +76,16 @@ Even if you don't specify a `credit_card_last_4_digits` metadata field on the
 `open` directive, the generic automatic account prediction will likely handle
 them.
 
+To book the listed card payments for one Amazon source to a single account,
+set `credit_card_account` in its source configuration. This takes precedence
+over the card's `credit_card_last_4_digits` mapping and can be used for a payable
+that is later cleared by the actual card charge:
+
+    dict(module='beancount_import.source.amazon',
+         directory='/path/to/invoices',
+         amazon_account='example@example.com',
+         credit_card_account='Liabilities:Payable:Amazon')
+
 Imported transaction format
 ===========================
 
@@ -307,7 +317,8 @@ def make_amazon_transaction(
         posttax_adjustment_accounts,
         credit_card_accounts,
         amazon_account: str,
-        payee='Amazon.com'
+        payee='Amazon.com',
+        credit_card_account: Optional[str] = None,
 ):
     txn = Transaction(
         date=invoice.order_date,
@@ -426,8 +437,8 @@ def make_amazon_transaction(
     for payment in invoice.credit_card_transactions:
         txn.postings.append(
             Posting(
-                account=credit_card_accounts.get(payment.card_ending_in,
-                                                 FIXME_ACCOUNT),
+                account=credit_card_account or credit_card_accounts.get(
+                    payment.card_ending_in, FIXME_ACCOUNT),
                 units=-payment.amount,
                 cost=None,
                 price=None,
@@ -548,10 +559,12 @@ class AmazonSource(Source):
                  pickle_dir: Optional[str] = None,
                  earliest_date: Optional[datetime.date] = None,
                  locale='en_US',
+                 credit_card_account: Optional[str] = None,
                  **kwargs) -> None:
         super().__init__(**kwargs)
         self.directory = directory
         self.amazon_account = amazon_account
+        self.credit_card_account = credit_card_account
         self.posttax_adjustment_accounts = posttax_adjustment_accounts
         self.example_posting_key_extractors[ITEM_DESCRIPTION_KEY] = None
         self.example_posting_key_extractors[CREDIT_CARD_DESCRIPTION_KEY] = None
@@ -616,7 +629,8 @@ class AmazonSource(Source):
                 posttax_adjustment_accounts=self.posttax_adjustment_accounts,
                 amazon_account=self.amazon_account,
                 credit_card_accounts=credit_card_accounts,
-                payee=self.locale.payee)
+                payee=self.locale.payee,
+                credit_card_account=self.credit_card_account)
             results.add_pending_entry(
                 ImportResult(
                     date=transaction.date,
