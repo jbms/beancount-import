@@ -752,6 +752,14 @@ def parse_arguments(argv, **kwargs):
         help='Do not offer balance entries older than the newest balance '
         'assertion that holds in the journal for the same account.')
     argparser.add_argument(
+        '--classifier',
+        choices=reconcile.CLASSIFIERS,
+        default=reconcile.DECISION_TREE,
+        help='Classifier for automatic account prediction.  '
+        'nearest_neighbor votes among the most similar past postings and '
+        'learns from each accepted transaction immediately; decision_tree '
+        'learns only when retrained.')
+    argparser.add_argument(
         '--classifier_cache',
         type=str,
         help=

@@ -249,6 +249,46 @@ def test_basic(tmpdir: py.path.local):
     tester.snapshot()
 
 
+def test_basic_nearest_neighbor(tmpdir: py.path.local):
+    cache_path = str(tmpdir.join('classifier_cache'))
+    journal_dir = tmpdir.mkdir('journal')
+    tester = ReconcileGoldenTester(
+        golden_directory=os.path.join(testdata_root, 'reconcile',
+                                      'test_basic_nearest_neighbor'),
+        temp_dir=str(journal_dir),
+        options=dict(
+            data_sources=[
+                {
+                    'module': 'beancount_import.source.mint',
+                    'filename': mint_data_path,
+                },
+            ],
+            classifier='nearest_neighbor',
+        ),
+    )
+    tester.reconciler.options['classifier_cache'] = cache_path
+
+    tester.accept_candidate(0)
+    # Unlike the decision tree (see test_basic), the accepted transaction
+    # informs the next prediction without retraining.
+    tester.snapshot()
+    tester.change_candidate(0, dict(accounts=['Expenses:Coffee'], ))
+    tester.accept_candidate(0)
+    tester.snapshot()
+
+    # Retraining writes the encoder cache; reloading reuses the encoder.
+    tester.reconciler.retrain()
+    loaded = tester.loaded_reconciler
+    assert os.path.exists(cache_path)
+    encoder = loaded.classifier.encoder
+    assert encoder is not None
+    tester.reconciler.reload_journal()
+    reloaded = tester.loaded_reconciler
+    assert reloaded is not loaded
+    assert reloaded.classifier.encoder is encoder
+    assert len(reloaded.classifier) == len(loaded.classifier)
+
+
 def test_ignore(tmpdir: py.path.local):
     tester = ReconcileGoldenTester(
         golden_directory=os.path.join(testdata_root, 'reconcile',

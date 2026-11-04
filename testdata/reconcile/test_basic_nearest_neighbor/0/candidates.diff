@@ -1,0 +1,20 @@
+<journal-dir>/journal.beancount
++
++2013-11-27 * "CR CARD PAYMENT ALEXANDRIA VA"
++  Liabilities:Credit-Card   66.88 USD
++    date: 2013-11-27
++    source_desc: "CR CARD PAYMENT ALEXANDRIA VA"
++  Assets:Checking          -66.88 USD
++    date: 2013-12-02
++    source_desc: "NATIONAL FEDERAL DES:TRNSFR"
+
+
+<journal-dir>/journal.beancount
++
++2013-11-27 * "CR CARD PAYMENT ALEXANDRIA VA"
++  Liabilities:Credit-Card   66.88 USD
++    date: 2013-11-27
++    source_desc: "CR CARD PAYMENT ALEXANDRIA VA"
++  [0]Expenses:FIXME     -66.88 USD
++
++2013-11-27 open Expenses:FIXME                                  USD

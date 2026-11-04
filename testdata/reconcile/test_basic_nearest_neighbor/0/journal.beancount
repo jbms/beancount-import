@@ -1,0 +1,5 @@
+1900-01-01 open Liabilities:Credit-Card  USD
+  mint_id: "My Credit Card"
+
+1900-01-01 open Assets:Checking  USD
+  mint_id: "My Checking"
