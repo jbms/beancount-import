@@ -758,7 +758,9 @@ def parse_credit_card_transactions_from_payments_table(
     return credit_card_transactions
 
 
-def parse_credit_card_transactions(soup, locale=Locale_en_US) -> List[CreditCardTransaction]:
+def parse_credit_card_transactions(
+        soup, locale=Locale_en_US, require_full_date: bool = False
+) -> List[CreditCardTransaction]:
     """ Parse Credit Card Transactions from bottom sub-table of payments table.
     Transactions are listed with type, 4 digits, transaction date and amount.
     """
@@ -781,6 +783,8 @@ def parse_credit_card_transactions(soup, locale=Locale_en_US) -> List[CreditCard
         m = re.match(locale.credit_card_last_digits, description,
                     re.UNICODE)
         assert m is not None
+        if require_full_date and re.fullmatch(r'[A-Za-z]+ \d{1,2}, \d{4}', m.group(3)) is None:
+            raise ValueError('Invalid card transaction date: %r' % m.group(3))
         transactions.append(
             CreditCardTransaction(
                 date=locale.parse_date(m.group(3)),
@@ -1117,7 +1121,7 @@ def parse_new_style_invoice(soup: BeautifulSoup, locale=Locale_en_US) -> Order:
             errors.append('expected %s is %s, but parsed value is %s' % (label, expected, actual))
 
     # A displayed payment method does not establish a charge amount or date.
-    payments = parse_credit_card_transactions(soup, locale=locale)
+    payments = parse_credit_card_transactions(soup, locale=locale, require_full_date=True)
     if payments and reduce_amounts(p.amount for p in payments) != grand_total:
         errors.append('total payment amount is %s, but grand total is %s' %
                       (reduce_amounts(p.amount for p in payments), grand_total))

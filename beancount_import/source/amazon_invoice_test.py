@@ -188,3 +188,12 @@ def test_modern_order_source_prepare(tmp_path, modern_invoice_html):
     assert transaction.meta[amazon.ORDER_ID_KEY] == '111-0000001-0000001'
     assert sum(p.units.number for p in transaction.postings) == 0
     assert str(transaction.postings[-1].units) == '-25.07 USD'
+
+
+
+def test_modern_explicit_payment_requires_full_date(tmp_path, modern_invoice_html):
+    table = '''<table><tr><td>Credit Card transactions</td><td><table>
+<tr><td>Example Visa ending in 0000: March 17:</td><td>$25.07</td></tr>
+</table></td></tr></table>'''
+    with pytest.raises(ValueError, match='Invalid card transaction date'):
+        parse_modern_html(tmp_path, modern_invoice_html.replace('</body>', table + '</body>'))
