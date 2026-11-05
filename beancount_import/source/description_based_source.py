@@ -2,13 +2,13 @@
 
 import datetime
 import collections
-from typing import Iterable, Tuple, Dict, TypeVar, Callable, List, AbstractSet, Union
+from typing import Iterable, Tuple, Dict, TypeVar, Callable, List, AbstractSet, Union, Optional
 
 from beancount.core.data import Transaction, Posting, Open, Directive, CostSpec, Meta
 from beancount.core.number import ZERO, MISSING
 
 from ..posting_date import POSTING_DATE_KEY
-from . import Source, SourceResults, InvalidSourceReference
+from . import Source, SourceResults, ImportResult, InvalidSourceReference
 from ..training import TrainingExamples
 from ..unbook import unbook_postings, group_postings_by_meta
 
@@ -72,8 +72,17 @@ def get_pending_and_invalid_entries(
             Transaction, Posting, List[Posting], str, datetime.date
         ], RawEntryKey],
         get_key_from_raw_entry: Callable[[RawEntry], RawEntryKey],
-        make_import_result: Callable[[RawEntry], Transaction],
-        results: SourceResults) -> None:
+        make_import_result: Callable[[RawEntry], ImportResult],
+        results: SourceResults,
+        get_keys_from_raw_entry: Optional[Callable[[RawEntry],
+                                                  Iterable[RawEntryKey]]] = None
+        ) -> None:
+    """Match source references, emitting one pending result per unmatched record.
+
+    A record may supply several keys. Each occurrence consumes one matching
+    journal reference; if any is missing, the record is offered once.
+    get_keys_from_raw_entry overrides the single-key callback when provided.
+    """
     matched_postings = dict(
     )  # type: Dict[RawEntryKey, List[Tuple[Transaction, Posting]]]
 
@@ -98,12 +107,26 @@ def get_pending_and_invalid_entries(
     for key, entry_posting_pairs in matched_postings.items():
         matched_postings_counter[key] += len(entry_posting_pairs)
 
+    pending_entries = []  # type: List[Tuple[RawEntry, Dict[RawEntryKey, int]]]
     for raw_entry in raw_entries:
-        key = get_key_from_raw_entry(raw_entry)
-        if matched_postings_counter[key] > 0:
-            matched_postings_counter[key] -= 1
+        keys = (get_keys_from_raw_entry(raw_entry)
+                if get_keys_from_raw_entry is not None
+                else [get_key_from_raw_entry(raw_entry)])
+        key_counts: Dict[RawEntryKey, int] = collections.Counter(keys)
+        if all(matched_postings_counter[key] >= count
+               for key, count in key_counts.items()):
+            for key, count in key_counts.items():
+                matched_postings_counter[key] -= count
         else:
-            results.add_pending_entry(make_import_result(raw_entry))
+            pending_entries.append((raw_entry, key_counts))
+
+    # Match complete records before consuming references for partial records.
+    # Otherwise a new overlapping record can steal an accepted record's match.
+    for raw_entry, key_counts in pending_entries:
+        for key, count in key_counts.items():
+            matched_postings_counter[key] = max(
+                0, matched_postings_counter[key] - count)
+        results.add_pending_entry(make_import_result(raw_entry))
 
     for key, entry_posting_pairs in matched_postings.items():
         extra = matched_postings_counter[key]
