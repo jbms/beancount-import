@@ -14,6 +14,8 @@ Author: Sufiyan Adhikari(github.com/dumbPy)
 """
 
 import os
+import datetime
+from copy import deepcopy
 from glob import glob
 from collections import Counter, OrderedDict
 import itertools
@@ -24,15 +26,15 @@ from beancount.core.data import Balance, Transaction, Posting, Directive, Option
 from beancount.core.amount import Amount
 from beancount.core.convert import get_weight
 from beancount.core.number import MISSING
+from beancount.parser import booking
 from beangulp.importer import Importer, ImporterProtocol, Adapter
 from beangulp.cache import get_file
 from beancount.parser.booking_full import convert_costspec_to_cost
 
 from ..matching import FIXME_ACCOUNT, SimpleInventory
 from . import ImportResult, SourceResults
-from ..journal_editor import JournalEditor
+from ..journal_editor import JournalEditor, get_partially_booked_entries
 from .description_based_source import DescriptionBasedSource, get_pending_and_invalid_entries
-from .mint import _get_key_from_posting
 
 
 class ImporterSource(DescriptionBasedSource):
@@ -68,14 +70,27 @@ class ImporterSource(DescriptionBasedSource):
     def prepare(self, journal: 'JournalEditor', results: SourceResults) -> None:
         results.add_account(self.account)
 
+        def get_keys(entry: Directive) -> List[Hashable]:
+            return self._get_keys_from_imported_entry(entry, journal.options_map)
+
+        def get_posting_key(entry: Transaction, posting: Posting,
+                            source_postings: List[Posting], source_desc: str,
+                            posting_date: datetime.date) -> Hashable:
+            units = posting.units
+            if len(source_postings) == 1 and (
+                    units is None or units is MISSING or units.number is MISSING):
+                inferred = self._get_inferred_source_units(entry,
+                                                           journal.options_map)
+                units = inferred.get(id(source_postings[0]), units)
+            return (posting.account, posting_date, units, source_desc)
+
         entries = OrderedDict() #type: Dict[Hashable, List[Directive]]
         for f in self.files:
             f_entries = self.importer.extract(f, journal.entries)
             # collect  all entries in current statement, grouped by hash
             hashed_entries = OrderedDict() #type: Dict[Hashable, List[Directive]]
             for entry in f_entries:
-                entry_key = frozenset(Counter(
-                    self._get_keys_from_imported_entry(entry)).items())
+                entry_key = frozenset(Counter(get_keys(entry)).items())
                 self._add_description(entry)
                 hashed_entries.setdefault(entry_key, []).append(entry)
             # deduplicate across statements
@@ -91,12 +106,12 @@ class ImporterSource(DescriptionBasedSource):
             raw_entries=list(itertools.chain.from_iterable(entries.values())),
             journal_entries=journal.all_entries,
             account_set=set([self.account]),
-            get_key_from_posting=_get_key_from_posting,
-            get_key_from_raw_entry=self._get_key_from_imported_entry,
+            get_key_from_posting=get_posting_key,
+            get_key_from_raw_entry=lambda entry: get_keys(entry)[0],
             make_import_result=lambda entry: self._make_import_result(
                 entry, journal.options_map),
             results=results,
-            get_keys_from_raw_entry=self._get_keys_from_imported_entry)
+            get_keys_from_raw_entry=get_keys)
 
     def _add_description(self, entry: Directive) -> None:
         if not isinstance(entry, Transaction):
@@ -110,7 +125,34 @@ class ImporterSource(DescriptionBasedSource):
             posting.meta.setdefault("source_desc", entry.narration)
             posting.meta.setdefault("date", entry.date)
 
-    def _get_keys_from_imported_entry(self, entry: Directive) -> List[Hashable]:
+    def _get_inferred_source_units(self, entry: Transaction,
+                                   options_map: Options) -> Dict[int, Amount]:
+        indices = [i for i, p in enumerate(entry.postings)
+                   if p.account == self.account and
+                   (p.units is None or p.units is MISSING or
+                    p.units.number is MISSING)]
+        if not indices:
+            return {}
+        # Infer identity without changing the import or the journal objects used
+        # by invalid-reference diagnostics. Keep the original posting structure.
+        entry_copy = deepcopy(entry)
+        entry_copy.postings[:] = [
+            p._replace(meta={}) if p.meta is None else p
+            for p in entry_copy.postings]
+        booked, errors = booking.book([entry_copy], options_map)
+        if errors:
+            return {}
+        for i in indices:
+            entry_copy.postings[i] = entry_copy.postings[i]._replace(units=MISSING)
+        partial, = get_partially_booked_entries([entry_copy], booked)
+        return {id(entry.postings[i]): partial.postings[i].units
+                for i in indices
+                if partial.postings[i].units is not None and
+                partial.postings[i].units is not MISSING and
+                partial.postings[i].units.number is not MISSING}
+
+    def _get_keys_from_imported_entry(self, entry: Directive,
+                                     options_map: Options) -> List[Hashable]:
         if isinstance(entry, Balance):
             return [(entry.account, entry.date, entry.amount)]
         if not isinstance(entry, Transaction):
@@ -118,14 +160,12 @@ class ImporterSource(DescriptionBasedSource):
         postings = [p for p in entry.postings if p.account == self.account]
         if not postings:
             raise ValueError("entry {} has no postings for account: {}".format(entry, self.account))
+        inferred = self._get_inferred_source_units(entry, options_map)
         return [(self.account,
                  (p.meta or {}).get('date', entry.date),
-                 p.units,
+                 inferred.get(id(p), p.units),
                  (p.meta or {}).get('source_desc', entry.narration))
                 for p in postings]
-
-    def _get_key_from_imported_entry(self, entry: Directive) -> Hashable:
-        return self._get_keys_from_imported_entry(entry)[0]
 
     def _make_import_result(self, imported_entry: Directive,
                             options_map: Options) -> ImportResult:

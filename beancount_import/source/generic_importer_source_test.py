@@ -398,3 +398,29 @@ def test_import_single_records_can_match_one_combined_journal_transaction(tmp_pa
     results, _ = reload_import(tmp_path, entry)
     assert results.pending == []
     assert results.invalid_references == []
+
+
+@pytest.mark.parametrize('inferred_posting', ['Assets:Bank', 'Assets:Bank USD'])
+def test_import_inferred_source_leg_is_recognized_after_reload(tmp_path,
+                                                              inferred_posting):
+    entry, _ = import_transaction(tmp_path, '''2020-01-03 * "Transfer and fee"
+  Assets:Bank -10 USD
+  %s
+  Expenses:Food 1 USD
+''' % inferred_posting)
+    units = entry.postings[1].units
+    assert units is MISSING or units.number is MISSING
+    results, _ = reload_import(tmp_path, entry)
+    assert results.pending == []
+    assert results.invalid_references == []
+
+
+def test_import_ambiguous_source_amounts_remain_pending(tmp_path):
+    entry, _ = import_transaction(tmp_path, '''2020-01-03 * "Unallocated transfer"
+  Assets:Bank -10 USD
+  Assets:Bank
+  Assets:Bank
+  Expenses:Food 1 USD
+''')
+    assert entry.postings[1].units is MISSING
+    assert entry.postings[2].units is MISSING
