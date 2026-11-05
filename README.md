@@ -153,11 +153,37 @@ To run Beancount-import, create a Python script that invokes the
 
 ## Deterministic preprocessing
 
-The optional `preprocessor` callback can record, modify, or ignore pending
-imports using your own rules before account classification. See the
-[preprocessor example](examples/preprocessor/) for a runnable configuration,
-the helper API, and callback lifecycle. Entries left pending continue through
-the normal web review flow.
+Rules can handle routine imports before you review anything: `record` writes an
+entry straight to the journal, `modify` fills in its account but keeps it for
+review, and `ignore` sends it to the ignore journal. Entries no rule matches go
+through the normal web review.
+
+```python
+import re
+from beancount_import.preprocessor import (
+    BasePreprocessor, PreprocessingRule, TransactionRuleMixin)
+
+RULES = [
+    PreprocessingRule(transaction_narration=re.compile('EXAMPLE MARKET'),
+                      target_account='Expenses:Groceries'),
+    PreprocessingRule(transaction_narration=re.compile('EXAMPLE CAFE'),
+                      target_account='Expenses:Dining', action='modify'),
+    PreprocessingRule(transaction_narration=re.compile('CARD VERIFICATION'),
+                      posting_amount='-1.00 USD', action='ignore'),
+]
+
+class Rules(TransactionRuleMixin, BasePreprocessor):
+    def preprocess(self) -> None:
+        self.apply_rules(RULES)
+
+beancount_import.webserver.main(argv, preprocessor=Rules, ...)
+```
+
+Rules are tried in order, and the first match wins. They only apply to
+transactions with two postings, one of them `Expenses:FIXME`. The
+[preprocessor example](examples/preprocessor/) runs these rules on sample data.
+Its README lists every rule criterion and covers custom callbacks for split
+transactions or logic spanning several imports.
 
 For rules-only callers, set `build_classifier=False` in the launch configuration
 (or the reconciler options). Source loading, matching, and preprocessing still

@@ -11,5 +11,5 @@ Examples:
   - `manually_entered`: Example of importing transactions corresponding to
     existing, manually-entered transactions.
 
-  - `preprocessor`: Record a fictional grocery payment using an explicit rule,
-    leaving unmatched imports for normal review.
+  - `preprocessor`: Use rules to record, modify, or ignore routine imports,
+    leaving the rest for normal review.
