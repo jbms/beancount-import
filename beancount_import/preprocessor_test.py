@@ -1,14 +1,16 @@
 import datetime
 import gc
+import importlib.util
 import os
 import re
+import shutil
 from types import SimpleNamespace
 
 import py
 import pytest
 from beancount.core.data import Transaction
 
-from . import journal_editor, matching, reconcile, reconcile_test, test_util, training
+from . import journal_editor, matching, reconcile, reconcile_test, test_util, training, webserver
 from .preprocessor import BasePreprocessor, TransactionRuleMixin, PreprocessingRule
 from .source import ImportResult, Source
 
@@ -675,3 +677,41 @@ def test_partial_journal_replacement_acceptance_fails_before_writing(mint_journa
     with open(loaded.editor.journal_path) as stream:
         assert stream.read() == before
     assert loaded.pending_data == [grouped]
+
+
+def _load_example_reconciler(directory):
+    spec = importlib.util.spec_from_file_location(
+        'preprocessor_example_run', os.path.join(directory, 'run.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    args = webserver.parse_arguments([], **module.options(str(directory)))
+    return reconcile.Reconciler(
+        journal_path=args.journal_input, ignore_path=args.ignored_journal,
+        log_status=lambda *args: None, options=vars(args))
+
+
+def test_preprocessor_example_applies_each_action(tmp_path):
+    """The README example records, modifies and ignores, and stays that way."""
+    example_dir = os.path.join(
+        os.path.dirname(__file__), '..', 'examples', 'preprocessor')
+    shutil.copytree(example_dir, str(tmp_path), dirs_exist_ok=True,
+                    ignore=shutil.ignore_patterns('__pycache__'))
+
+    for _ in range(2):  # A restart must not record or ignore anything twice.
+        loaded = _load_example_reconciler(tmp_path).loaded_future.result()
+        assert loaded.errors == []
+        recorded = [entry for entry in loaded.editor.entries
+                    if isinstance(entry, Transaction)]
+        ignored = [entry for entry in loaded.editor.ignored_entries
+                   if isinstance(entry, Transaction)]
+        assert [(t.narration, t.postings[1].account) for t in recorded] == [
+            ('EXAMPLE MARKET', 'Expenses:Groceries')]
+        assert [t.narration for t in ignored] == ['CARD VERIFICATION HOLD']
+        pending = {
+            entry.entries[0].narration: [p.account
+                                         for p in entry.entries[0].postings]
+            for entry in loaded.pending_data}
+        assert pending == {
+            'EXAMPLE CAFE': ['Assets:Checking', 'Expenses:Dining'],
+            'EXAMPLE HARDWARE': ['Assets:Checking', 'Expenses:FIXME'],
+        }
