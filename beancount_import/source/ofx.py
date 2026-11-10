@@ -30,6 +30,8 @@ manually download OFX-format statements and place them in a directory.
 Duplicate transactions, as determined by the FITID field, are automatically
 excluded.  Therefore, if downloading manually, you should just ensure that there
 are no gaps in the date ranges selected; overlap will not cause any problems.
+If bank transactions in one statement reuse a FITID on the same date with
+different amounts, the importer reports the skipped transaction as an error.
 
 Specifying the source to beancount_import
 =========================================
@@ -545,7 +547,7 @@ DESC_KEY = 'desc'
 
 OFX_FEATURE_KEYS = [OFX_TYPE_KEY, OFX_TYPE_TRANSFER_KEY, OFX_MEMO_KEY, OFX_NAME_KEY]
 
-cache_version_number = 4
+cache_version_number = 5
 
 valid_account_types = frozenset([
     'cash_only',
@@ -647,6 +649,8 @@ class ParsedOfxStatement(object):
         raw_transactions = self.raw_transactions = []
         raw_balance_entries = self.raw_balance_entries = []
         raw_cash_balance_entries = self.raw_cash_balance_entries = []
+        self.fitid_conflicts: List[Tuple[str, Optional[int]]] = []
+        bank_amounts: Dict[Tuple[datetime.date, str], Decimal] = {}
 
         # Set of (date, uniqueid) pairs where there were transactions.
 
@@ -676,12 +680,25 @@ class ParsedOfxStatement(object):
                     security_activity_dates.add((date, uniqueid))
                 cash_activity_dates.add(date)
 
+                trantype = tran.name.upper()
+                bank_amount = find_child(tran, 'trnamt', D) if trantype == 'STMTTRN' else None
+                if fitid and bank_amount is not None:
+                    first_amount = bank_amounts.setdefault((date, fitid), bank_amount)
+                    if bank_amount != first_amount:
+                        self.fitid_conflicts.append((
+                            f'Skipped OFX transaction on {date} with FITID {fitid!r}: '
+                            f'{bank_amount} {self.currency} conflicts with '
+                            f'{first_amount} {self.currency} in the same statement.',
+                            tran.sourceline,
+                        ))
+
                 if full_fitid in seen_fitids:
                     continue
                 seen_fitids.add(full_fitid)
 
-                trantype = tran.name.upper()
-                if trantype == 'INVBANKTRAN' or trantype == 'STMTTRN':
+                if trantype == 'STMTTRN':
+                    total = bank_amount
+                elif trantype == 'INVBANKTRAN':
                     total = find_child(tran, 'trnamt', D)
                 else:
                     total = find_child(tran, 'total', D)
@@ -791,6 +808,9 @@ class ParsedOfxStatement(object):
                 'No account matching OFX ORG, BROKERID, ACCTID triplet: %r.  Known accounts: %r' %
                 (self.ofx_id, prepare_state.ofx_id_to_account.keys()))
             return
+
+        for message, line in self.fitid_conflicts:
+            results.add_error(message, {'filename': self.filename, 'lineno': line})
 
         account_type = account.meta.get('ofx_account_type')
         if account_type not in valid_account_types:

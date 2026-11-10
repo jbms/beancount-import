@@ -2,8 +2,11 @@ import os
 
 import bs4
 import pytest
+from beancount.core.amount import Amount
+from beancount.core.number import D
 
-from . import ofx
+from ..journal_editor import JournalEditor
+from . import SourceResults, ofx
 from .source_test import check_source_example
 
 testdata_dir = os.path.realpath(
@@ -90,3 +93,48 @@ def test_decode_ofx_zero_balances_are_not_utf7():
 def test_decode_ofx_windows_1252():
     assert ofx.decode_ofx(b'<NAME>Caf\xe9 Rouge') == '<NAME>Caf\xe9 Rouge'
     assert ofx.decode_ofx('<NAME>Caf\xe9'.encode('utf-8')) == '<NAME>Caf\xe9'
+
+
+@pytest.mark.parametrize('second_amount', ['-100.0', '-3.25'])
+def test_same_fitid_bank_transactions(tmp_path, second_amount):
+    statement = tmp_path / 'card.ofx'
+    statement.write_text(
+        '<OFX><ORG>TEST<CCSTMTRS><CURDEF>AUD<ACCTID>TEST-CARD'
+        '<BANKTRANLIST>'
+        '<STMTTRN><TRNTYPE>DEBIT<DTPOSTED>20260630<TRNAMT>-100.00'
+        '<FITID>test-1<NAME>Purchase</STMTTRN>\n'
+        f'<STMTTRN><TRNTYPE>DEBIT<DTPOSTED>20260630<TRNAMT>{second_amount}'
+        '<FITID>test-1<NAME>Purchase</STMTTRN>'
+        '</BANKTRANLIST></CCSTMTRS></OFX>', encoding='ascii')
+    journal_path = tmp_path / 'journal.beancount'
+    journal_path.write_text(
+        '2026-01-01 open Liabilities:TestCard AUD\n'
+        '  ofx_org: "TEST"\n'
+        '  ofx_broker_id: ""\n'
+        '  account_id: "TEST-CARD"\n'
+        '  ofx_account_type: "cash_only"\n', encoding='ascii')
+    journal = JournalEditor(str(journal_path))
+    assert not journal.errors
+    cache = tmp_path / 'ofx.cache'
+
+    for cached in (False, True):
+        status = []
+        source = ofx.OfxSource([str(statement)], log_status=status.append,
+                               cache_filename=str(cache))
+        assert any(message.startswith('ofx: loading') for message in status) != cached
+        results = SourceResults()
+        source.prepare(journal, results)
+        assert len(results.pending) == 1
+        [transaction] = results.pending[0].entries
+        [card_posting] = [posting for posting in transaction.postings
+                          if posting.account == 'Liabilities:TestCard']
+        assert card_posting.units == Amount(D('-100.00'), 'AUD')
+        if second_amount == '-100.0':
+            assert not results.messages
+        else:
+            assert len(results.messages) == 1
+            [(severity, message, location)] = results.messages
+            assert severity == 'error'
+            assert 'test-1' in message
+            assert '-100.00 AUD' in message and '-3.25 AUD' in message
+            assert location == {'filename': str(statement), 'lineno': 2}
