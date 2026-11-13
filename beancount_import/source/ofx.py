@@ -547,7 +547,7 @@ DESC_KEY = 'desc'
 
 OFX_FEATURE_KEYS = [OFX_TYPE_KEY, OFX_TYPE_TRANSFER_KEY, OFX_MEMO_KEY, OFX_NAME_KEY]
 
-cache_version_number = 5
+cache_version_number = 6
 
 valid_account_types = frozenset([
     'cash_only',
@@ -645,7 +645,9 @@ class ParsedOfxStatement(object):
         account_id = self.account_id = find_child(stmtrs, 'acctid')
         self.broker_id = find_child(stmtrs, 'brokerid') or ''
 
-        self.currency = find_child(stmtrs, 'curdef')
+        currency = stmtrs.find('curdef')
+        currency_text = currency.contents[0] if currency is not None and currency.contents else None
+        self.currency = currency_text.strip() if isinstance(currency_text, str) else None
         raw_transactions = self.raw_transactions = []
         raw_balance_entries = self.raw_balance_entries = []
         raw_cash_balance_entries = self.raw_cash_balance_entries = []
@@ -661,6 +663,8 @@ class ParsedOfxStatement(object):
         cash_activity_dates = self.cash_activity_dates = set()
 
         self.ofx_id = account_ofx_id = (org, self.broker_id, account_id)
+        if not self.currency:
+            return
 
         for invtranlist in stmtrs.find_all(re.compile('invtranlist|banktranlist')):
             for tran in invtranlist.find_all(
@@ -762,7 +766,12 @@ class ParsedOfxStatement(object):
             if not bal_amount_str.strip():
                 continue
             bal_amount = D(bal_amount_str)
-            date = find_child(bal, 'dtasof', parse_ofx_time).date()
+            as_of = find_child(bal, 'dtasof', parse_ofx_time)
+            date = as_of.date()
+            # Beancount asserts at the start of a day. Treat a ledger
+            # snapshot in the written day's final second as its close.
+            if as_of.time() == datetime.time(23, 59, 59):
+                date += datetime.timedelta(days=1)
             raw_cash_balance_entries.append(
                 RawCashBalanceEntry(
                     date=date, number=bal_amount, filename=filename))
@@ -801,8 +810,12 @@ class ParsedOfxStatement(object):
                         tolerance=tolerance))
 
     def get_entries(self, prepare_state):
-        account = prepare_state.ofx_id_to_account.get(self.ofx_id)
         results = prepare_state.results
+        if not self.currency:
+            results.add_error('OFX statement has no CURDEF currency.',
+                              {'filename': self.filename, 'lineno': 0})
+            return
+        account = prepare_state.ofx_id_to_account.get(self.ofx_id)
         if account is None:
             results.add_warning(
                 'No account matching OFX ORG, BROKERID, ACCTID triplet: %r.  Known accounts: %r' %
@@ -1514,13 +1527,14 @@ class OfxSource(Source):
                     version = cache_data['version']
                     if version != cache_version_number:
                         raise RuntimeError('invalid version')
-                    cached_ofx_filenames.update(
-                        s.filename for s in cache_data['parsed_files'])
-                    if not cached_ofx_filenames.issubset(set(ofx_filenames)):
+                    parsed_files = list(cache_data['parsed_files'])
+                    filenames = {s.filename for s in parsed_files}
+                    source_fitids = set(cache_data['source_fitids'])
+                    if not filenames.issubset(set(ofx_filenames)):
                         raise RuntimeError('filenames are not subset')
-                    parsed_files = cache_data['parsed_files']
-                    self.source_fitids.update(cache_data['source_fitids'])
-                    self.parsed_files.extend(parsed_files)
+                    self.parsed_files = parsed_files
+                    self.source_fitids = source_fitids
+                    cached_ofx_filenames = filenames
             except:
                 import traceback
                 traceback.print_exc()
