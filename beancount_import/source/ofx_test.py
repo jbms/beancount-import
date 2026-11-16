@@ -138,3 +138,18 @@ def test_same_fitid_bank_transactions(tmp_path, second_amount):
             assert 'test-1' in message
             assert '-100.00 AUD' in message and '-3.25 AUD' in message
             assert location == {'filename': str(statement), 'lineno': 2}
+
+
+def test_comma_decimal_amounts(tmp_path):
+    statement = tmp_path / 'bank.ofx'
+    statement.write_text(
+        '<OFX><BANKMSGSRSV1><STMTTRNRS><STMTRS><CURDEF>EUR'
+        '<BANKACCTFROM><ACCTID>TEST</BANKACCTFROM><BANKTRANLIST>'
+        '<STMTTRN><TRNTYPE>DEBIT<DTPOSTED>20260630<TRNAMT>-34,51'
+        '<FITID>test-1<NAME>Purchase</STMTTRN>'
+        '</BANKTRANLIST><LEDGERBAL><BALAMT>100,99<DTASOF>20260630</LEDGERBAL>'
+        '</STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>', encoding='ascii')
+
+    [statement] = ofx.ParsedOfxFile(set(), str(statement)).parsed_statements
+    assert [t.total for t in statement.raw_transactions] == [D('-34.51')]
+    assert [b.number for b in statement.raw_cash_balance_entries] == [D('100.99')]
