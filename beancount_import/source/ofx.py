@@ -441,6 +441,13 @@ from ..matching import FIXME_ACCOUNT, CHECK_KEY
 from ..training import ExampleKeyValuePairs
 
 
+def parse_ofx_decimal(value: str) -> Decimal:
+    """Parses an OFX amount, where the decimal mark may be a comma ("-34,51")."""
+    if '.' not in value:
+        value = value.replace(',', '.')
+    return D(value)
+
+
 # find_child and parse_ofx_time were derived from implementation in beancount/ingest/importers/ofx.py{,test}
 # Copyright (C) 2016  Martin Blais
 # GNU GPLv2
@@ -685,7 +692,7 @@ class ParsedOfxStatement(object):
                 cash_activity_dates.add(date)
 
                 trantype = tran.name.upper()
-                bank_amount = find_child(tran, 'trnamt', D) if trantype == 'STMTTRN' else None
+                bank_amount = find_child(tran, 'trnamt', parse_ofx_decimal) if trantype == 'STMTTRN' else None
                 if fitid and bank_amount is not None:
                     first_amount = bank_amounts.setdefault((date, fitid), bank_amount)
                     if bank_amount != first_amount:
@@ -703,11 +710,11 @@ class ParsedOfxStatement(object):
                 if trantype == 'STMTTRN':
                     total = bank_amount
                 elif trantype == 'INVBANKTRAN':
-                    total = find_child(tran, 'trnamt', D)
+                    total = find_child(tran, 'trnamt', parse_ofx_decimal)
                 else:
-                    total = find_child(tran, 'total', D)
-                units = find_child(tran, 'units', D)
-                unitprice = find_child(tran, 'unitprice', D)
+                    total = find_child(tran, 'total', parse_ofx_decimal)
+                units = find_child(tran, 'units', parse_ofx_decimal)
+                unitprice = find_child(tran, 'unitprice', parse_ofx_decimal)
                 if units and total and unitprice:
                     error_ratio = abs(units * unitprice / total)
                     if error_ratio > UNITPRICE_ERROR_UPPER_BOUND or error_ratio < UNITPRICE_ERROR_LOWER_BOUND:
@@ -719,7 +726,7 @@ class ParsedOfxStatement(object):
                             f"Transaction [{id_type} {unique_id}]: Mismatch between UNITS * UNITPRICE = {units_x_unitprice:.2f} and TOTAL = {total:.2f}. Inferring price: {unitprice:.3f}")
 
                 opttrantype = None
-                shares_per_contract = find_child(tran, 'shperctrct', D)
+                shares_per_contract = find_child(tran, 'shperctrct', parse_ofx_decimal)
                 if trantype == 'BUYOPT':
                     opttrantype = find_child(tran, 'optbuytype')
                 elif trantype == 'SELLOPT':
@@ -739,8 +746,8 @@ class ParsedOfxStatement(object):
                     units=units,
                     unitprice=unitprice,
                     tferaction=find_child(tran, 'tferaction'),
-                    fees=find_child(tran, 'fees', D),
-                    commission=find_child(tran, 'commission', D),
+                    fees=find_child(tran, 'fees', parse_ofx_decimal),
+                    commission=find_child(tran, 'commission', parse_ofx_decimal),
                     checknum=find_child(tran, 'checknum'),
                     opttradetype=opttrantype,
                     optsharesperctrct=shares_per_contract,
@@ -748,11 +755,11 @@ class ParsedOfxStatement(object):
                 raw_transactions.append(raw)
 
         for inv_bal in stmtrs.find_all('invbal'):
-            availcash = find_child(inv_bal, 'availcash', D)
+            availcash = find_child(inv_bal, 'availcash', parse_ofx_decimal)
             self.availcash = availcash
 
             for bal in inv_bal.find_all('bal'):
-                if find_child(bal, 'value', D) == availcash:
+                if find_child(bal, 'value', parse_ofx_decimal) == availcash:
                     date = find_child(bal, 'dtasof', parse_ofx_time)
                     if date is not None:
                         date = date.date()
@@ -765,7 +772,7 @@ class ParsedOfxStatement(object):
             bal_amount_str = find_child(bal, 'balamt')
             if not bal_amount_str.strip():
                 continue
-            bal_amount = D(bal_amount_str)
+            bal_amount = parse_ofx_decimal(bal_amount_str)
             as_of = find_child(bal, 'dtasof', parse_ofx_time)
             date = as_of.date()
             # Beancount asserts at the start of a day. Treat a ledger
@@ -779,9 +786,9 @@ class ParsedOfxStatement(object):
         for invposlist in stmtrs.find_all('invposlist'):
             for invpos in invposlist.find_all('invpos'):
                 time_str = find_child(invpos, 'dtpriceasof')
-                units = find_child(invpos, 'units', D)
-                unitprice = find_child(invpos, 'unitprice', D)
-                mktval = find_child(invpos, 'mktval', D)
+                units = find_child(invpos, 'units', parse_ofx_decimal)
+                unitprice = find_child(invpos, 'unitprice', parse_ofx_decimal)
+                mktval = find_child(invpos, 'mktval', parse_ofx_decimal)
                 tolerance = None
                 if mktval and mktval > 0:
                     error_ratio = units*unitprice/mktval
