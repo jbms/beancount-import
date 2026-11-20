@@ -1,11 +1,13 @@
 import os
+import datetime
 from pathlib import Path
 from typing import Optional, Tuple
 
 import pytest
 
 from .source_test import check_source_example, load_source
-from . import SourceResults
+from . import Source, SourceResults
+from .. import test_util
 from ..journal_editor import JournalEditor
 from beancount.core.data import Transaction
 from beancount.core.amount import Amount
@@ -227,3 +229,198 @@ def test_import_legacy_none_amount_is_balanced_by_booking(tmp_path):
     booked, errors = booking.book([entry], editor.options_map)
     assert errors == []
     assert booked[0].postings[1].units == Amount.from_string('10 USD')
+
+
+def test_import_preserves_source_description_and_date(tmp_path):
+    entry, _ = import_transaction(tmp_path, '''2020-01-03 * "Groceries"
+  Assets:Bank -10 USD
+    source_desc: "CARD PAYMENT EXAMPLE SHOP 1234"
+    date: 2020-01-02
+    note: "Importer metadata"
+  Expenses:Food 10 USD
+''')
+    meta = entry.postings[0].meta
+    assert meta['source_desc'] == 'CARD PAYMENT EXAMPLE SHOP 1234'
+    assert meta['date'] == datetime.date(2020, 1, 2)
+    assert meta['note'] == 'Importer metadata'
+
+
+def reload_import(tmp_path: Path, entry: Transaction
+                  ) -> Tuple[SourceResults, Source]:
+    journal_path = tmp_path / 'journal.beancount'
+    journal_path.write_text('''2019-01-01 open Assets:Bank
+2019-01-01 open Expenses:Food
+2019-01-01 open Income:Salary
+''' + test_util.format_entries([entry._replace(narration='Edited narration')]))
+    editor = JournalEditor(str(journal_path))
+    assert editor.errors == []
+    source = load_source({
+        'module': 'beancount_import.source.generic_importer_source',
+        'directory': str(tmp_path / 'input'),
+        'account': 'Assets:Bank',
+        'importer': BeancountLedgerImporter(),
+    })
+    results = SourceResults()
+    source.prepare(editor, results)
+    return results, source
+
+
+def test_import_preserved_metadata_identifies_accepted_transaction(tmp_path):
+    entry, _ = import_transaction(tmp_path, '''2020-01-03 * "Groceries"
+  Assets:Bank -10 USD
+    source_desc: "CARD PAYMENT EXAMPLE SHOP 1234"
+    date: 2020-01-02
+  Expenses:Food 10 USD
+''')
+    results, _ = reload_import(tmp_path, entry)
+    assert results.pending == []
+    assert results.invalid_references == []
+
+
+@pytest.mark.parametrize('none_meta', [False, True])
+def test_import_annotates_only_all_source_account_postings(tmp_path, none_meta):
+    class MetadataImporter(BeancountLedgerImporter):
+        def extract(self, file, existing_entries):
+            entries = super().extract(file, existing_entries)
+            if none_meta:
+                for entry in entries:
+                    if isinstance(entry, Transaction):
+                        entry.postings[:] = [
+                            p._replace(meta=None) for p in entry.postings]
+            return entries
+
+    entry, _ = import_transaction(tmp_path, '''2020-01-03 * "Salary and bonus"
+  Assets:Bank 3000 USD
+  Assets:Bank 500 USD
+  Income:Salary -3500 USD
+''', importer=MetadataImporter())
+    assert [(p.meta['source_desc'], p.meta['date'])
+            for p in entry.postings[:2]] == [
+                ('Salary and bonus', datetime.date(2020, 1, 3)),
+                ('Salary and bonus', datetime.date(2020, 1, 3))]
+    assert not (entry.postings[2].meta or {}).get('source_desc')
+    assert not (entry.postings[2].meta or {}).get('date')
+    _, source = reload_import(tmp_path, entry)
+    assert [source.is_posting_cleared(p) for p in entry.postings] == [
+        True, True, False]
+
+
+@pytest.mark.parametrize('postings', ['''  Assets:Bank 3000 USD
+  Assets:Bank 500 USD
+  Income:Salary -3500 USD
+''', '''  Assets:Bank 500 USD
+  Assets:Bank 500 USD
+  Income:Salary -1000 USD
+''', '''  Assets:Bank 3000 USD
+    source_desc: "EXAMPLE SALARY"
+    date: 2020-01-02
+  Assets:Bank 500 USD
+    source_desc: "EXAMPLE BONUS"
+    date: 2020-01-03
+  Income:Salary -3500 USD
+'''])
+def test_import_split_source_postings_are_recognized_after_reload(tmp_path,
+                                                                 postings):
+    entry, _ = import_transaction(
+        tmp_path, '2020-01-03 * "Salary and bonus"\n' + postings)
+    results, _ = reload_import(tmp_path, entry)
+    assert results.pending == []
+    assert results.invalid_references == []
+
+
+def test_import_overlapping_files_keep_distinct_split_records(tmp_path):
+    entry, _ = import_transaction(tmp_path, '''2020-01-03 * "Salary and bonus"
+  Assets:Bank 3000 USD
+  Assets:Bank 500 USD
+  Income:Salary -3500 USD
+''')
+    (tmp_path / 'input' / 'second.beancount').write_text('''2020-01-03 * "Salary and bonus"
+  Assets:Bank 3000 USD
+  Assets:Bank 600 USD
+  Income:Salary -3600 USD
+''')
+    results, _ = reload_import(tmp_path, entry)
+    pending, = results.pending
+    transaction, = pending.entries
+    assert [p.units for p in transaction.postings] == [
+        Amount.from_string('3000 USD'), Amount.from_string('600 USD'),
+        Amount.from_string('-3600 USD')]
+    assert results.invalid_references == []
+
+
+def test_import_overlapping_files_deduplicate_reordered_split_postings(tmp_path):
+    entry, _ = import_transaction(tmp_path, '''2020-01-03 * "Salary and bonus"
+  Assets:Bank 3000 USD
+  Assets:Bank 500 USD
+  Income:Salary -3500 USD
+''')
+    (tmp_path / 'input' / 'second.beancount').write_text('''2020-01-03 * "Salary and bonus"
+  Assets:Bank 500 USD
+  Assets:Bank 3000 USD
+  Income:Salary -3500 USD
+''')
+    results, _ = reload_import(tmp_path, entry)
+    assert results.pending == []
+    assert results.invalid_references == []
+
+
+def test_import_split_records_preserve_repeated_occurrences(tmp_path):
+    text = '''2020-01-03 * "Two equal payments"
+  Assets:Bank 500 USD
+  Assets:Bank 500 USD
+  Income:Salary -1000 USD
+'''
+    entry, _ = import_transaction(tmp_path, text)
+    (tmp_path / 'input' / 'statement.beancount').write_text(text + '\n' + text)
+    results, _ = reload_import(tmp_path, entry)
+    assert len(results.pending) == 1
+    assert results.invalid_references == []
+
+
+def test_import_single_records_can_match_one_combined_journal_transaction(tmp_path):
+    text = '''2020-01-03 * "First payment"
+  Assets:Bank 3000 USD
+    source_desc: "FIRST PAYMENT"
+  Income:Salary -3000 USD
+'''
+    entry, _ = import_transaction(tmp_path, text)
+    (tmp_path / 'input' / 'statement.beancount').write_text(text + '''
+2020-01-03 * "Second payment"
+  Assets:Bank 500 USD
+    source_desc: "SECOND PAYMENT"
+  Income:Salary -500 USD
+''')
+    second, _, _ = parse_file(str(tmp_path / 'input' / 'statement.beancount'))
+    second_posting = second[1].postings[0]._replace(meta={
+        'source_desc': 'SECOND PAYMENT', 'date': datetime.date(2020, 1, 3)})
+    entry = entry._replace(postings=[entry.postings[0], second_posting,
+        entry.postings[1]._replace(units=Amount.from_string('-3500 USD'))])
+    results, _ = reload_import(tmp_path, entry)
+    assert results.pending == []
+    assert results.invalid_references == []
+
+
+@pytest.mark.parametrize('inferred_posting', ['Assets:Bank', 'Assets:Bank USD'])
+def test_import_inferred_source_leg_is_recognized_after_reload(tmp_path,
+                                                              inferred_posting):
+    entry, _ = import_transaction(tmp_path, '''2020-01-03 * "Transfer and fee"
+  Assets:Bank -10 USD
+  %s
+  Expenses:Food 1 USD
+''' % inferred_posting)
+    units = entry.postings[1].units
+    assert units is MISSING or units.number is MISSING
+    results, _ = reload_import(tmp_path, entry)
+    assert results.pending == []
+    assert results.invalid_references == []
+
+
+def test_import_ambiguous_source_amounts_remain_pending(tmp_path):
+    entry, _ = import_transaction(tmp_path, '''2020-01-03 * "Unallocated transfer"
+  Assets:Bank -10 USD
+  Assets:Bank
+  Assets:Bank
+  Expenses:Food 1 USD
+''')
+    assert entry.postings[1].units is MISSING
+    assert entry.postings[2].units is MISSING
