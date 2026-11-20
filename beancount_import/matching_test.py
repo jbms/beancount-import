@@ -6,6 +6,7 @@ import unittest
 
 import beancount.parser.parser
 import beancount.parser.printer
+from beancount.core.number import MISSING
 from . import matching
 from . import test_util
 
@@ -27,6 +28,27 @@ def load_match_test_data(name, key):
     return ''
 
 
+def get_match_results(candidate_entry, pending_entries, journal_entries):
+
+    def is_cleared(posting):
+        return posting.meta and posting.meta.get('cleared') == True
+
+    posting_db = matching.PostingDatabase(
+        fuzzy_match_days=3,
+        fuzzy_match_amount=decimal.Decimal("0.01"),
+        is_cleared=is_cleared,
+        metadata_keys=frozenset([matching.CHECK_KEY]),
+    )
+    add_entries_to_db(posting_db, pending_entries)
+    add_entries_to_db(posting_db, journal_entries)
+    add_entries_to_db(posting_db, [candidate_entry])
+
+    return [
+        txn for txn, used_transactions in matching.get_extended_transactions(
+            candidate_entry, posting_db)
+    ]
+
+
 def assert_match(pending_candidate: str = '',
                  journal_candidate: str = '',
                  pending: str = '',
@@ -46,23 +68,8 @@ def assert_match(pending_candidate: str = '',
     if pending_candidate:
         del candidate_entry.meta['filename']
 
-    def is_cleared(posting):
-        return posting.meta and posting.meta.get('cleared') == True
-
-    posting_db = matching.PostingDatabase(
-        fuzzy_match_days=3,
-        fuzzy_match_amount=decimal.Decimal("0.01"),
-        is_cleared=is_cleared,
-        metadata_keys=frozenset([matching.CHECK_KEY]),
-    )
-    add_entries_to_db(posting_db, pending_entries)
-    add_entries_to_db(posting_db, journal_entries)
-    add_entries_to_db(posting_db, [candidate_entry])
-
-    results = [
-        txn for txn, used_transactions in matching.get_extended_transactions(
-            candidate_entry, posting_db)
-    ]
+    results = get_match_results(candidate_entry, pending_entries,
+                                journal_entries)
     expected_match_entries = test_util.format_entries(expected_match_entries)
     results = test_util.format_entries(results)
     if results != expected_match_entries:
@@ -712,6 +719,38 @@ def test_missing_price_currency_does_not_crash_search():
           Assets:Checking  -55.00 USD
           Expenses:Travel  50.00 EUR @ 1.10
         """)
+
+
+def test_none_units_match_like_missing():
+    # Importers commonly leave the amount of an auto-balanced posting as
+    # `None` (e.g. `beangulp.petl_utils`), where the parser would produce
+    # `MISSING`.  Checking a pending entry like that for opposite postings
+    # must not try to negate `None`, and it should match as if `MISSING`.
+    candidate_text = """
+    2016-01-01 * "Fictional Grocer"
+      Assets:Checking  -100.00 USD
+        cleared: TRUE
+      Expenses:FIXME    100.00 USD
+    """
+    pending_text = """
+    2016-01-01 * "Fictional Grocer"
+      Assets:Checking     -100.00 USD
+      Expenses:Groceries    90.00 USD
+      Expenses:Household
+    """
+
+    def get_results(units):
+        candidate, = test_util.parse(candidate_text)
+        pending, = test_util.parse(pending_text)
+        for entry in (candidate, pending):
+            del entry.meta['filename']
+        pending.postings[2] = pending.postings[2]._replace(units=units)
+        return test_util.format_entries(
+            get_match_results(candidate, [pending], []))
+
+    missing_results = get_results(MISSING)
+    assert missing_results
+    assert get_results(None) == missing_results
 
 
 def test_match_fuzzy_amount():

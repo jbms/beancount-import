@@ -1096,7 +1096,7 @@ def transaction_has_opposite_posting(transaction: Transaction,
     This is used by IsTransactionMergeablePredicate.
     """
     for posting in transaction.postings:
-        if posting.units is not MISSING:
+        if posting.units is not MISSING and posting.units is not None:
             opposite_key = (posting.account, -posting.units, posting.cost,
                             posting.price)
             if opposite_key in posting_specs:
