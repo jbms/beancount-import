@@ -118,7 +118,7 @@ import os
 import collections
 import csv
 import re
-from typing import Dict, Tuple, List, Union, Sequence
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
 from beancount.core.data import Transaction, Posting, Balance, EMPTY_SET, Open
@@ -303,6 +303,11 @@ class VenmoSource(Source):
                         results.add_invalid_reference(InvalidSourceReference(len(existing) - num_needed, existing))
                 elif has:
                     txn = make(raw_txn, has_transfer and has_payment)
+                    if txn is None:
+                        results.add_error(
+                            f'Venmo transaction {venmo_id} has no total amount.',
+                            {'filename': raw_txn['filename'], 'lineno': 1})
+                        continue
                     results.add_pending_entry(
                         ImportResult(
                             date=txn.date, entries=[txn], info=get_info(raw_txn)))
@@ -347,8 +352,13 @@ class VenmoSource(Source):
                     ))
         results.add_account(self.assets_account)
 
-    def _make_transaction(self, raw_txn: RawTransaction, link: bool, is_transfer: bool):
-        amount = original_amount = amount_parsing.parse_amount(raw_txn[CSV_AMOUNT_TOTAL_KEY])
+    def _make_transaction(self, raw_txn: RawTransaction, link: bool,
+                          is_transfer: bool) -> Optional[Transaction]:
+        amount_text = raw_txn[CSV_AMOUNT_TOTAL_KEY] or ''
+        original_amount = amount_parsing.parse_amount(amount_text.strip())
+        if original_amount is None:
+            return None
+        amount = original_amount
         txn_type = raw_txn[CSV_TYPE_KEY]
         is_payment_txn = txn_type in [
             'Payment', 'Charge', 'Merchant Transaction', 'Refunded transaction'
@@ -409,10 +419,12 @@ class VenmoSource(Source):
         )
 
 
-    def make_transfer_transaction(self, raw_txn: RawTransaction, link: bool):
+    def make_transfer_transaction(
+            self, raw_txn: RawTransaction, link: bool) -> Optional[Transaction]:
         return self._make_transaction(raw_txn, link, True)
 
-    def make_payment_transaction(self, raw_txn: RawTransaction, link: bool):
+    def make_payment_transaction(
+            self, raw_txn: RawTransaction, link: bool) -> Optional[Transaction]:
         return self._make_transaction(raw_txn, link, False)
 
     @property

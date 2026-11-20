@@ -354,6 +354,10 @@ transaction_schema = {
 }
 
 
+class _MissingAmountError(ValueError):
+    pass
+
+
 class Locale_Base(ABC):
     # metaclass
     LOCALE: str
@@ -365,8 +369,15 @@ class Locale_Base(ABC):
 
     @staticmethod
     @abstractmethod
-    def parse_amount(amount) -> Amount:
+    def parse_amount(amount: str) -> Optional[Amount]:
         raise NotImplementedError
+
+    @classmethod
+    def parse_required_amount(cls, text: str, field: str) -> Amount:
+        amount = cls.parse_amount(text.strip())
+        if amount is None:
+            raise _MissingAmountError(field)
+        return amount
 
 
 class Locale_en_US(Locale_Base):
@@ -377,7 +388,7 @@ class Locale_en_US(Locale_Base):
         return dateutil.parser.parse(date_str).date()
 
     @staticmethod
-    def parse_amount(amount) -> Amount:
+    def parse_amount(amount: str) -> Optional[Amount]:
         return parse_amount(amount)
 
 
@@ -407,7 +418,7 @@ class Locale_de_DE(Locale_Base):
         return value.replace(thousands_sep, '').replace(decimal_sep, '.')
 
     @staticmethod
-    def parse_amount(amount) -> Amount:
+    def parse_amount(amount: str) -> Optional[Amount]:
         return parse_amount(Locale_de_DE._format_number_str(amount))
 
 
@@ -477,9 +488,14 @@ class PaypalSource(LinkBasedSource, Source):
             tags=EMPTY_SET,
             postings=[])
         is_credit = data['isCredit']
-        counterparty_amount = self.locale.parse_amount(data['amount']['grossAmount'])
-        funding_source_amount = self.locale.parse_amount(data['amount']['netAmount'])
-        fee_amount = self.locale.parse_amount(data['amount']['feeAmount'])
+        amounts = data['amount']
+        counterparty_amount = self.locale.parse_required_amount(
+            amounts['grossAmount'], 'grossAmount')
+        funding_source_amount = self.locale.parse_required_amount(
+            amounts['netAmount'], 'netAmount')
+        fee_amount = self.locale.parse_amount(amounts['feeAmount'].strip())
+        if fee_amount is None and not amounts['isZeroFee']:
+            raise _MissingAmountError('feeAmount')
         transaction_type_enum = data['transactionTypeEnum']
 
         # Metadata added to postings to the `self.assets_account` account.
@@ -554,7 +570,7 @@ class PaypalSource(LinkBasedSource, Source):
                 ))
 
 
-        if fee_amount.number != ZERO:
+        if fee_amount is not None and fee_amount.number != ZERO:
             if (negate_counterparty_amounts
                 and transaction_type_enum != 'EBAY_SALE'
                 and not transaction_type_enum.endswith('_RECEIVED')
@@ -574,13 +590,15 @@ class PaypalSource(LinkBasedSource, Source):
 
         if 'itemDetails' in data:
             for item in data['itemDetails']['itemList']:
-                units = self.locale.parse_amount(item['itemTotalPrice'])
+                units = self.locale.parse_required_amount(
+                    item['itemTotalPrice'], 'itemTotalPrice')
                 if 'quantity' in item:
                     quantity = D(item['quantity'])
                 else:
                     quantity = None
                 if units.number == ZERO and 'price' in item:
-                    units = self.locale.parse_amount(item['price'])
+                    units = self.locale.parse_required_amount(
+                        item['price'], 'item price')
                 extra_meta = [
                     (self.prefix + '_item_name', item['name']),
                 ]
@@ -593,20 +611,23 @@ class PaypalSource(LinkBasedSource, Source):
                 add_counterparty_posting(amount=units, extra_meta=extra_meta)
                 if 'discounts' in item:
                     for discount in item['discounts']:
-                        units = -self.locale.parse_amount(discount['price'])
+                        units = -self.locale.parse_required_amount(
+                            discount['price'], 'item discount price')
                         add_counterparty_posting(amount=units, extra_meta=[
                             (self.prefix + '_item_discount', discount['name']),
                         ])
             for key in ('salesTax', 'shippingAmount'):
                 if key in data['itemDetails']:
-                    units = self.locale.parse_amount(data['itemDetails'][key])
+                    units = self.locale.parse_required_amount(
+                        data['itemDetails'][key], key)
                     add_counterparty_posting(amount=units, extra_meta=[
                         (self.prefix + '_item_type', key),
                     ])
 
             if 'discount' in data['itemDetails']:
                 for discount in data['itemDetails']['discount']:
-                    units = -self.locale.parse_amount(discount['value'])
+                    units = -self.locale.parse_required_amount(
+                        discount['value'], 'discount value')
                     add_counterparty_posting(amount=units, extra_meta=[
                         (self.prefix + '_item_discount', discount['name']),
                     ])
@@ -653,7 +674,8 @@ class PaypalSource(LinkBasedSource, Source):
                         if key in source:
                             meta[self.prefix + '_' + meta_suffix] = source[key]
                 # FIXME handle currencyCode
-                units = self.locale.parse_amount(source['amount'])
+                units = self.locale.parse_required_amount(
+                    source['amount'], 'funding source amount')
                 if negate_funding_source_amounts:
                     units = -units
                 funding_source_inventory -= units
@@ -709,8 +731,14 @@ class PaypalSource(LinkBasedSource, Source):
             if "date" not in txn:
                 continue
             jsonschema.validate(txn, transaction_schema)
-            import_result = self._make_import_result(
+            try:
+                import_result = self._make_import_result(
                     txn_id=txn_id, data=txn, json_path=path)
+            except _MissingAmountError as error:
+                results.add_error(
+                    f'PayPal transaction {txn_id} has no amount for {error}.',
+                    {'filename': path, 'lineno': 1})
+                continue
             if import_result is not None:
                 if self.earliest_date is not None and import_result.date < self.earliest_date:
                     self.log_status("Skipping transaction with date [%s] before [%s]"
